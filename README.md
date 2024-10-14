@@ -21,13 +21,13 @@ The application would provide greater transparency through expanding avenues of 
 
 ## Features
 1. Customer and Contractor Profiles
-⋅⋅* Differentiated login pages for customers and contractors
+   - Differentiated login pages for customers and contractors
 2. Project Tracking Dashboard
-⋅⋅* Visual Dashboard for Project Progress and Task Management
+   - Visual Dashboard for Project Progress and Task Management
 3. Contractor Marketplace
-⋅⋅* A marketplace that list contractors and their expertise
+   - A marketplace that list contractors and their expertise
 4. Escrow Payment System
-⋅⋅* Holding of funds by a neutral third-party to ensures mutual commitment. Funds are released when project milestones are met
+   - Holding of funds by a neutral third-party to ensures mutual commitment. Funds are released when project milestones are met
 
 
 <!-- ## Customize configuration
