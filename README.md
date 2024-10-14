@@ -1,7 +1,7 @@
 
 # Members
-| :------------------: | :--------: | :------------------------------: |
 |    Team Members      | Student ID |         |Email                   |
+| :------------------: | :--------: | :------------------------------: |
 | Adrian Tok Jun Hao   |            |adrian.tok.2023@scis.smu.edu.sg   | 
 | Joel Tan Yong Ern    |            |joel.tan.2023@scis.smu.edu.sg     | 
 | Kng Eng Cheng, Moses |            |moses.kng.2023@scis.smu.edu.sg    | 
