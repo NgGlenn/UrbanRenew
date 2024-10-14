@@ -1,4 +1,4 @@
-(https://github.com/NgGlenn/UrbanRenew/blob/d02c6e5b7e7551708b650c092dd05a63a1561569/src/assets/UrbanRenew.png)
+!(https://github.com/NgGlenn/UrbanRenew/blob/main/src/assets/UrbanRenew.png)
 # Members
 | Team Members         | Student ID | Email                            |
 | :------------------: | :--------: | :------------------------------: |
