@@ -54,7 +54,7 @@
 </template>
 
 <script setup>
-    import logedInLayout from '../components/logedInLayout.vue';
+    import logedInLayout from '@/components/logedInLayout.vue';
     import {ref} from 'vue';
 
     const location = ref()

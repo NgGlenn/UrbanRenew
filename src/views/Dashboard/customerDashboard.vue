@@ -17,24 +17,24 @@
                     <div id="carouselExampleControls" class="carousel slide" data-bs-ride="carousel" data-bs-theme="dark"> 
                         <div class="carousel-inner"> 
                             <div class="carousel-item active" data-bs-interval="0"> 
-                                <img src="../assets/gt3rs.png" alt="" style="width:710px;height:600px;">
+                                <img src="@/assets/gt3rs.png" alt="" style="width:710px;height:600px;">
                                 <div class="carousel-caption d-none d-md-block">
                                     <h5>Porsche 911 GT3 RS</h5>
-                                    <p>Porsche's most hardcore track car.</p>
+                                    <p>Testing</p>
                                 </div>
                             </div> 
                             <div class="carousel-item" data-bs-interval="0"> 
-                            <img src="../assets/gt3.webp" alt="" style="width:710px;height:600px;">
+                            <img src="@/assets/gt3.webp" alt="" style="width:710px;height:600px;">
                                 <div class="carousel-caption d-none d-md-block">
                                     <h5>Porsche 911 GT3</h5>
-                                    <p>Porsche track car for the road.</p>
+                                    <p>Testing</p>
                                 </div>
                             </div> 
                             <div class="carousel-item" data-bs-interval="0"> 
-                                <img src="../assets/logo.png" alt="" style="width:710px;height:600px;">
+                                <img src="@/assets/turbos.png" alt="" style="width:710px;height:600px;">
                                 <div class="carousel-caption d-none d-md-block">
-                                    <h5>Logo of Vue</h5>
-                                    <p>Logo lmao</p>
+                                    <h5>Porsche 911 Turbo S</h5>
+                                    <p>Testing</p>
                                 </div>
                             </div> 
                         </div> 
@@ -56,7 +56,7 @@
 </template>
 
 <script setup>
-    import logedInLayout from '../components/logedInLayout.vue';
+    import logedInLayout from '@/components/logedInLayout.vue';
 </script>
 
 <style scoped>

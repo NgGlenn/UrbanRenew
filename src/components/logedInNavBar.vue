@@ -1,7 +1,7 @@
 <template>
     <nav class="navbar navbar-expand-lg bg-body-tertiary p-3 navbarBorder">
         <div class="container-fluid">
-            <router-link :to="{ name: 'userDashboard' }"><strong class="websiteFont">UrbanRenew</strong></router-link>
+            <router-link :to="{ name: 'customerDashboard' }"><strong class="websiteFont">UrbanRenew</strong></router-link>
 
             <!-- <strong class="companyFont d-flex align-item-center text-start">UrbanRenew</strong> -->
 
@@ -19,8 +19,10 @@
                     <li class="nav-item mx-2">
                         <router-link class="nav-link" :to="{ name: 'contractors' }" active-class="active">Contractors</router-link>
                     </li>
+                    <!-- Leaving it as customerDashboard first, behaviour should change according based on 
+                        what type of user loged in i.e. customer or contractor -->
                     <li class="nav-item mx-2">
-                        <router-link class="nav-link" :to="{ name: 'userDashboard' }" active-class="active">Dashboard</router-link>
+                        <router-link class="nav-link" :to="{ name: 'customerDashboard' }" active-class="active">Dashboard</router-link>
                     </li>
                     <li class="nav-item mx-2">
                         <router-link class="nav-link" :to="{ name: 'userProfile' }" active-class="active">Profile</router-link>
@@ -48,11 +50,22 @@ a{
   font-size: 30px;
   list-style: none;
   color: black;
-  
 }
 
 .buttonFont {
   font-size: 18px;
+}
+
+@media (min-width: 2560px){
+    .websiteFont{
+        font-size: 60px;
+        list-style: none;
+        color: black;
+    }
+
+    .buttonFont {
+        font-size: 30px;
+    }
 }
 
 

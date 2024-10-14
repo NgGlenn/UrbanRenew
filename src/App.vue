@@ -1,16 +1,15 @@
 <script setup>
-  import userDashboard from './views/userDashboard.vue';
-  import contractor from './views/contractors.vue';
-  import noProject from './views/customerNoProject.vue';
-  import createProjectCust from './views/createProjectCust.vue';
-  import contractorDashboard from './views/contractorDashboard.vue';
-  import prjlist from './views/contractorProjectList.vue';
-
+  import customerDashboard from '@/views/Dashboard/customerDashboard.vue';
+  import home from '@/views/home.vue';
 </script>
 
 <template>
   <!-- <prjlist></prjlist> -->
-  <RouterView/>
+  <!-- <customerDashboard></customerDashboard> -->
+  <!-- <home></home> -->
+
+  <!-- For testing of website about page, comment out <router-view>-->
+  <router-view/>
 </template>
 
 

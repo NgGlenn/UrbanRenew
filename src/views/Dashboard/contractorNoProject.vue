@@ -3,9 +3,10 @@
         <navBar/>
         <div class="container-fluid">   
             <h1><strong>You do not have an ongoing renovation project</strong></h1>
-            <router-link :to="{ name: 'createProjectCust' }">
+            <h1><strong>Head to Job Requests to start accepting jobs !</strong></h1>
+            <router-link :to="{ name: 'jobRequest' }">
                 <button type="button" class="btn btn-primary btn-lg" style="background-color: #769FCD; color: white;">
-                    Create A Project    
+                    Job Requests    
                 </button>
             </router-link>  
         </div>
@@ -13,7 +14,7 @@
 </template>
 
 <script setup>
-    import navBar from '../components/logedInNavBar.vue';
+    import navBar from '@/components/logedInNavBar.vue';
 </script>
 
 <style scoped>

@@ -62,7 +62,7 @@
 </template>
 
 <script setup>
-    import logedInLayout from '../components/logedInLayout.vue';
+    import logedInLayout from '@/components/logedInLayout.vue';
 </script>
 
 <style scoped>
