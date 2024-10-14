@@ -1,12 +1,12 @@
 
 # Members
-|    Team Members      | Student ID |         |Email                   |
+| Team Members         | Student ID | Email                            |
 | :------------------: | :--------: | :------------------------------: |
-| Adrian Tok Jun Hao   |            |adrian.tok.2023@scis.smu.edu.sg   | 
-| Joel Tan Yong Ern    |            |joel.tan.2023@scis.smu.edu.sg     | 
-| Kng Eng Cheng, Moses |            |moses.kng.2023@scis.smu.edu.sg    | 
-| Ng Jun Heng Glenn    | 01428193   |glenn.ng.2023@scis.smu.edu.sg     | 
-| Shaun Nisal Peiris   |            |shaunnisalp.2023@scis.smu.edu.sg  | 
+| Adrian Tok Jun Hao   |            | adrian.tok.2023@scis.smu.edu.sg  | 
+| Joel Tan Yong Ern    |            | joel.tan.2023@scis.smu.edu.sg    | 
+| Kng Eng Cheng, Moses |            | moses.kng.2023@scis.smu.edu.sg   | 
+| Ng Jun Heng Glenn    | 01428193   | glenn.ng.2023@scis.smu.edu.sg    | 
+| Shaun Nisal Peiris   |            | shaunnisalp.2023@scis.smu.edu.sg | 
 
 # Project Overview
 
