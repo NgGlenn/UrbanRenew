@@ -1,6 +1,6 @@
-<div style="text-align:center">
-  <img src="https://github.com/NgGlenn/UrbanRenew/blob/main/src/assets/UrbanRenew.png" alt="Alt text" width="300" height="300">
-</div>
+<p align="center">
+  <img src="https://github.com/NgGlenn/UrbanRenew/blob/main/src/assets/UrbanRenew.png" alt="UrbanRenew Logo" width="300" height="300">
+</p>
 
 # Members
 | Team Members         | Student ID | Email                            |
