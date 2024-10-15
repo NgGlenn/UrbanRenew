@@ -1,5 +1,16 @@
+<script setup>
+    import LogedInLayout from '@/components/LogedInLayout.vue';
+    import {ref} from 'vue';
+
+    const location = ref()
+    const description = ref()
+    const projectStyle = ref([])
+
+
+</script>
+
 <template>
-    <logedInLayout>
+    <LogedInLayout>
         <div class="container-fluid">
             <form>
                 <div class="mb-3 row">
@@ -50,20 +61,9 @@
                 <button type="submit" class="btn btn-primary btn-lg d-flex justify-content-end" style="color: white; background-color: #769FCD;">Next</button>
             </form>
         </div>
-    </logedInLayout>
+    </LogedInLayout>
 </template>
 
-<script setup>
-    import logedInLayout from '@/components/logedInLayout.vue';
-    import {ref} from 'vue';
-
-    const location = ref()
-    const description = ref()
-    const projectStyle = ref([])
-
-
-</script>
-    
 <style scoped>
     .container-fluid {
         height: 100%;

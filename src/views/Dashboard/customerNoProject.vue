@@ -1,20 +1,20 @@
+<script setup>
+    import NavBar from '@/components/NavBar.vue';
+</script>
+
 <template>
     <div class="pageWrapper">
-        <navBar/>
+        <NavBar/>
         <div class="container-fluid">   
             <h1><strong>You do not have an ongoing renovation project</strong></h1>
-            <router-link :to="{ name: 'createProjectCust' }">
+            <RouterLink :to="{ name: 'createProjectCust' }">
                 <button type="button" class="btn btn-primary btn-lg" style="background-color: #769FCD; color: white;">
                     Create A Project    
                 </button>
-            </router-link>  
+            </RouterLink>  
         </div>
     </div>
 </template>
-
-<script setup>
-    import navBar from '@/components/logedInLayout.vue';
-</script>
 
 <style scoped>
     .pageWrapper {

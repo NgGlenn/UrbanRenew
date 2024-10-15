@@ -1,14 +1,14 @@
 <template>
-    <navBar/>
+    <NavBar/>
     <div class="whiteBody">
         <slot></slot>
         <footer>
-            <ul>
-                <li>Copyright © 2024. All rights reserved |</li>
-                <li> Terms of Sale |</li>
-                <li> Terms of Use |</li>
-                <li> UrbanRenew Privacy Policy</li>
-            </ul>
+                <ul>
+                    <li>Copyright © 2024. All rights reserved |</li>
+                    <li> Terms of Sale |</li>
+                    <li> Terms of Use |</li>
+                    <li> UrbanRenew Privacy Policy</li>
+                </ul>
         </footer>
     </div>
     <!-- <div class="appContainer">
@@ -17,9 +17,8 @@
 </template>
 
 <script setup>
-    import navBar from './logedInNavBar.vue';
+    import NavBar from './NavBar.vue';
      
-
 </script>
 
 <style scoped>
@@ -30,12 +29,13 @@
     } */
 
     .whiteBody{
-        display: flex;
+        /* display: flex;
         flex-direction: column;
-        flex-grow: 1;
+        flex-grow: 1; */
         background-color: white;
         width: 95%;
         margin: 0px auto;
+        min-height: 100vh;
         /* min-height: 100%; */
     }
 

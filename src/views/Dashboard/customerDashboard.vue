@@ -1,14 +1,21 @@
+<script setup>
+    import LogedInLayout from '@/components/LogedInLayout.vue';
+    import ProjectProgressionBar from '@/components/Project Analytics/ProjectProgressionBar.vue';
+    import { ref } from 'vue';
+
+    const renovationSteps = ref(['Planning', 'Design', 'Demolition', 'Construction', 'Finishing']);
+    const currentStepIndex = ref(2); 
+</script>
+
 <template>
-    <logedInLayout>
+    <LogedInLayout>
         <div class="container-fluid">
             <div class="row mx-0 py-4">
                 <div class="font header">Progress</div>
             </div>
             <div class="row mx-0 my-3">
-                <div class="font containerBorder">Overall Progression<br>
-                    Overall Progression<br>
-                    Overall Progression<br>
-                    Overall Progression<br>Overall Progression<br>
+                <div class="font containerBorder">Overall Progression
+                    <ProjectProgressionBar :my-steps="renovationSteps" :current-step="currentStepIndex"></ProjectProgressionBar>
                 </div>
             </div>
             <div class="customRow">
@@ -52,12 +59,8 @@
                 <div class="jobProgressionContainer font containerBorder"> Overall Progression for Job</div>
             </div>
         </div>
-    </logedInLayout>
+    </LogedInLayout>
 </template>
-
-<script setup>
-    import logedInLayout from '@/components/logedInLayout.vue';
-</script>
 
 <style scoped>
     h5, p{
