@@ -2,15 +2,15 @@
     <NavBar/>
     <div class="whiteBody">
         <slot></slot>
-        <footer>
-                <ul>
-                    <li>Copyright © 2024. All rights reserved |</li>
-                    <li> Terms of Sale |</li>
-                    <li> Terms of Use |</li>
-                    <li> UrbanRenew Privacy Policy</li>
-                </ul>
-        </footer>
     </div>
+    <footer>
+            <ul>
+                <li>Copyright © 2024. All rights reserved |</li>
+                <li> Terms of Sale |</li>
+                <li> Terms of Use |</li>
+                <li> UrbanRenew Privacy Policy</li>
+            </ul>
+    </footer>
     <!-- <div class="appContainer">
 
     </div> -->
@@ -35,7 +35,9 @@
         background-color: white;
         width: 95%;
         margin: 0px auto;
-        /* min-height: 100vh; */
+        height: auto;
+        /* min-height: 100vh;  */
+        overflow-y: scroll;
 
     }
 
@@ -55,6 +57,10 @@
     footer {
         margin-top: auto;
         padding: 10px 0;
+        background-color: white;
+        width: 95%;
+        margin: 0px auto;
+        bottom: 0;
         
     }
 
