@@ -15,7 +15,6 @@
     const donutChartSection = [{value: jobCompletionPercentage.value, color: '#769FCD'}, 
                                 {value: remainingJobPercentage.value, color: 'grey'}]
     const jobNo = ref(1)
-    console.log(remainingJobPercentage)
 </script>
 
 <template>

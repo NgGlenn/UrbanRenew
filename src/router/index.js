@@ -47,6 +47,11 @@ const router = createRouter({
       name: 'register',
       component: register
     },
+    {
+      path: '/',
+      name: 'customerDashboard',
+      component: customerDashboard
+    },
 
   ]
 })

@@ -1,7 +1,7 @@
 <script setup>
   import customerDashboard from '@/views/Dashboard/customerDashboard.vue';
   import home from '@/views/home.vue';
-import { RouterView } from 'vue-router';
+  import { RouterView } from 'vue-router';
   // import firesbasetesting from '@/components/TestFirebase.vue';
 </script>
 
