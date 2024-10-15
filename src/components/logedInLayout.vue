@@ -29,14 +29,14 @@
     } */
 
     .whiteBody{
-        /* display: flex;
+        display: flex;
         flex-direction: column;
-        flex-grow: 1; */
+        flex-grow: 1;
         background-color: white;
         width: 95%;
         margin: 0px auto;
-        min-height: 100vh;
-        /* min-height: 100%; */
+        /* min-height: 100vh; */
+
     }
 
     ul{
@@ -55,6 +55,7 @@
     footer {
         margin-top: auto;
         padding: 10px 0;
+        
     }
 
         /* .blueBackground {

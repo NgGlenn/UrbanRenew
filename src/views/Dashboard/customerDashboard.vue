@@ -1,10 +1,21 @@
 <script setup>
     import LogedInLayout from '@/components/LogedInLayout.vue';
     import ProjectProgressionBar from '@/components/Project Analytics/ProjectProgressionBar.vue';
+    import ProjectDonutChart from '@/components/Project Analytics/JobDonutChart.vue';
     import { ref } from 'vue';
+    import { computed } from 'vue';
 
+    //Overall progression variables
     const renovationSteps = ref(['Planning', 'Design', 'Demolition', 'Construction', 'Finishing']);
     const currentStepIndex = ref(2); 
+
+    //Donut chart variables
+    const jobCompletionPercentage = ref(70);
+    const remainingJobPercentage = computed(() => 100-jobCompletionPercentage.value);
+    const donutChartSection = [{value: jobCompletionPercentage.value, color: '#769FCD'}, 
+                                {value: remainingJobPercentage.value, color: 'grey'}]
+    const jobNo = ref(1)
+    console.log(remainingJobPercentage)
 </script>
 
 <template>
@@ -14,7 +25,8 @@
                 <div class="font header">Progress</div>
             </div>
             <div class="row mx-0 my-3">
-                <div class="font containerBorder">Overall Progression
+                <div class="font containerBorder">
+                    Overall Progression
                     <ProjectProgressionBar :my-steps="renovationSteps" :current-step="currentStepIndex"></ProjectProgressionBar>
                 </div>
             </div>
@@ -56,7 +68,13 @@
                     </div> 
                      <!-- BS carousel: end --> 
                 </div>
-                <div class="jobProgressionContainer font containerBorder"> Overall Progression for Job</div>
+                <div class="jobProgressionContainer font containerBorder"> 
+                    <p class="my-3">Overall Progression for Job {{ jobNo }}</p>
+                    <div class="my-5">
+                        <ProjectDonutChart :sections="donutChartSection"/>
+                        Completion: {{ jobCompletionPercentage }}%
+                    </div>
+                </div>
             </div>
         </div>
     </LogedInLayout>
@@ -70,7 +88,7 @@
     .font{
         font-family: 'Roboto', sans-serif;
         font-weight: bold;
-        font-size: 20px;
+        font-size: 30px;
         color: #769FCD;
         text-align: center;
     }
@@ -84,6 +102,7 @@
         /* padding: 0px; */
         padding-left: 1%;
         padding-right: 1%;
+        flex-grow: 1;
     }
 
     .containerBorder {

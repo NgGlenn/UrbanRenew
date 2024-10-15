@@ -23,8 +23,8 @@
 
 <template>
     <div>
-        <StepProgress :steps="mySteps" :current-step="currentStep" :active-color="activeColor" icon-class="fa fa-check">
-        </StepProgress>
+        <step-progress :steps="mySteps" :current-step="currentStep" :active-color="activeColor" icon-class="fa fa-check">
+        </step-progress>
     </div>
 </template>
 

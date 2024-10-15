@@ -9,7 +9,6 @@ Colour scheme (lightest to darkest)
 body {
    margin: 0;
    padding: 0;
-   /* height: 100%; */
  }
 
 #app {
@@ -20,6 +19,8 @@ body {
   border-radius: 3px;
   font-weight: normal;
   font-family: 'Roboto', sans-serif;
+  display: flex;
+  flex-direction: column;
 }
 
 .navbarBorder {
