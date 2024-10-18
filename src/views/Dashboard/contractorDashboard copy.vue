@@ -36,6 +36,12 @@
             <div class="row mx-0 py-4">
                 <div class="font header">Progress</div>
             </div>
+            <div class="row mx-0 py-2 font containerBorder" style="text-align: left;">
+                <span>Project ID: <span style="color: black; font-weight: normal;">{{  }}</span></span>
+                <span>Customer ID: <span style="color: black; font-weight: normal;">{{  }}</span></span>
+                <span>Customer Name ID: <span style="color: black; font-weight: normal;">asas{{  }}</span></span>
+                <span>Customer Home Location ID: <span style="color: black; font-weight: normal;">{{  }}</span></span>
+            </div>
             <div class="row mx-0 my-3">
                 <div class="font containerBorder">
                     Overall Progression

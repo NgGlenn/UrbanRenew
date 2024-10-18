@@ -6,23 +6,25 @@ Colour scheme (lightest to darkest)
 3. B9D7EA
 4. #769FCD
 */
-body {
-   margin: 0;
-   padding: 0;
-   min-height: 100vh;
-  
- }
+/* html, body {
+
+  background-color: lightgray; 
+} */
 
 #app {
   min-width: 100%;
   min-height: 100vh;
-  overflow-x: hidden;
+  /* overflow-x: hidden; */
   background-color: lightgray;
   border-radius: 3px;
   font-weight: normal;
   font-family: 'Roboto', sans-serif;
   display: flex;
   flex-direction: column;
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  overflow: scroll;
 
 }
 

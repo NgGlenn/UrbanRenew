@@ -11,9 +11,6 @@
                 <li> UrbanRenew Privacy Policy</li>
             </ul>
     </footer>
-    <!-- <div class="appContainer">
-
-    </div> -->
 </template>
 
 <script setup>
@@ -35,9 +32,9 @@
         background-color: white;
         width: 95%;
         margin: 0px auto;
-        height: auto;
+        min-height: auto;
         /* min-height: 100vh;  */
-        overflow-y: scroll;
+        /* overflow-y: scroll; */
 
     }
 

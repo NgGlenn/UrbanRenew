@@ -1,7 +1,9 @@
 <script setup>
   import customerDashboard from '@/views/Dashboard/customerDashboard.vue';
   import home from '@/views/home.vue';
+  import contdb from '@/views/Dashboard/contractorDashboard copy.vue';
   import { RouterView } from 'vue-router';
+
   // import firesbasetesting from '@/components/TestFirebase.vue';
 </script>
 
@@ -18,10 +20,12 @@
     i.e. Testing of home page: import home from '@/views/home.vue'
         Under template: <home/>-->
   <RouterView/>
+<!-- 
+    <contdb/> -->
   
 </template>
 
 
 <style>
- 
+
 </style>
