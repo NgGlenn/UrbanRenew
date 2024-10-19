@@ -35,8 +35,6 @@ export default {
 <template> 
 <LogedInLayout>    
   <div class="container-fluid p-0">
-
-
       <div class="row g-0">
         <div class="col-lg-6 col-12 login-container">
           <div class="login-form">
