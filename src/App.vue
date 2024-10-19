@@ -10,9 +10,11 @@
 
   <!-- For testing of website about page, comment out <router-view>-->
   <router-view/>
+  
 </template>
 
-
+<script setup>
+</script>
 <style>
  
 </style>

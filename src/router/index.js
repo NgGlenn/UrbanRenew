@@ -7,10 +7,17 @@ import userProfile from '@/views/userProfile.vue';
 import createProjectCust from '@/views/Dashboard/createProjectCust.vue';
 import login from '@/views/login.vue'
 import register from '@/views/register.vue'
+//import { c } from 'vite/dist/node/types.d-aGj9QkWt';
+//import { c } from 'vite/dist/node/types.d-aGj9QkWt';
+//import { c } from 'vite/dist/node/types.d-aGj9QkWt';
+import ContractorReview from '@/views/contractorReview.vue';
+import Payment from '@/views/Payment.vue';
 
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
+  //history: createWebHistory(),
+
   routes: [
     {
       path: '/jobRequest',
@@ -47,7 +54,20 @@ const router = createRouter({
       name: 'register',
       component: register
     },
-
+    {
+      path:'/',
+      redirect:'/Payment',
+    },
+    {
+      path:'/contractorReview',
+      name:'ContractorReview',
+      component: ContractorReview
+    },
+    {
+      path:'/Payment',
+      name:'Payment',
+      component: Payment
+    }
   ]
 })
 
