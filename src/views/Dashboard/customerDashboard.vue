@@ -46,7 +46,7 @@
                 <!-- <div class="carouselContainer font containerBorder"> -->
                     <!-- BS carousel: start --> 
                     <div id="carouselExampleControls" class="carousel slide carouselContainer font containerBorder" 
-                        data-bs-theme="dark"> 
+                        data-bs-theme="dark" data-bs-slide="carousel"> 
                         <div class="carousel-inner"> 
                             <div class="carousel-item active"> 
                                 <div class="gantt-container">
@@ -55,7 +55,7 @@
                             </div> 
                             <div class="carousel-item"> 
                                 <div class="gantt-container">
-                                    <GanttChart class="left-container" :tasks="task2"/>
+                                    <img src="@/assets/gt3rs.png" height="200" width="200">
                                 </div>
                             </div> 
                         </div> 
