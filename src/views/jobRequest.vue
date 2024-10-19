@@ -1,10 +1,10 @@
-<template>
-    <logedInLayout></logedInLayout>
-</template>
-
 <script setup>
-    import logedInLayout from '../components/logedInLayout.vue';
+    import LogedInLayout from '@/components/LogedInLayout.vue';
 </script>
+
+<template>
+    <LogedInLayout></LogedInLayout>
+</template>
 
 <style scoped>
 

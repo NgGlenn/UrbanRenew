@@ -1,6 +1,43 @@
 <template>
   <div class="page-container">
-    <logedInNavBar></logedInNavBar>
+    <nav
+        class="custom-navbar navbar navbar navbar-expand-md navbar-light bg-light"
+        arial-label="Furni navigation bar"
+      >
+        <div class="container-fluid">
+          <a class="navbar-brand" href="index.html"
+            ><img src="../img/UrbanRenew.png" width="80px" alt="" />
+          </a>
+
+          <button
+            class="navbar-toggler"
+            type="button"
+            data-bs-toggle="collapse"
+            data-bs-target="#navbarsFurni"
+            aria-controls="navbarsFurni"
+            aria-expanded="false"
+            aria-label="Toggle navigation"
+          >
+            <span class="navbar-toggler-icon"></span>
+          </button>
+
+          <div class="collapse navbar-collapse" id="navbarsFurni">
+            <ul class="custom-navbar-nav navbar-nav ms-auto mb-2 mb-md-0">
+              <li class="nav-item active">
+                <a class="nav-link" href="">About us</a>
+              </li>
+              <li><a class="nav-link" href="">Services</a></li>
+              <li><a class="nav-link" href="">Testimonials</a></li>
+              <li><a class="nav-link" href="">Contact us</a></li>
+              <li>
+                <a class="nav-link" href=""
+                  ><i class="fa-solid fa-user"></i> Log In</a
+                >
+              </li>
+            </ul>
+          </div>
+        </div>
+      </nav>
     <div id="app" class=" review-container">
     <div class="row">
       <div class="col-md-12 col-lg-12 col-sm-12">
@@ -106,74 +143,68 @@
 
 </template>
   
-<script>
-import logedInNavBar from '@/components/logedInNavBar.vue'; // Import the logedInNavBar component
-
-export default {
-  components: {
-    logedInNavBar, // Register the component
-  },
-  data() {
-    return {
-      contractorName: '',
-      qualityOfWork: 0,
-      timeliness: 0,
-      communication: 0,
-      problemResolution: 0,
-      budgetAdherence: 0,
-      hoverQualityOfWork: 0,
-      hoverTimeliness: 0,
-      hoverCommunication: 0,
-      hoverProblemResolution: 0,
-      hoverBudgetAdherence: 0,
-      reviewText: '',
-      submitted: false,
-    };
-  },
-  methods: {
-    setRating(metric, value) {
-      this[metric] = value; // Set the rating on click
+  <script>
+  export default {
+    data() {
+      return {
+        contractorName: '',
+        qualityOfWork: 0,
+        timeliness: 0,
+        communication: 0,
+        problemResolution: 0,
+        budgetAdherence: 0,
+        hoverQualityOfWork: 0,
+        hoverTimeliness: 0,
+        hoverCommunication: 0,
+        hoverProblemResolution: 0,
+        hoverBudgetAdherence: 0,
+        reviewText: '',
+        submitted: false,
+      };
     },
-    hoverRating(hoverMetric, value) {
-      this[hoverMetric] = value; // Temporarily highlight stars during hover
+    methods: {
+      setRating(metric, value) {
+        this[metric] = value; // Set the rating on click
+      },
+      hoverRating(hoverMetric, value) {
+        this[hoverMetric] = value; // Temporarily highlight stars during hover
+      },
+      leaveRating(hoverMetric) {
+        this[hoverMetric] = 0; // Reset hover state
+      },
+      getRatingDescription(rating) {
+        switch (rating) {
+          case 5:
+            return 'Excellent';
+          case 4:
+            return 'Very Good';
+          case 3:
+            return 'Good';
+          case 2:
+            return 'Fair';
+          case 1:
+            return 'Poor';
+          default:
+            return '';
+        }
+      },
+      submitReview() {
+        if (
+          this.contractorName &&
+          this.qualityOfWork &&
+          this.timeliness &&
+          this.communication &&
+          this.problemResolution &&
+          this.budgetAdherence
+        ) {
+          this.submitted = true;
+        } else {
+          alert('Please fill out all fields.');
+        }
+      },
     },
-    leaveRating(hoverMetric) {
-      this[hoverMetric] = 0; // Reset hover state
-    },
-    getRatingDescription(rating) {
-      switch (rating) {
-        case 5:
-          return 'Excellent';
-        case 4:
-          return 'Very Good';
-        case 3:
-          return 'Good';
-        case 2:
-          return 'Fair';
-        case 1:
-          return 'Poor';
-        default:
-          return '';
-      }
-    },
-    submitReview() {
-      if (
-        this.contractorName &&
-        this.qualityOfWork &&
-        this.timeliness &&
-        this.communication &&
-        this.problemResolution &&
-        this.budgetAdherence
-      ) {
-        this.submitted = true;
-      } else {
-        alert('Please fill out all fields.');
-      }
-    },
-  },
-};
-</script>
-
+  };
+  </script>
   
   <style scoped>
         #app{

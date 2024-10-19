@@ -1,5 +1,19 @@
+<script setup>
+    import LogedInLayout from '@/components/LogedInLayout.vue';
+
+    import { inject } from 'vue'
+    import { collection, getDocs } from 'firebase/firestore'
+
+    const db = inject('db')
+
+    const fetchData = async () => {
+    const querySnapshot = await getDocs(collection(db, 'contractors'))
+    // Process the data...
+    }
+</script>
+
 <template>
-    <logedInLayout>
+    <LogedInLayout>
         <div class="dashboardContent">
             <div class="row mx-0 py-4">
                 <div class="font header">Progress of Project {{  }}</div>
@@ -58,12 +72,8 @@
                 <div class="jobProgressionContainer font containerBorder"> Overall Progression for Job</div>
             </div>
         </div>
-    </logedInLayout>
+    </LogedInLayout>
 </template>
-
-<script setup>
-    import logedInLayout from '@/components/logedInLayout.vue';
-</script>
 
 <style scoped>
     h5, p{

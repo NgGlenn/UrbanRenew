@@ -1,3 +1,9 @@
+<script setup>
+    import { RouterLink } from 'vue-router';
+
+
+</script>
+
 <template>
     <nav class="navbar navbar-expand-lg bg-body-tertiary p-3 navbarBorder">
         <div class="container-fluid">
@@ -12,10 +18,10 @@
             <div class="collapse navbar-collapse" id="navbarToggle">
                 <ul class="navbar-nav nav nav-pills ms-auto my-2 buttonFont">
                     <li class="nav-item mx-2">
-                        <router-link class="nav-link" :to="{ name: 'login' }" active-class="active">Login</router-link>
+                        <RouterLink class="nav-link" :to="{ name: 'login' }" active-class="active">Login</RouterLink>
                     </li>
                     <li class="nav-item mx-2">
-                        <router-link class="nav-link" :to="{ name: 'register' }" active-class="active">Register</router-link>
+                        <RouterLink class="nav-link" :to="{ name: 'register' }" active-class="active">Register</RouterLink>
                     </li>
                 </ul>
             </div>
@@ -28,10 +34,6 @@
         About us
     </div>
 </template>
-
-<script setup>
-
-</script>
 
 <style scoped>
 

@@ -1,5 +1,5 @@
 <script setup>
-    import LogedInLayout from '@/components/logedInLayout.vue';
+    import LogedInLayout from '@/components/LogedInLayout.vue';
     import ProjectProgressionBar from '@/components/Project Analytics/ProjectProgressionBar.vue';
     import ProjectDonutChart from '@/components/Project Analytics/JobDonutChart.vue';
     import GanttChart from '@/components/Project Analytics/GanttChart.vue';
@@ -36,6 +36,12 @@
             <div class="row mx-0 py-4">
                 <div class="font header">Progress</div>
             </div>
+            <div class="row mx-0 py-2 font containerBorder" style="text-align: left;">
+                <span>Project ID: <span style="color: black; font-weight: normal;">{{  }}</span></span>
+                <span>Customer ID: <span style="color: black; font-weight: normal;">{{  }}</span></span>
+                <span>Customer Name ID: <span style="color: black; font-weight: normal;">asas{{  }}</span></span>
+                <span>Customer Home Location ID: <span style="color: black; font-weight: normal;">{{  }}</span></span>
+            </div>
             <div class="row mx-0 my-3">
                 <div class="font containerBorder">
                     Overall Progression
@@ -46,7 +52,7 @@
                 <!-- <div class="carouselContainer font containerBorder"> -->
                     <!-- BS carousel: start --> 
                     <div id="carouselExampleControls" class="carousel slide carouselContainer font containerBorder" 
-                        data-bs-theme="dark" data-bs-slide="carousel"> 
+                        data-bs-theme="dark"> 
                         <div class="carousel-inner"> 
                             <div class="carousel-item active"> 
                                 <div class="gantt-container">
@@ -55,7 +61,7 @@
                             </div> 
                             <div class="carousel-item"> 
                                 <div class="gantt-container">
-                                    <img src="@/assets/gt3rs.png" height="200" width="200">
+                                    <GanttChart class="left-container" :tasks="task2"/>
                                 </div>
                             </div> 
                         </div> 
