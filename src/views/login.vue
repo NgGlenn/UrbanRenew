@@ -1,6 +1,6 @@
 <!-- Remove setup if you are using options API. options API is the style we are learning in school -->
 <script>
-import LogedInLayout from '@/components/logedInLayout.vue';
+import LogedInLayout from '@/components/LogedInLayout.vue';
 import NavBar from '@/components/NavBar.vue';
 export default {
   data() {

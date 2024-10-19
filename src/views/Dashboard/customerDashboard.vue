@@ -1,5 +1,5 @@
 <script setup>
-    import LogedInLayout from '@/components/logedInLayout.vue';
+    import LogedInLayout from '@/components/LogedInLayout.vue';
     import ProjectProgressionBar from '@/components/Project Analytics/ProjectProgressionBar.vue';
     import ProjectDonutChart from '@/components/Project Analytics/JobDonutChart.vue';
     import GanttChart from '@/components/Project Analytics/GanttChart.vue';
