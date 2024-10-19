@@ -41,6 +41,21 @@ Colour scheme (lightest to darkest)
   font-size: 18px;
 }
 
+.icon{
+  width: 20px;
+  height: 20px;
+  margin-inline: 0px;
+}
+
+button{
+  background-color: #769FCD;
+  color: white;
+  border: 0px;
+  border-radius: 2px;
+  height: 35px;
+  padding-inline: 10px;
+}
+
 /* a,
 .green {
   text-decoration: none;
