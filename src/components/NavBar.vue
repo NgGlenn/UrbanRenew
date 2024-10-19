@@ -1,7 +1,7 @@
 <template>
     <!-- Start Header/Navigation -->
     <nav
-      class="custom-navbar navbar navbar navbar-expand-md navbar-light bg-light"
+      class="custom-navbar navbar navbar navbar-expand-md navbar-light bg-light fixed-top"
       arial-label="Furni navigation bar"
     >
       <div class="container-fluid">
@@ -30,7 +30,7 @@
                 <router-link class="nav-link" :to="{ name: 'contractors' }" active-class="active">Contractors</router-link >
             </li>
             <li>
-                <router-link class="nav-link" :to="{ name: 'customerDashboard' }" active-class="active">Dashboard</router-link >
+                <router-link class="nav-link" :to="{ name: 'customerDashboard' }" exact-active-class="active">Dashboard</router-link >
             </li>
             <li>
                 <router-link class="nav-link" :to="{ name: 'userProfile' }" active-class="active">Profile</router-link >
@@ -78,12 +78,18 @@
     }
 }*/
 
+nav {
+    font-family: "Inter", sans-serif;
+    font-weight: 400;
+    line-height: 28px;
+    font-size: 14px;
+}
+
 a {
     margin-left: 20px;
     margin-right: 20px;
     text-decoration: none;
     transition: .3s all ease;
-    color: #2f2f2f;
 }
 
 
@@ -167,6 +173,44 @@ a {
 
 .footer-section .border-top.copyright {
     font-size: 14px !important;
+}
+
+.custom-navbar .custom-navbar-nav li a.active {
+  color: #f9bf29; /* Gold color for active links */
+  font-weight: 600; /* Bold the active link */
+  opacity: 1;
+}
+
+.custom-navbar .custom-navbar-nav li a.active:before {
+  width: calc(100% - 16px);
+  background-color: #f9bf29; /* Ensure hover effect color matches */
+}
+
+.custom-navbar .custom-navbar-nav li a {
+    position: relative;
+    display: inline-block;
+}
+
+.custom-navbar .custom-navbar-nav li a:before {
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    background: #f9bf29; /* Gold color for the underline */
+    height: 5px;
+    width: 0;
+    transition: width 0.3s ease-out;
+}
+
+.custom-navbar .custom-navbar-nav li a:hover:before,
+.custom-navbar .custom-navbar-nav li a.active:before {
+    width: 100%; /* Underline should match the width of the text */
+    background-color: #f9bf29;
+}
+
+.custom-navbar .custom-navbar-nav li a.active {
+    color: #f9bf29; /* Gold color for active links */
+    font-weight: 600; /* Bold the active link */
 }
 
 </style>

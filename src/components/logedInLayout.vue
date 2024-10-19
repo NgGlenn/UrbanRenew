@@ -25,6 +25,8 @@
         min-height: 100vh;
     } */
 
+    
+
     .whiteBody{
         display: flex;
         flex-direction: column;
