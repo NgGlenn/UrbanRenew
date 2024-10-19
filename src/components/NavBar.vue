@@ -1,7 +1,8 @@
 <template>
     <!-- Start Header/Navigation -->
+    <!-- removed "fixed-top" from nav's class as it was blocking the header of dashboard -->
     <nav
-      class="custom-navbar navbar navbar navbar-expand-md navbar-light bg-light fixed-top"
+      class="custom-navbar navbar navbar navbar-expand-md navbar-light bg-light"
       arial-label="Furni navigation bar"
     >
       <div class="container-fluid">
