@@ -25,6 +25,8 @@
         min-height: 100vh;
     } */
 
+    
+
     .whiteBody{
         display: flex;
         flex-direction: column;
@@ -32,7 +34,7 @@
         background-color: white;
         width: 95%;
         margin: 0px auto;
-        min-height: auto;
+        min-height: calc(100vh-120px);
         /* min-height: 100vh;  */
         /* overflow-y: scroll; */
 
@@ -57,7 +59,7 @@
         background-color: white;
         width: 95%;
         margin: 0px auto;
-        bottom: 0;
+        /* bottom: 0; */
         
     }
 

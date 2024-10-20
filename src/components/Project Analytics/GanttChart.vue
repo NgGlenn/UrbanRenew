@@ -1,5 +1,5 @@
 <template>
-  <div ref="ganttContainer" class='Gclass'></div>
+  <div ref="ganttContainer" class="Gclass"></div>
 </template>
 
 <script setup>
@@ -27,7 +27,7 @@ onMounted(() => {
 
 <style scoped>
     .Gclass {
-        width: auto;
-        height: auto;
+        width: 100%;
+        height: 100%;
     }
 </style>

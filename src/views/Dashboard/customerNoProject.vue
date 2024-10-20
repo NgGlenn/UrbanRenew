@@ -18,18 +18,17 @@
 
 <style scoped>
     .pageWrapper {
-        display: flex;
-        flex-direction: column;
+        /* display: flex;
+        flex-direction: column; */
         height: 100%;
     }
 
     .container-fluid{ 
+        height: calc(100vh - 120px);
         display: flex;
-        flex-grow: 1;
         flex-direction: column;
         align-items: center;
         justify-content: center;
-        padding-top: auto;
-        padding-bottom: auto;
+        text-align: center;
     }
 </style>
