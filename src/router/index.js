@@ -7,6 +7,7 @@ import userProfile from '@/views/userProfile.vue';
 import createProjectCust from '@/views/Dashboard/createProjectCust.vue';
 import login from '@/views/login.vue'
 import register from '@/views/register.vue'
+import home from '@/views/home.vue'
 import contractorReview from '@/views/contractorReview.vue'
 
 
@@ -52,6 +53,11 @@ const router = createRouter({
       path: '/',
       name: 'customerDashboard',
       component: customerDashboard
+    },
+    {
+      path: '/home',
+      name: 'home',
+      component: home
     }
 
   ]

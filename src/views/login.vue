@@ -1,7 +1,7 @@
 <!-- Remove setup if you are using options API. options API is the style we are learning in school -->
 <script>
-import LogedInLayout from '@/components/LogedInLayout.vue';
-import NavBar from '@/components/NavBar.vue';
+import NavBarPreLogin from '@/components/NavBarPreLogin.vue';
+import FooterPreLogin from '@/components/FooterPreLogin.vue';
 export default {
   data() {
     return {
@@ -27,13 +27,15 @@ export default {
     },
     },
    components: {
-    LogedInLayout, // Register the NavBar component
+     NavBarPreLogin,
+     FooterPreLogin
+     // Register the NavBar component
   },
 };
 </script>
 
 <template> 
-<LogedInLayout>    
+<NavBarPreLogin></NavBarPreLogin>    
   <div class="container-fluid p-0">
       <div class="row g-0">
         <div class="col-lg-6 col-12 login-container">
@@ -124,36 +126,18 @@ export default {
               </div>
             </div>
           </div>
-          <button
-            class="carousel-control-prev"
-            type="button"
-            data-bs-target="#carouselExample"
-            data-bs-slide="prev"
-          >
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Previous</span>
-          </button>
-          <button
-            class="carousel-control-next"
-            type="button"
-            data-bs-target="#carouselExample"
-            data-bs-slide="next"
-          >
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Next</span>
-          </button>
+  
         </div>
       </div>
     </div>
-</LogedInLayout>
+
+<FooterPreLogin></FooterPreLogin>
 </template>
 
 <style scoped>
-body {
-     background-color: #F7FBFC;
-     height: 100vh;
-     margin: 0;
- }
+.container-fluid{
+  margin-top: 130px;
+}
 
  .carousel-item img {
      height: 100vh;
@@ -270,6 +254,7 @@ body {
  /*mobile and tablet view */
  @media (max-width: 768px) {
      .login-container {
+        margin-top: 30px;
          position: absolute;
          top: 50%;
          left: 50%;
@@ -321,5 +306,20 @@ body {
  .show-password {
      cursor: pointer;
  }
+
+ @media (max-width: 768px) {
+  .footer-section {
+    margin-top: 700px;
+    }
+  }
+
+ @media (max-width: 375px) {
+  .login-container {
+    margin-top: 130px;
+  }
+  .footer-section {
+    margin-top: 680px;
+  }
+}
 </style>
 
