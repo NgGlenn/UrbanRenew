@@ -50,10 +50,13 @@ const router = createRouter({
     },
     {
       path: '/',
-      name: 'customerDashboard',
-      component: customerDashboard
+      redirect: '/customerDashboard',
+    },
+    {
+      path:'/contractorReview',
+      name: 'contractorReview',
+      component: contractorReview
     }
-
   ]
 })
 
