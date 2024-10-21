@@ -504,7 +504,7 @@ export default {
   }
 
   .carousel-item img {
-      height: 114vh;
+      height: 112.5vh;
       object-fit: cover;
   }
 
