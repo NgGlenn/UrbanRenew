@@ -8,6 +8,7 @@ import createProjectCust from '@/views/Dashboard/createProjectCust.vue';
 import login from '@/views/login.vue'
 import register from '@/views/register.vue'
 import contractorReview from '@/views/contractorReview.vue'
+import Payment from '@/views/Payment.vue';
 
 
 const router = createRouter({
@@ -50,12 +51,17 @@ const router = createRouter({
     },
     {
       path: '/',
-      redirect: '/customerDashboard',
+      redirect: '/Payment',
     },
     {
       path:'/contractorReview',
       name: 'contractorReview',
       component: contractorReview
+    },
+    {
+      path:'/Payment',
+      name: 'Payment',
+      component: Payment
     }
   ]
 })

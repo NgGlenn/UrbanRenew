@@ -9,17 +9,17 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
 //Firestore
-import {db, auth} from './firebase.js';
+// import {db, auth} from './firebase.js';
 
-//Vuefire
-import { installVuefire } from './firebase';
+// //Vuefire
+// import { installVuefire } from './firebase';
 
 const app = createApp(App)
 
-installVuefire(app)
+// installVuefire(app)
 
-app.provide('db', db)
-app.provide('auth', auth)
+// app.provide('db', db)
+// app.provide('auth', auth)
 app.use(router)
 
 app.mount('#app')
