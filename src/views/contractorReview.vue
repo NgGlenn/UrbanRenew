@@ -203,8 +203,8 @@
           width: 80%;
           margin-left: 10%;
           margin-right: 10%;
-          margin-top: 10%;
-          margin-bottom: 10%;
+          margin-top: 5%;
+          margin-bottom: 5%;
         }
         .review-container h1 {
             font-size: 30px;
