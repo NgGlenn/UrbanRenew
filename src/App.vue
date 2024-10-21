@@ -3,7 +3,7 @@
   import home from '@/views/home.vue';
   import contdb from '@/views/Dashboard/contractorDashboard copy.vue';
   import { RouterView } from 'vue-router';
-
+  
   // import firesbasetesting from '@/components/TestFirebase.vue';
 </script>
 
@@ -23,7 +23,7 @@
 <!-- 
     <contdb/> -->
     
-  
+   
 </template>
 
 

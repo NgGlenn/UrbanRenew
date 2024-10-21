@@ -54,6 +54,7 @@ const router = createRouter({
       redirect: '/Payment',
     },
     {
+<<<<<<< Updated upstream
       path:'/contractorReview',
       name: 'contractorReview',
       component: contractorReview
@@ -62,6 +63,16 @@ const router = createRouter({
       path:'/Payment',
       name: 'Payment',
       component: Payment
+=======
+      path: '/home',
+      name: 'home',
+      component: home
+    },
+    {
+      path: '/contractorReview',
+      name: 'contractorReview',
+      component: contractorReview
+>>>>>>> Stashed changes
     }
   ]
 })
