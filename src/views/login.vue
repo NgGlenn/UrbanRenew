@@ -254,7 +254,7 @@ export default {
  /*mobile and tablet view */
  @media (max-width: 768px) {
      .login-container {
-        margin-top: 30px;
+        margin-top: 130px;
          position: absolute;
          top: 50%;
          left: 50%;

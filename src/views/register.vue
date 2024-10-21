@@ -408,10 +408,12 @@ export default {
 
 
 <style scoped>
+.registration-form{
+  margin-top:100px;
+}
 .container-fluid{
   margin-top: 130px;
 }
-
   .registration-container {
       display: flex;
       align-items: center;
@@ -586,13 +588,16 @@ export default {
           padding: 20px;
       }
   }
+  .footer-section {
+    margin-top:100px;
+  }
 
     @media (max-width: 375px) {
       .form-container {
           margin-top: 230px;
       }
       .footer-section {
-        margin-top: 200px;
+        margin-top: 300px;
       }
   }
 </style>
