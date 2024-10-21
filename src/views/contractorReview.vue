@@ -233,8 +233,10 @@
           border-radius: 10px;
           padding:2%;
           width: 80%;
-          margin-left: auto;
-          margin-right: auto;
+          margin-left: 10%;
+          margin-right: 10%;
+          margin-top: 5%;
+          margin-bottom: 5%;
         }
         .review-container h1 {
             font-size: 30px;
