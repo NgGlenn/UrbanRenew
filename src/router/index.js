@@ -9,6 +9,7 @@ import login from '@/views/login.vue'
 import register from '@/views/register.vue'
 import home from '@/views/home.vue'
 import contractorReview from '@/views/contractorReview.vue'
+import Payment from '@/views/Payment.vue';
 
 
 const router = createRouter({
@@ -49,17 +50,10 @@ const router = createRouter({
       name: 'register',
       component: register
     },
-    {
-      path: '/',
-      name: 'customerDashboard',
-      component: customerDashboard
-    },
-    {
-      path: '/home',
-      name: 'home',
-      component: home
-    }
-  ]
+    
+   
+    ]
+
 })
 
 export default router
