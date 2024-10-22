@@ -7,6 +7,7 @@ import userProfile from '@/views/userProfile.vue';
 import createProjectCust from '@/views/Dashboard/createProjectCust.vue';
 import login from '@/views/login.vue'
 import register from '@/views/register.vue'
+import home from '@/views/home.vue'
 import contractorReview from '@/views/contractorReview.vue'
 import Payment from '@/views/Payment.vue';
 
@@ -49,18 +50,10 @@ const router = createRouter({
       name: 'register',
       component: register
     },
-    {
-      path: '/',
-      redirect: '/Payment',
-    },
-   
-    {
-      path:'/Payment',
-      name: 'Payment',
-      component: Payment
-    },
     
-  ] 
+   
+    ]
+
 })
 
 export default router
