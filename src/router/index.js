@@ -50,7 +50,11 @@ const router = createRouter({
       name: 'register',
       component: register
     },
-    
+    {
+      path: '/contractorReview',
+      name: 'contractorReview',
+      component: contractorReview
+    },
    
     ]
 
