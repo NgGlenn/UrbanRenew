@@ -1,5 +1,5 @@
 <script setup>
-    import LogedInLayout from '@/components/LogedInLayout.vue';
+    import LogedInLayout from '@/components/logedInLayout.vue';
     import {ref} from 'vue';
 
     const location = ref()

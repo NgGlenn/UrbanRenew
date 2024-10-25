@@ -1,90 +1,43 @@
 <script setup>
-    import LogedInLayout from '@/components/LogedInLayout.vue';
+    import LogedInLayout from '@/components/logedInLayout.vue';
     import ProjectProgressionBar from '@/components/Project Analytics/ProjectProgressionBar.vue';
     import ProjectDonutChart from '@/components/Project Analytics/JobDonutChart.vue';
     import GanttChart from '@/components/Project Analytics/GanttChart.vue';
     import customerNoProject from './customerNoProject.vue';
-
-    import { ref, computed, inject } from 'vue';
-    import { collection, query, where } from 'firebase/firestore';
-    import { useCollection } from 'vuefire';
-
-
-    // const db = inject('db');
-
-    // const props = defineProps(['userId']);
-
-    // //fetch user's project data
-    // const projectQuery = computed(() => query(collection(db, 'projects'), where('customerId', '==', props.userId)));   
-    // const projects = useCollection(projectQuery);
-
-    // //get jobs associated with project
-    // const projectId = computed(() => projects.value[0]?.id);
-    // const jobsQuery = computed(() => {
-    //     if (!projectId.value) return null
-    //     return query(collection(db, 'jobs'), where('projectId', '==', projectId.value))
-    // });
-    // const jobs = useCollection(jobsQuery);
+    import { useDonutFormat } from '@/composables/useDonutFormat.js';
+    import { useGanttFormat } from '@/composables/useGanttFormat.js';
+    import { useProgressFormat } from '@/composables/useProgressFormat.js';
+    import { useProjectStore } from '@/stores/projectStore.js';
     
-    // //get task associated with job
-    // const tasksQuery = computed(() => {
-    //     if (!jobs.value || jobs.value.length === 0) return null
-    //     const jobIds = jobs.value.map(job => job.id)
-    //     return query(collection(db, 'tasks'), where('jobId', 'in', jobIds ));
-    // });
-    // const tasks = useCollection(tasksQuery)
+    import { storeToRefs } from 'pinia';
+    import { ref, computed } from 'vue';
+    import { onMounted } from 'vue';
 
-    // //format jobs and task data for gantt chart
-    // const formattedJobs = computed(() => {
-    //     if (!jobs.value || !tasks.value) return [];
+    const projectStore = useProjectStore();
+    const { jobs, tasks } = storeToRefs(projectStore);
 
-    //     const taskMap = new Map(tasks.value.map(task => [task.id, task]));
+    //Using the composables
+    const { ganttData } = useGanttFormat(jobs, tasks);
+    console.log(ganttData)
+    const { projectProgress } = useProgressFormat(jobs, tasks);
+    const { jobProgress } = useDonutFormat(jobs, tasks);
 
-    //     return jobs.value.map(job => {
-    //         const jobTasks = tasks.value.filter(task => task.jobId === job.id)
+    //Template switch
+    // const activeJobs = ref([1]);   //Variable to store active jobs
+    const hasActiveJobs = computed(() => jobs.value.length > 0); //Variable to check active jobs
+    console.log(jobs)
+    //Track active job index for donut chart to change as the job in the gantt chart changes
+    const activeJobIndex = ref(0);
 
-    //         return {
-    //             id: job.id,
-    //             name: job.description,
-    //             tasks: jobTasks.map(task => ({
-    //                 id: task.id,
-    //                 name: task.name,
-    //                 start: task.startDate.toDate(),
-    //                 end: task.endDate.toDate(),
-    //                 progress: task.progress,
-    //                 dependencies: task.dependencies ? [task.dependencies] : [], // Wrap in array if exists
-    //                 dependencyTask: task.dependencies ? taskMap.get(task.dependencies) : null
-    //             }))
-    //         }
-    //     })
-    // });
-
-    //Test code for template switch
-    const activeJobs = ref([]);   //Variable to store active jobs
-    const hasActiveJobs = computed(() => activeJobs.value.length > 0); //Variable to check active jobs
-    
-    //Overall progression variables
-    const renovationSteps = ref(['Planning', 'Design', 'Demolition', 'Construction', 'Finishing']);
-    const currentStepIndex = ref(2); 
-
-    //Donut chart variables
-    const jobCompletionPercentage = ref(70);
-    const remainingJobPercentage = computed(() => 100-jobCompletionPercentage.value);
-    const donutChartSection = [{value: jobCompletionPercentage.value, color: '#769FCD'}, 
-                                {value: remainingJobPercentage.value, color: 'grey'}]
-    const jobNo = ref(1)
-
-    //Gantt Chart variables
-    //dummy gantt chart data
-    const GanttChartData = [{id: 1, text: 'Task #1', start_date: '2024-10-18', duration: 3, progress: 0.6},
-                            {id: 2, text: 'Task #2', start_date: '2024-10-20', duration: 3, progress: 0.4}];
-    const GanttChartLinks = [{id: 1, source: 1, target: 2, type: '0'}];
-    const task = {data: GanttChartData, links: GanttChartLinks};
-
-    const GanttChartData2 = [{id: 1, text: 'Task #1', start_date: '2024-10-18', duration: 6, progress: 0.6},
-                            {id: 2, text: 'Task #2', start_date: '2024-10-20', duration: 6, progress: 0.4}];
-    const GanttChartLinks2 = [{id: 1, source: 1, target: 2, type: '0'}];
-    const task2 = {data: GanttChartData2, links: GanttChartLinks2};
+    //Event listener for carousel change to update donut chart
+    onMounted(() => {
+        const carouselControlElement = document.getElementsByClassName('carouselControls')[0];
+        if (carouselControlElement) {
+            carouselControlElement.addEventListener('slide.bs.carousel', (event) => {
+                activeJobIndex.value = event.to;
+            });
+        }
+    })
 </script>
 
 <template>
@@ -97,36 +50,30 @@
             <div class="row mx-0 my-3">
                 <div class="font containerBorder">
                     Overall Progression of Project
-                    <ProjectProgressionBar :my-steps="renovationSteps" :current-step="currentStepIndex"></ProjectProgressionBar>
+                    <ProjectProgressionBar :my-steps="projectProgress.steps" :current-step="projectProgress.currentStep"></ProjectProgressionBar>
                 </div>
             </div>
             <div class="customRow">
                 <div class="jobProgressionContainer font containerBorder"> 
-                    <p class="my-3">Overall Progression for Job {{ jobNo }}</p>
+                    <p class="my-3">Overall Progression for Job {{ activeJobIndex + 1 }}</p>
                     <div class="my-5">
-                        <ProjectDonutChart :sections="donutChartSection"/>
-                        Completion: {{ jobCompletionPercentage }}%
+                        <ProjectDonutChart :sections="jobProgress[activeJobIndex]?.donutSections"/>
+                        Completion: {{ jobProgress[activeJobIndex]?.completionPercentage }}%
                     </div>
                 </div>
-                <div id="carouselExampleControls" class="carousel slide carouselContainer font containerBorder"> 
+                <div id="carouselControls" class="carousel slide carouselContainer font containerBorder"> 
                     <div class="carousel-inner"> 
-                        <div class="carousel-item active"> 
+                        <div v-for="(job, index) in ganttData" :key="job.jobId" :class="['carousel-item', index === 0 ? 'active' : '']"> 
                             <div class="gantt-container">
-                                <GanttChart class="left-container" :tasks="task"/>
-                            </div>
-                        </div> 
-                        <div class="carousel-item"> 
-                            <div class="gantt-container">
-                                <img src="@/assets/gt3rs.png" height="auto" width="auto">
-                                <!-- <GanttChart class="left-container" :tasks="task2"/> -->
+                                <GanttChart class="left-container" :tasks="ganttData[activeJobIndex]?.task || []"/>
                             </div>
                         </div> 
                     </div> 
-                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="prev"> 
+                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselControls" data-bs-slide="prev"> 
                         <span class="carousel-control-prev-icon" aria-hidden="true"></span> 
                         <span class="visually-hidden">Previous</span> 
                     </button> 
-                    <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="next">  
+                    <button class="carousel-control-next" type="button" data-bs-target="#carouselControls" data-bs-slide="next">  
                         <span class="carousel-control-next-icon" aria-hidden="true"></span> 
                         <span class="visually-hidden">Next</span> 
                     </button> 
