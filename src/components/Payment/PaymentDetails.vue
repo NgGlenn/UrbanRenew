@@ -1,51 +1,49 @@
 <template>
-    <div class="payment-container">
-        <div class="payment-details">
-            <div v-if="project">
-                <div class="row align-items-center mb-3">
-                    <div class="col-auto">
-                        <img :src="project.contractorLogo" alt="Contractor Logo" class="contractor-logo">
+    <div class="payment-details">
+        <div v-if="project">
+            <div class="row align-items-center mb-3">
+                <div class="col-auto">
+                    <img src="../icons/moodeng.png" alt="Contractor Logo" class="contractor-logo">
+                </div>
+                <div class="col">
+                    <div class="project-info mb-2">
+                        <h5 class="project-name">{{ project.projectName }}</h5>
                     </div>
-                    <div class="col">
-                        <div class="project-info mb-2">
-                            <h5 class="project-name">{{ project.projectName }}</h5>
-                        </div>
-                        <div class="contractor-info">
-                            <p class="mb-1"><strong>Contractor:</strong></p>
-                            <span class="contractor-name">{{ project.contractorName }}</span>
-                        </div>
+                    <div class="contractor-info">
+                        <p class="mb-1"><strong>Contractor:</strong></p>
+                        <span class="contractor-name">{{ project.contractorName }}</span>
                     </div>
                 </div>
-                <div class="fees-container">
-                    <div class="d-flex justify-content-between mb-1">
-                        <em>Project Cost:</em>
-                        <span>${{ project.price.toLocaleString() }}</span>
-                    </div>
-                    <div class="d-flex justify-content-between mb-1">
-                        <em>Administration Fee:</em>
-                        <span>${{ (project.price * 0.05).toLocaleString() }}</span> <!-- Example calculation -->
-                    </div>
-                    <div class="d-flex justify-content-between mb-1">
-                        <em>Platform Fee:</em>
-                        <span>${{ (project.price * 0.03).toLocaleString() }}</span> <!-- Example calculation -->
-                    </div>
-                    <hr />
-                    <div class="d-flex justify-content-between mb-1">
-                        <strong>Total Fees:</strong>
-                        <span class="font-weight-bold"><strong>${{ ((project.price * 0.05) + (project.price * 0.03) +
-                            project.price).toLocaleString() }}</strong></span>
-                    </div>
+            </div>
+            <div class="fees-container">
+                <div class="d-flex justify-content-between mb-1">
+                    <em>Project Cost:</em>
+                    <span>${{ project.price.toLocaleString() }}</span>
                 </div>
-                <!--                 
+                <div class="d-flex justify-content-between mb-1">
+                    <em>Administration Fee:</em>
+                    <span>${{ (project.price * 0.05).toLocaleString() }}</span> <!-- Example calculation -->
+                </div>
+                <div class="d-flex justify-content-between mb-1">
+                    <em>Platform Fee:</em>
+                    <span>${{ (project.price * 0.03).toLocaleString() }}</span> <!-- Example calculation -->
+                </div>
+                <hr />
+                <div class="d-flex justify-content-between mb-1">
+                    <strong>Total Fees:</strong>
+                    <span class="font-weight-bold"><strong>${{ ((project.price * 0.05) + (project.price * 0.03) +
+                        project.price).toLocaleString() }}</strong></span>
+                </div>
+            </div>
+            <!--                 
                 <h2>Project: {{ project.projectName }}</h2>
                 <p><strong>Contractor:</strong> {{ project.contractorName }}</p>
                 <p><strong>Price:</strong> ${{ formattedPrice }}</p> -->
-            </div>
+        </div>
 
 
-            <div v-else>
-                <p>Loading project details...</p>
-            </div>
+        <div v-else>
+            <p>Loading project details...</p>
         </div>
     </div>
 </template>
@@ -69,16 +67,18 @@ export default {
 <style scoped>
 /* Payment Details Container */
 .payment-details {
-    padding: 20px 0;
+    padding: 20px;
     background-color: #ffffff;
-    border-bottom: 1px solid #ccc;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin: 20px 0;
 }
 
 /* Contractor Logo Styling */
 .contractor-logo {
-    width: 50px;
-    height: auto;
-    border-radius: 5px;
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
     margin-right: 15px;
 }
 

@@ -31,8 +31,7 @@
                                 class="form-check-input" required />
                             <label for="creditcard" class="form-check-label">Credit Card</label>
                         </div>
-                        <img src="../icons/credit_card.png" alt="Credit Card"
-                            class="payment-method-icon" />
+                        <img src="../icons/credit_card.png" alt="Credit Card" class="payment-method-icon" />
                     </div>
                 </div>
             </div>
@@ -49,7 +48,7 @@
                 <div class="row">
                     <div class="col mb-3">
                         <label for="expiryDate" class="form-label">Expiry Date</label>
-                        <input type="text" class="form-control" id="expiryDate" placeholder="MM/YY" required />
+                        <input type="text" class="form-control" id="expiryDate" placeholder="MM / YYYY" required />
                     </div>
                     <div class="col mb-3">
                         <label for="cvv" class="form-label">CVV</label>
@@ -57,18 +56,26 @@
                     </div>
                 </div>
             </div>
-
-            <button type="submit" class="btn btn-primary">Make Payment</button>
+            <div class='row'>
+                <div class="col text-center">
+                    <button type="submit" class="btn btn-primary w-100">Make Payment</button>
+                </div>
+            </div>
         </form>
     </div>
 </template>
 
 <script>
 export default {
+    props: {
+        project: {
+            type: Object,
+            required: true,
+        },
+    },
     data() {
         return {
             paymentMethod: '', // No default payment method
-            formattedPrice: '108,000', // Example price, replace with actual data
         };
     },
     methods: {
@@ -81,6 +88,11 @@ export default {
             } else {
                 alert('Please select a payment method.');
             }
+        },
+    },
+    computed: {
+        formattedPrice() {
+            return this.project ? parseFloat(this.project.price).toLocaleString() : '';
         },
     },
 };
@@ -140,8 +152,11 @@ h4 {
 }
 
 .payment-method-icon {
-    width: auto; /* Adjust width as needed */
-    height: 30px; /* Maintain aspect ratio */
-    margin-left: 10px; /* Space between label and image */
+    width: auto;
+    /* Adjust width as needed */
+    height: 30px;
+    /* Maintain aspect ratio */
+    margin-left: 10px;
+    /* Space between label and image */
 }
 </style>

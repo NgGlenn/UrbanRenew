@@ -1,7 +1,7 @@
 <template>
     <div class="row project-item align-items-center mb-4 p-3 border rounded shadow-sm">
         <div class="col-sm-2 auto">
-            <img :src="project.contractorLogo" alt="Contractor Logo" class="contractor-logo">
+            <img src="../icons/moodeng.png" alt="Contractor Logo" class="contractor-logo">
         </div>
         <div class="col-sm-6">
             <h5 class="mb-1">{{ project.projectName }}</h5>
