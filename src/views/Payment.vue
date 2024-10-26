@@ -73,11 +73,75 @@ export default {
         this.loading = false;
       }
     },
-  },
-};
-</script>
-
-<style scoped>
+  };
+  </script>
+  
+  <style scoped>
+  .payment-container {
+    max-width: 500px;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+  }
+  
+  h2 {
+    text-align: center;
+    font-size: 14px;
+    margin-bottom: 20px;
+  }
+  
+  label {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 5px;
+    display: block;
+  }
+  
+  input,
+  textarea {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 15px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
+  
+  .card-element {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    margin-bottom: 15px;
+  }
+  
+  #card-errors {
+    color: red;
+    margin-bottom: 15px;
+  }
+  
+  button {
+    width: 100%;
+    background-color: #6a42c7;
+    color: white;
+    padding: 15px;
+    border: none;
+    border-radius: 30px;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+  }
+  
+  button:hover {
+    background-color: #5333a0;
+  }
+  
+  button:disabled {
+    background-color: grey;
+    cursor: not-allowed;
+  }
+ 
 .payment-page {
   max-width: 400px;
   margin: 0 auto;
@@ -103,5 +167,6 @@ button:disabled {
   color: green;
 }
 </style>
+
 
   

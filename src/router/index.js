@@ -9,9 +9,10 @@ import login from '@/views/login.vue'
 import register from '@/views/register.vue'
 import home from '@/views/home.vue'
 import contractorReview from '@/views/contractorReview.vue'
+import paymentOverview from '@/views/paymentOverview.vue'
+import Payment2 from '@/views/payment2.vue';
 import Payment from '@/views/Payment.vue';
 import ReviewView from '@/views/ReviewView.vue';
-
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -62,6 +63,18 @@ const router = createRouter({
       component: home
     },
     {
+
+      path: '/paymentOverview', 
+      name: 'paymentOverview', 
+      component: paymentOverview
+    },
+    {
+      path: '/paymentOverview/payment', 
+      name: 'payment', 
+      component: Payment2
+    },
+
+    {
       path: '/ReviewView',
       name: 'ReviewView',
       component: ReviewView,
@@ -70,6 +83,7 @@ const router = createRouter({
     
    
     ] 
+
 
 })
 

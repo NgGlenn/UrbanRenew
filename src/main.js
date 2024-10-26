@@ -12,8 +12,9 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 //Firestore
 // import {db, auth} from './firebase.js';
 
-// //Vuefire
-// import { installVuefire } from './firebase';
+
+//Vuefire
+import { installVuefire } from './firebase';
 
 const app = createApp(App)
 
