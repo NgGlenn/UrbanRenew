@@ -28,9 +28,7 @@ export default {
     methods: {
         goToPaymentPage() {
             const queryParams = new URLSearchParams({
-                projectName: this.project.projectName,
-                contractorName: this.project.contractorName,
-                price: this.project.price,
+                projectID: this.project.projectID,
             }).toString();
 
             this.$router.push(`/payment?${queryParams}`);

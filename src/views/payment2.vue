@@ -1,18 +1,19 @@
 <template>
     <div>
-      <NavBar />
-      <div class="container">
-        <div class="row">
-          <div class="col-md-6 col-12">
-            <PaymentDetails :projectName="projectName" :contractorName="contractorName" :price="price" />
-          </div>
-          <div class="col-md-6 col-12">
-            <PaymentForm :projectName="projectName" :contractorName="contractorName" :price="price" />
-          </div>
+        <NavBar />
+        <div class="container payment-container">
+            <div class="row g-4 justify-content-center">
+                <div class="col-12 col-md-6 payment-form-container mb-4">
+                    <PaymentForm :project="project" />
+                </div>
+                <div class="col-12 col-md-6 payment-details-container mb-4">
+                    <PaymentDetails :project="project" />
+                </div>
+            </div>
         </div>
-      </div>
     </div>
-  </template>
+</template>
+
 
 <script>
 import NavBar from '@/components/NavBar.vue';
@@ -24,11 +25,10 @@ export default {
         NavBar,
         PaymentDetails,
         PaymentForm
-
     },
     data() {
         return {
-            selectedButton: 'pending',
+            project: null,
             renoPaymentItems: [
                 {
                     projectID: 1234,
@@ -65,26 +65,94 @@ export default {
                     price: 156700,
                     status: 'held',
                 },
-            ],
+            ]
         };
     },
-    computed: {
-
-    },
-    methods: {
-
-    },
+    created() {
+        const projectID = 1234; // Replace with this.$route.query.projectID if using routing
+        this.project = this.renoPaymentItems.find(p => p.projectID === projectID);
+    }
 }
-
 </script>
 
-
-
 <style scoped>
-.container {
-    display: flex;
-    justify-content: space-between;
-    width: 80%;
-    margin: auto;
+.payment-container {
+    background-color: #f1f1f1; /* Light gray background */
+    padding: 20px;
+}
+
+.payment-details-container,
+.payment-form-container {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    border: 10px;
+}
+
+.project-info {
+    margin-bottom: 20px;
+}
+
+.project-title {
+    font-size: 1.8rem;
+    font-weight: bold;
+    color: #333;
+}
+
+.contractor,
+.price {
+    font-size: 1rem;
+    margin: 5px 0;
+}
+
+.price {
+    font-size: 1.2rem;
+    color: #28a745;
+    /* Green color for price */
+}
+
+.payment-form-container h3 {
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+}
+
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.form-control {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.form-control:focus {
+    border-color: #007bff;
+    /* Bootstrap primary color */
+    outline: none;
+}
+
+.btn {
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+}
+
+.btn:hover {
+    background-color: #0056b3;
+    /* Darker blue on hover */
 }
 </style>

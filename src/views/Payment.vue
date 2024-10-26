@@ -116,9 +116,9 @@
     border-radius: 8px;
   }
   
-  h1 {
+  h2 {
     text-align: center;
-    font-size: 24px;
+    font-size: 14px;
     margin-bottom: 20px;
   }
   

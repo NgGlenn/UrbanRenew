@@ -1,78 +1,147 @@
 <template>
     <div class="payment-form">
-        <h2>Proceed with Payment</h2>
+        <h4><strong>Proceed with Payment</strong></h4>
         <form @submit.prevent="handleSubmit">
             <div class="mb-3">
                 <label for="amount" class="form-label">Amount</label>
-                <input type="text" class="form-control" id="amount" :value="formattedPrice" disabled />
+                <div class="row mb-3">
+                    <div class="col-auto">
+                        <strong>SGD</strong>
+                    </div>
+                    <div class="col">
+                        <input type="text" class="form-control" id="amount" :value="formattedPrice" disabled />
+                    </div>
+                </div>
             </div>
+
             <div class="mb-3">
-                <label for="cardElement" class="form-label">Card Information</label>
-                <div id="cardElement"></div>
+                <label class="form-label">Payment Method</label>
+                <div>
+                    <div class="form-check d-flex justify-content-between align-items-center">
+                        <div>
+                            <input type="radio" id="paynow" value="paynow" v-model="paymentMethod"
+                                class="form-check-input" required />
+                            <label for="paynow" class="form-check-label">PayNow</label>
+                        </div>
+                        <img src="../icons/paynow.png" alt="PayNow" class="payment-method-icon" />
+                    </div>
+                    <div class="form-check d-flex justify-content-between align-items-center">
+                        <div>
+                            <input type="radio" id="creditcard" value="creditcard" v-model="paymentMethod"
+                                class="form-check-input" required />
+                            <label for="creditcard" class="form-check-label">Credit Card</label>
+                        </div>
+                        <img src="../icons/credit_card.png" alt="Credit Card"
+                            class="payment-method-icon" />
+                    </div>
+                </div>
             </div>
+
+            <div v-if="paymentMethod === 'creditcard'" class="mb-3">
+                <label for="cardName" class="form-label">Name on Card</label>
+                <input type="text" class="form-control" id="cardName" required />
+            </div>
+
+            <div v-if="paymentMethod === 'creditcard'" class="mb-3">
+                <label for="cardNumber" class="form-label">Card Number</label>
+                <input type="text" class="form-control" id="cardNumber" required />
+                <br />
+                <div class="row">
+                    <div class="col mb-3">
+                        <label for="expiryDate" class="form-label">Expiry Date</label>
+                        <input type="text" class="form-control" id="expiryDate" placeholder="MM/YY" required />
+                    </div>
+                    <div class="col mb-3">
+                        <label for="cvv" class="form-label">CVV</label>
+                        <input type="text" class="form-control" id="cvv" required />
+                    </div>
+                </div>
+            </div>
+
             <button type="submit" class="btn btn-primary">Make Payment</button>
         </form>
     </div>
 </template>
 
 <script>
-// Import Stripe.js
-import { loadStripe } from '@stripe/stripe-js';
-
 export default {
-    props: ['projectName', 'contractorName', 'price'],
     data() {
         return {
-            stripe: null,
-            cardElement: null,
+            paymentMethod: '', // No default payment method
+            formattedPrice: '108,000', // Example price, replace with actual data
         };
     },
-    computed: {
-        formattedPrice() {
-            return `$${parseFloat(this.price).toLocaleString()}`;
-        }
-    },
-    async mounted() {
-        // Initialize Stripe with your publishable key
-        this.stripe = await loadStripe('YOUR_STRIPE_PUBLISHABLE_KEY');
-
-        const elements = this.stripe.elements();
-        this.cardElement = elements.create('card');
-        this.cardElement.mount('#cardElement');
-    },
     methods: {
-        async handleSubmit() {
-            const { paymentMethod, error } = await this.stripe.createPaymentMethod({
-                type: 'card',
-                card: this.cardElement,
-            });
-
-            if (error) {
-                alert(error.message);
-                return;
-            }
-
-            // Process payment through your backend
-            const response = await fetch('/your-backend-endpoint', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    paymentMethodId: paymentMethod.id,
-                    amount: this.price,
-                    contractor: this.contractorName,
-                    project: this.projectName
-                }),
-            });
-
-            const result = await response.json();
-            if (result.success) {
-                alert('Payment successful!');
+        handleSubmit() {
+            if (this.paymentMethod === 'paynow') {
+                alert('Proceeding with PayNow for amount: $' + this.formattedPrice);
+            } else if (this.paymentMethod === 'creditcard') {
+                alert('Proceeding with Credit Card payment for amount: $' + this.formattedPrice);
+                // More handling can be added here if necessary
             } else {
-                alert('Payment failed: ' + result.error);
+                alert('Please select a payment method.');
             }
-        }
-    }
+        },
+    },
 };
 </script>
+
+<style scoped>
+/* Payment Form Container */
+.payment-form {
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    margin: 20px 0;
+}
+
+/* Label and Input Styling */
+.form-label {
+    font-weight: bold;
+    color: #555;
+}
+
+.form-control {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* Button Styling */
+.btn {
+    background-color: #769FCD;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.btn:hover {
+    background-color: #5a8bbf;
+    /* Darker shade for hover */
+}
+
+/* Consistent Typography */
+h4 {
+    font-size: 1.5rem;
+    color: #769FCD;
+    margin-bottom: 20px;
+}
+
+.mb-3 {
+    margin-bottom: 1.5rem;
+}
+
+/* Hover Effects for Interactive Elements */
+.form-check:hover {
+    background-color: #f9f9f9;
+    border-radius: 5px;
+}
+
+.payment-method-icon {
+    width: auto; /* Adjust width as needed */
+    height: 30px; /* Maintain aspect ratio */
+    margin-left: 10px; /* Space between label and image */
+}
+</style>
