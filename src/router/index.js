@@ -10,6 +10,7 @@ import register from '@/views/register.vue'
 import home from '@/views/home.vue'
 import contractorReview from '@/views/contractorReview.vue'
 import Payment from '@/views/Payment.vue';
+import ReviewView from '@/views/ReviewView.vue';
 
 
 const router = createRouter({
@@ -55,8 +56,19 @@ const router = createRouter({
       name: 'contractorReview',
       component: contractorReview
     },
+    {
+      path: '/home',
+      name: 'home',
+      component: home
+    },
+    {
+      path: '/ReviewView',
+      name: 'ReviewView',
+      component: ReviewView
+    },
+    
    
-    ]
+    ] 
 
 })
 
