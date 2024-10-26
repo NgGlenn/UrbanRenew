@@ -1,107 +1,77 @@
 <template>
-    <div class="payment-container">
-      <h1>Payment Information</h1>
-      <form @submit.prevent="handleSubmit">
-        <!-- Card details placeholder -->
-        <label for="card-element">Card Details</label>
-        <div id="card-element" class="card-element"></div>
-        <div id="card-errors" role="alert"></div>
-  
-        <!-- Name and other info -->
-        <label for="cardholder-name">Cardholder's Name</label>
-        <input type="text" id="cardholder-name" v-model="cardholderName" placeholder="Enter your name" required />
-  
-        <label for="task-details">Task Details</label>
-        <textarea id="task-details" v-model="taskDetails" placeholder="Enter task details" required></textarea>
-  
-        <!-- Submit Button -->
-        <button type="submit" :disabled="processing">Pay Now</button>
-      </form>
-    </div>
-  </template>
-  
-  <script>
-  import { loadStripe } from '@stripe/stripe-js';
-  
-  export default {
-    data() {
-      return {
-        stripe: null,
-        card: null,
-        cardholderName: '',
-        taskDetails: '',
-        processing: false,
-      };
-    },
-    async mounted() {
-      // Load Stripe with your publishable key
-      this.stripe = await loadStripe('pk_test_51QAhnrFvAGbEgh1Ez3Xwq2giSZsUFL276Ddcjj7C8wBk8CLGJLynvLZQ6eJSu9PaUkufy6BioUOqwfMwGAGjA2HL00SZg28ZG1');
-  
-      // Create an instance of Elements and mount the card element
-      const elements = this.stripe.elements();
-      this.card = elements.create('card');
-      this.card.mount('#card-element');
-  
-      // Handle real-time validation errors from the card Element.
-      this.card.on('change', (event) => {
-        const displayError = document.getElementById('card-errors');
-        if (event.error) {
-          displayError.textContent = event.error.message;
-        } else {
-          displayError.textContent = '';
-        }
+  <div class="payment-page">
+    <h2>Complete Your Payment</h2>
+
+    <form @submit.prevent="handleSubmit">
+      <div id="card-element"></div>
+      <button type="submit" :disabled="loading">
+        {{ loading ? "Processing..." : "Pay Now" }}
+      </button>
+      <div v-if="errorMessage" class="error">{{ errorMessage }}</div>
+      <div v-if="successMessage" class="success">{{ successMessage }}</div>
+    </form>
+  </div>
+</template>
+
+<script>
+import { loadStripe } from "@stripe/stripe-js";
+import { getFunctions, httpsCallable } from "firebase/functions";
+
+export default {
+  data() {
+    return {
+      stripe: null,
+      cardElement: null,
+      loading: false,
+      errorMessage: "",
+      successMessage: "",
+    };
+  },
+  async mounted() {
+    // Load Stripe instance with your public key
+    this.stripe = await loadStripe(process.env.VUE_APP_STRIPE_PUBLIC_KEY);
+    const elements = this.stripe.elements();
+    this.cardElement = elements.create("card");
+    this.cardElement.mount("#card-element");
+  },
+  methods: {
+    async handleSubmit() {
+      this.loading = true;
+      this.errorMessage = "";
+      this.successMessage = "";
+
+      // Create a Payment Method
+      const { error, paymentMethod } = await this.stripe.createPaymentMethod({
+        type: "card",
+        card: this.cardElement,
       });
-    },
-    methods: {
-      async handleSubmit() {
-        this.processing = true;
-  
-        const { paymentMethod, error } = await this.stripe.createPaymentMethod({
-          type: 'card',
-          card: this.card,
-          billing_details: {
-            name: this.cardholderName,
-          },
+
+      if (error) {
+        this.errorMessage = error.message;
+        this.loading = false;
+        return;
+      }
+
+      // Call Firebase Cloud Function to process payment
+      const functions = getFunctions();
+      const createPaymentIntent = httpsCallable(functions, "createPaymentIntent");
+
+      try {
+        const result = await createPaymentIntent({
+          paymentMethodId: paymentMethod.id,
+          amount: 1000, // Example amount in cents ($10)
         });
-  
-        if (error) {
-          // Inform the user if there was an error.
-          document.getElementById('card-errors').textContent = error.message;
-          this.processing = false;
+
+        if (result.data.error) {
+          this.errorMessage = result.data.error;
         } else {
-          // Call your server to handle the payment intent.
-          this.confirmPayment(paymentMethod.id);
+          this.successMessage = "Payment successful!";
         }
-      },
-      async confirmPayment(paymentMethodId) {
-        try {
-          const response = await fetch('/create-payment-intent', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              payment_method_id: paymentMethodId,
-              task_details: this.taskDetails,
-            }),
-          });
-  
-          const paymentResult = await response.json();
-  
-          if (paymentResult.error) {
-            // Show error to your customer.
-            document.getElementById('card-errors').textContent = paymentResult.error.message;
-            this.processing = false;
-          } else {
-            // The payment has been processed!
-            alert('Payment successful!');
-            this.processing = false;
-          }
-        } catch (error) {
-          console.error('Error confirming payment:', error);
-          this.processing = false;
-        }
-      },
+      } catch (e) {
+        this.errorMessage = "Payment failed. Please try again.";
+      } finally {
+        this.loading = false;
+      }
     },
   };
   </script>
@@ -171,5 +141,32 @@
     background-color: grey;
     cursor: not-allowed;
   }
-  </style>
+ 
+.payment-page {
+  max-width: 400px;
+  margin: 0 auto;
+}
+#card-element {
+  margin-bottom: 20px;
+}
+button {
+  background-color: #6772e5;
+  color: white;
+  padding: 10px 15px;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+button:disabled {
+  background-color: #ccc;
+}
+.error {
+  color: red;
+}
+.success {
+  color: green;
+}
+</style>
+
+
   

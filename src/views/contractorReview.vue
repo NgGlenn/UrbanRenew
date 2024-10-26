@@ -88,17 +88,8 @@
             <button type="submit">Submit Review</button>
         </form>
 
-        <!-- Review Summary Section -->
-        <div v-if="submitted" class="review-summary">
-            <h2>Review Summary</h2>
-            <p><strong>Contractor Name:</strong> {{ contractorName }}</p>
-            <p><strong>Quality of Work:</strong> {{ qualityOfWork }} / 5</p>
-            <p><strong>Timeliness:</strong> {{ timeliness }} / 5</p>
-            <p><strong>Communication:</strong> {{ communication }} / 5</p>
-            <p><strong>Problem Resolution:</strong> {{ problemResolution }} / 5</p>
-            <p><strong>Budget Adherence:</strong> {{ budgetAdherence }} / 5</p>
-            <p><strong>Additional Comments:</strong> {{ reviewText }}</p>
-        </div>
+        
+        
     </div>
     </div>
     </div>
@@ -109,6 +100,9 @@
   
   <script>
   import Navbar from '@/components/NavBar.vue';
+  import { db } from '../firebase';  // Ensure your firebase.js is correctly configured
+  import { collection, addDoc } from 'firebase/firestore';
+
   export default {
     components: {
       Navbar,
@@ -156,19 +150,31 @@
             return '';
         }
       },
-      submitReview() {
-        if (
-          this.contractorName &&
-          this.qualityOfWork &&
-          this.timeliness &&
-          this.communication &&
-          this.problemResolution &&
-          this.budgetAdherence
-        ) {
-          this.submitted = true;
-        } else {
-          alert('Please fill out all fields.');
-        }
+      async submitReview() {
+        try {
+            // Save the review data to Firestore
+            const reviewData = {
+              contractorName: this.contractorName,
+              qualityOfWork: this.qualityOfWork,
+              timeliness: this.timeliness,
+              communication: this.communication,
+              problemResolution: this.problemResolution,
+              budgetAdherence: this.budgetAdherence,
+              createdAt: new Date()
+            };
+            this.$router.push({
+            name: 'ReviewView',
+            params: { reviewData: reviewData}
+            });
+            await addDoc(collection(db, 'reviews'), reviewData);
+            this.submitted = true;
+            // Redirect to Review.vue and pass the review data
+
+          } catch (e) {
+            console.error("Error adding document: ", e);
+            alert('Error submitting review. Please try again.');
+      
+          }
       },
     },
   };
@@ -205,6 +211,7 @@
           margin-right: 10%;
           margin-top: 5%;
           margin-bottom: 5%;
+
         }
         .review-container h1 {
             font-size: 30px;
@@ -226,7 +233,7 @@
             transition: background-color 0.3s ease;
             width: 100%;
             text-align: center;
-            height:50px;
+            height:auto;
         }
 
         button:hover {

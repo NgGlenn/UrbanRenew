@@ -3,10 +3,12 @@
   import home from '@/views/home.vue';
   import contdb from '@/views/Dashboard/contractorDashboard copy.vue';
   import { RouterView } from 'vue-router';
-  import PaymentOverview from './views/paymentOverview.vue';
-import Payment2 from './views/payment2.vue';
 
-  // import firesbasetesting from '@/components/TestFirebase.vue';
+  import PaymentOverview from './views/paymentOverview.vue';
+  import Payment2 from './views/payment2.vue';
+
+
+  import firesbasetesting from '@/components/TestFirebase.vue';
 </script>
 
 <template>
@@ -27,7 +29,7 @@ import Payment2 from './views/payment2.vue';
 <!-- 
     <contdb/> -->
     
-  
+   
 </template>
 
 
