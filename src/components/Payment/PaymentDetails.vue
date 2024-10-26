@@ -18,20 +18,20 @@
             <div class="fees-container">
                 <div class="d-flex justify-content-between mb-1">
                     <em>Project Cost:</em>
-                    <span>${{ project.price.toLocaleString() }}</span>
+                    <span>SGD {{ project.price.toLocaleString() }}</span>
                 </div>
                 <div class="d-flex justify-content-between mb-1">
                     <em>Administration Fee:</em>
-                    <span>${{ (project.price * 0.05).toLocaleString() }}</span> <!-- Example calculation -->
+                    <span>SGD {{ (project.price * 0.0010).toLocaleString() }}</span> <!-- Example calculation -->
                 </div>
                 <div class="d-flex justify-content-between mb-1">
                     <em>Platform Fee:</em>
-                    <span>${{ (project.price * 0.03).toLocaleString() }}</span> <!-- Example calculation -->
+                    <span>SGD {{ (project.price * 0.0025).toLocaleString() }}</span> <!-- Example calculation -->
                 </div>
                 <hr />
                 <div class="d-flex justify-content-between mb-1">
                     <strong>Total Fees:</strong>
-                    <span class="font-weight-bold"><strong>${{ ((project.price * 0.05) + (project.price * 0.03) +
+                    <span class="font-weight-bold"><strong>SGD {{ ((project.price * 0.0025) + (project.price * 0.0010) +
                         project.price).toLocaleString() }}</strong></span>
                 </div>
             </div>

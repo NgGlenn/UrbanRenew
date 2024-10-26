@@ -47,8 +47,18 @@
                 <br />
                 <div class="row">
                     <div class="col mb-3">
-                        <label for="expiryDate" class="form-label">Expiry Date</label>
-                        <input type="text" class="form-control" id="expiryDate" placeholder="MM / YYYY" required />
+                        <label class="form-label">Expiry Date</label>
+                        <div class="row">
+                            <div class="col-4">
+                                <input type="text" class="form-control" id="expiryMonth" placeholder="MM" required />
+                            </div>
+                            <div class="col-1">
+                                <p style = 'font-size:x-large'>/</p>
+                            </div>
+                            <div class="col-6">
+                                <input type="text" class="form-control" id="expiryYear" placeholder="YYYY" required />
+                            </div>
+                        </div>
                     </div>
                     <div class="col mb-3">
                         <label for="cvv" class="form-label">CVV</label>
@@ -131,10 +141,8 @@ export default {
 
 .btn:hover {
     background-color: #5a8bbf;
-    /* Darker shade for hover */
 }
 
-/* Consistent Typography */
 h4 {
     font-size: 1.5rem;
     color: #769FCD;
@@ -153,10 +161,8 @@ h4 {
 
 .payment-method-icon {
     width: auto;
-    /* Adjust width as needed */
     height: 30px;
-    /* Maintain aspect ratio */
     margin-left: 10px;
-    /* Space between label and image */
 }
+
 </style>
