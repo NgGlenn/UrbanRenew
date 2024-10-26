@@ -64,7 +64,8 @@ const router = createRouter({
     {
       path: '/ReviewView',
       name: 'ReviewView',
-      component: ReviewView
+      component: ReviewView,
+      props: true
     },
     
    

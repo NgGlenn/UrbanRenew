@@ -37,19 +37,21 @@
   </template>
   
   <script>
+  
   export default {
-    data() {
-      return {
-        reviewData: {
-          contractorName: '',
-          qualityOfWork: 0,
-          timeliness: 0,
-          communication: 0,
-          problemResolution: 0,
-          budgetAdherence: 0
-        }
-      };
-    },
+    props: {
+    reviewData: {
+      type: Object,
+      default: () => ({
+        contractorName: '',
+        qualityOfWork: 0,
+        timeliness: 0,
+        communication: 0,
+        problemResolution: 0,
+        budgetAdherence: 0
+      })
+    }
+  },
     computed: {
       overallRating() {
         // Compute the average rating based on 5 rating components
@@ -64,16 +66,14 @@
         return (totalRating / ratings.length).toFixed(1); // Calculate and round to one decimal place
       }
     },
+
     methods: {
       goToHome() {
         // Redirect to home.vue
         this.$router.push({ name: 'home' });
       }
     },
-    created() {
-      // Retrieve the review data passed from the previous page (contractorReview.vue)
-      this.reviewData = this.$route.params.reviewData || this.reviewData;
-    }
+   
   };
   </script>
   
@@ -88,10 +88,18 @@
   }
   
   button {
-    margin-top: 20px;
-    padding: 10px 20px;
-    font-size: 16px;
-    cursor: pointer;
-  }
+            background-color: #6A42C7;
+            color: white;
+            border: none;
+            padding: 15px;
+            border-radius: 10%;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            width: 100%;
+            text-align: center;
+            height:auto;
+        }
   </style>
   

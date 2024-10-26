@@ -88,14 +88,7 @@
             <button type="submit">Submit Review</button>
         </form>
 
-        <!-- Review Summary Section -->
-          <router-link 
-        v-if="submitted" 
-        class="nav-link" 
-        :to="{ name: 'ReviewView', params: { reviewData: reviewData } }" 
-        active-class="active">
-        <button class="btn btn-link">Go to Review Summary</button>
-      </router-link>
+        
         
     </div>
     </div>
@@ -169,7 +162,10 @@
               budgetAdherence: this.budgetAdherence,
               createdAt: new Date()
             };
-      
+            this.$router.push({
+            name: 'ReviewView',
+            params: { reviewData: reviewData}
+            });
             await addDoc(collection(db, 'reviews'), reviewData);
             this.submitted = true;
             // Redirect to Review.vue and pass the review data
