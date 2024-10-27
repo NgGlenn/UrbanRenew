@@ -77,7 +77,7 @@
 
 <script>
 import { db } from '../../firebase'  // Ensure your firebase.js is correctly configured
-import { collection, addDoc, getDoc } from 'firebase/firestore';
+import { collection, addDoc, updateDoc } from 'firebase/firestore';
 export default {
     props: {
         project: {
