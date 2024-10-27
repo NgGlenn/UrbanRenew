@@ -6,7 +6,7 @@ import FooterPreLogin from '@/components/FooterPreLogin.vue';
 export default {
   data() {
     return {
-      // State to track password visibility
+ 
     };
   },
   methods: {},
@@ -21,7 +21,7 @@ export default {
 
 
   <NavBarPreLogin></NavBarPreLogin>
-
+<div class="mainDiv">
 <div id="top-carousel" class="carousel slide" data-bs-ride="carousel">
   <div class="carousel-inner">
     <div class="carousel-item active">
@@ -46,18 +46,10 @@ export default {
       </div>
     </div>
   </div>
-  <button class="carousel-control-prev" type="button" data-bs-target="#top-carousel" data-bs-slide="prev">
-    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-    <span class="visually-hidden">Previous</span>
-  </button>
-  <button class="carousel-control-next" type="button" data-bs-target="#top-carousel" data-bs-slide="next">
-    <span class="carousel-control-next-icon" aria-hidden="true"></span>
-    <span class="visually-hidden">Next</span>
-  </button>
 </div>
   
   <!-- About Section -->
-  <div class="about-section">
+  <div id="about" class="about-section">
     <div class="container">
       <h1>About UrbanRenew</h1>
       <p>At UrbanRenew, we simplify your home renovation journey by connecting you with reliable, experienced contractors tailored to your specific needs. Whether you're dreaming of a modern kitchen, a cozy living space, or a full home makeover, our mission is to make your vision come to life with quality craftsmanship and seamless project management.</p>
@@ -66,7 +58,7 @@ export default {
   </div>
 
   <!-- Services Section -->
-  <div class="services-section">
+  <div id="services" class="services-section">
     <div class="container">
       <h2>Our Services</h2>
       <div class="row">
@@ -93,28 +85,28 @@ export default {
   </div>
 
   <!-- Testimonials Section -->
-  <div class="testimonials-section">
+  <div id="testimonials" class="testimonials-section">
     <div class="container">
       <h2>What Our Clients Say</h2>
       <div id="testimonial-carousel" class="carousel slide" data-bs-ride="carousel">
         <div class="carousel-inner">
           <div class="carousel-item active">
             <div class="testimonial-box">
-              <img src="../assets/home_testi1.jpg" class="rounded-circle mb-3" alt="John Doe">
+              <img src="../assets/home_testi1.jpg" class="rounded-circle mb-3 img-fluid" alt="John Doe">
               <p>"UrbanRenew transformed my kitchen into a modern masterpiece. Their contractors were professional, and the project was completed on time!"</p>
               <h5> - John Doe.</h5>
             </div>
           </div>
           <div class="carousel-item">
             <div class="testimonial-box">
-              <img src="../assets/home_testi2.jpg" class="rounded-circle mb-3" alt="Mark L.">
+              <img src="../assets/home_testi2.jpg" class="rounded-circle mb-3 img-fluid" alt="Mark L.">
               <p>"I absolutely love my new living room. The design process was smooth, and the final result exceeded my expectations."</p>
               <h5>- Nicole Smith.</h5>
             </div>
           </div>
           <div class="carousel-item">
             <div class="testimonial-box">
-              <img src="../assets/home_testi3.jpg" class="rounded-circle mb-3" alt="Susan R.">
+              <img src="../assets/home_testi3.jpg" class="rounded-circle mb-3 img-fluid" alt="Susan R.">
               <p>"Thanks to UrbanRenew, my full home renovation was stress-free and well-managed. Highly recommend their services!"</p>
               <h5>- Susan Lim.</h5>
             </div>
@@ -123,11 +115,15 @@ export default {
       </div>
     </div>
   </div>
-
-  <FooterPreLogin></FooterPreLogin>
+  <div id="contactus"><FooterPreLogin></FooterPreLogin></div>
+</div>
 </template>
 
 <style scoped>
+
+.mainDiv {
+  margin-top: 130px;
+}
 
 /* About Section */
 .about-section {
@@ -170,28 +166,46 @@ export default {
   background: linear-gradient(135deg, #ffffff 50%, #769FCD 50%);
 }
 
+/* Carousel Height */
+#top-carousel .carousel-item {
+  height: 550px; /* Set a fixed height for the carousel */
+}
 
+#top-carousel .carousel-item img {
+  height: 100%; /* Make the image fill the carousel height */
+  object-fit: cover; /* Ensure the image covers the area */
+}
+
+/* Responsive Captions */
 .carousel-caption {
   position: absolute;
   bottom: 20px; /* Adjust this as needed */
   left: 50%;
   transform: translateX(-50%);
   text-align: center;
-  color: white; /* Change this if necessary */
+  color: white;
   background-color: rgba(0, 0, 0, 0.5); /* Semi-transparent background */
-  padding: 10px;
+  padding: 10px 15px; /* Responsive padding */
   border-radius: 5px;
 }
 
-.carousel-control-prev-icon,
-.carousel-control-next-icon {
-  background-color: rgba(255, 255, 255, 0.5); /* Semi-transparent white */
-  border-radius: 50%;
+.carousel-caption h3 {
+  font-size: 1.5rem; /* Base font size */
 }
 
-.carousel-control-prev-icon:hover,
-.carousel-control-next-icon:hover {
-  background-color: rgba(255, 255, 255, 0.8); /* Slightly less transparent on hover */
+.carousel-caption p {
+  font-size: 1rem; /* Base font size */
+}
+
+/* Responsive Font Sizes */
+@media (max-width: 768px) {
+  .carousel-caption h3 {
+    font-size: 1.25rem; /* Smaller font for mobile */
+  }
+
+  .carousel-caption p {
+    font-size: 0.875rem; /* Smaller font for mobile */
+  }
 }
 
   /* Services Section */

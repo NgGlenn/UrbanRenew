@@ -2,19 +2,25 @@
 <script>
 import NavBarPreLogin from '@/components/NavBarPreLogin.vue';
 import FooterPreLogin from '@/components/FooterPreLogin.vue';
+import { auth } from "@/firebase";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { onAuthStateChanged } from "firebase/auth";
+import { getFirestore, doc, getDoc } from "firebase/firestore";
+const db = getFirestore(); // Ensure Firestore is initialized here
+
 export default {
   data() {
     return {
+      email: '', // State to hold the user's email
+      password: '', // State to hold the user's password
       passwordVisible: false, // State to track password visibility
     };
   },
   methods: {
     togglePasswordVisibility() {
-      // Get the password input and eye icon elements
       const passwordInput = document.getElementById('password');
       const eyeIcon = document.getElementById('eye-icon');
 
-      // Toggle the password field type
       if (passwordInput.type === 'password') {
         passwordInput.type = 'text';
         eyeIcon.classList.remove('fa-eye');
@@ -25,11 +31,52 @@ export default {
         eyeIcon.classList.add('fa-eye');
       }
     },
+    // onAuthStateChanged(user) {
+    //   if (user) {
+    //     console.log('user logged in: ', user);
+    //     this.$router.push('/userProfile');
+    //   }
+    //   else {
+    //     console.log('user logged out');
+    //   }
+    // },
+  async login(e) {
+      e.preventDefault();
+      try {
+        // Attempt to sign in
+        const cred = await signInWithEmailAndPassword(auth, this.email, this.password);
+        
+        // After successful login, get the user's role from Firestore
+        const userDocRef = doc(db, "users", cred.user.uid); // Adjust collection name if necessary
+        const userDoc = await getDoc(userDocRef);
+
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          const userRole = userData.role; // Ensure 'role' exists in the document
+
+          // Redirect based on role
+          if (userRole === "customer") {
+            this.$router.push('/customerProfile');
+          } else if (userRole === "contractor") {
+            this.$router.push('/contractorProfile');
+          } else {
+            console.error("Unknown role:", userRole);
+            alert("Invalid role assigned to user.");
+          }
+        } else {
+          console.error("User document not found in Firestore");
+          alert("User profile data not found.");
+        }
+      } catch (error) {
+        console.error("Error signing in:", error);
+        alert("Incorrect Email or Password");
+      }
     },
-   components: {
-     NavBarPreLogin,
-     FooterPreLogin
-     // Register the NavBar component
+  },
+
+  components: {
+    NavBarPreLogin,
+    FooterPreLogin,
   },
 };
 </script>
@@ -50,6 +97,7 @@ export default {
                 id="email"
                 placeholder="Enter your email"
                 required
+                v-model="email"
               />
             </div>
 
@@ -62,6 +110,7 @@ export default {
                   id="password"
                   placeholder="Enter your password"
                   required
+                  v-model="password"
                 />
                 <span
                   class="input-group-text show-password"
@@ -73,7 +122,7 @@ export default {
             </div>
 
             <div class="d-grid mb-2">
-              <button class="btn login-btn" type="button">Login</button>
+              <button class="btn login-btn" type="button" @click="login">Login</button>
             </div>
 
             <div class="d-grid mb-3">
