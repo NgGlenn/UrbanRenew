@@ -59,7 +59,7 @@ export default {
       try {
         const result = await createPaymentIntent({
           paymentMethodId: paymentMethod.id,
-          amount: 1000, // Example amount in cents ($10)
+          amount: 1000 // Example amount in cents ($10)
         });
 
         if (result.data.error) {
@@ -73,7 +73,8 @@ export default {
         this.loading = false;
       }
     },
-  };
+  }
+};
   </script>
   
   <style scoped>

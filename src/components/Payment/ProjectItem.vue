@@ -9,7 +9,7 @@
             <p class="mb-1"><strong>Price:</strong> ${{ project.price.toLocaleString() }}</p>
         </div>
         <div class="col-sm-4 text-md-end">
-            <button v-if="project.status === 'pending'" type="button" class="btn btn-primary" @click="goToPaymentPage">
+            <button v-if="project.paidstatus === 'pending'" type="button" class="btn btn-primary" @click="goToPaymentPage">
                 Make Payment
             </button>
         </div>
@@ -28,10 +28,10 @@ export default {
     methods: {
         goToPaymentPage() {
             const queryParams = new URLSearchParams({
-                projectID: this.project.projectID,
+                projectID: this.project.jobID,
             }).toString();
 
-            this.$router.push(`/payment?${queryParams}`);
+            this.$router.push(`/payment2?${queryParams}`);
         },
     },
 };

@@ -20,12 +20,11 @@
   <!-- <customerDashboard></customerDashboard> -->
   <!-- <home></home> -->
   <!-- <PaymentOverview /> -->
-  <Payment2 />
 
   <!-- For testing of views, comment out <router-view>. Import your file under script first then enter <file_variable>
     i.e. Testing of home page: import home from '@/views/home.vue'
         Under template: <home/>-->
-  <!-- <RouterView/> -->
+  <RouterView/>
 <!-- 
     <contdb/> -->
     

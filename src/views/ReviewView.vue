@@ -42,6 +42,7 @@
     props: {
     reviewData: {
       type: Object,
+      //required: true,
       default: () => ({
         contractorName: '',
         qualityOfWork: 0,

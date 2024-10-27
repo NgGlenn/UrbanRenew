@@ -76,6 +76,8 @@
 </template>
 
 <script>
+import { db } from '../../firebase'  // Ensure your firebase.js is correctly configured
+import { collection, addDoc, getDoc } from 'firebase/firestore';
 export default {
     props: {
         project: {
@@ -89,16 +91,30 @@ export default {
         };
     },
     methods: {
-        handleSubmit() {
+        async handleSubmit() {
+            this.project.paidstatus = 'paid';
+            await addDoc(collection(db, 'payments'), {
+                projectname: this.project.Jobname,
+                contractorname: this.project.contractorName,
+                projectID: this.project.jobID,
+                amount: ((this.project.price * 0.0025) + (this.project.price * 0.0010) +
+                this.project.price),
+                paymentMethod: this.paymentMethod,
+                projstatus: this.project.paidstatus,
+                paidOn: new Date(),
+            });
             if (this.paymentMethod === 'paynow') {
                 alert('Proceeding with PayNow for amount: $' + this.formattedPrice);
+                this.$router.push({ name: 'completePayment' });
             } else if (this.paymentMethod === 'creditcard') {
                 alert('Proceeding with Credit Card payment for amount: $' + this.formattedPrice);
+                this.$router.push({ name: 'completePayment' });
                 // More handling can be added here if necessary
             } else {
                 alert('Please select a payment method.');
             }
         },
+        
     },
     computed: {
         formattedPrice() {

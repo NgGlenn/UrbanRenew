@@ -13,6 +13,7 @@ import paymentOverview from '@/views/paymentOverview.vue'
 import Payment2 from '@/views/payment2.vue';
 import Payment from '@/views/Payment.vue';
 import ReviewView from '@/views/ReviewView.vue';
+import CompletePayment from '@/views/completePayment.vue';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -69,8 +70,8 @@ const router = createRouter({
       component: paymentOverview
     },
     {
-      path: '/paymentOverview/payment', 
-      name: 'payment', 
+      path: '/payment2', 
+      name: 'payment2', 
       component: Payment2
     },
 
@@ -80,7 +81,12 @@ const router = createRouter({
       component: ReviewView,
       props: true
     },
-    
+
+    {
+      path: '/completePayment',
+      name: 'completePayment',
+      component: CompletePayment,
+    },
    
     ] 
 

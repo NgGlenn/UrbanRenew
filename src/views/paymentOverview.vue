@@ -21,7 +21,7 @@
         </div>
         <div class="payment-items">
             <div class="container">
-                <ProjectItem v-for="project in filteredProjects" :key="project.projectName" :project="project" />
+                <ProjectItem v-for="project in filteredProjects" :key="project.jobID" :project="project" />
             </div>
         </div>
 
@@ -43,7 +43,8 @@
 <script>
 import NavBar from '@/components/NavBar.vue';
 import ProjectItem from '@/components/Payment/ProjectItem.vue';
-
+import { db } from '../firebase'  // Ensure your firebase.js is correctly configured
+import { collection, getDocs } from 'firebase/firestore';
 export default {
     components: {
         ProjectItem,
@@ -52,53 +53,69 @@ export default {
     data() {
         return {
             selectedButton: 'pending',
-            renoPaymentItems: [
-                {
-                    projectID: 1234,
-                    projectName: 'Hacking of Wall',
-                    contractorName: 'Adrian Tok & Co.',
-                    price: 100000,
-                    status: 'pending',
-                },
-                {
-                    projectID: 1299,
-                    projectName: 'Kitchen Reno',
-                    contractorName: 'Shaunbrina Carpentry',
-                    price: 167880,
-                    status: 'held',
-                },
-                {
-                    projectID: 4569,
-                    projectName: 'Toilet Plumbing',
-                    contractorName: "Joel's Toilets",
-                    price: 25000,
-                    status: 'pending',
-                },
-                {
-                    projectID: 8970,
-                    projectName: 'Cabinet in Master Bedroom',
-                    contractorName: 'Moses & Bed',
-                    price: 1000,
-                    status: 'released',
-                },
-                {
-                    projectID: 8930,
-                    projectName: 'Windows for Bedroom',
-                    contractorName: "Glenn's Windows and Doors",
-                    price: 156700,
-                    status: 'held',
-                },
-            ],
+            renoPaymentItems:[],
+            // renoPaymentItems: [
+            //     {
+            //         projectID: 1234,
+            //         projectName: 'Hacking of Wall',
+            //         contractorName: 'Adrian Tok & Co.',
+            //         price: 100000,
+            //         status: 'pending',
+            //     },
+            //     {
+            //         projectID: 1299,
+            //         projectName: 'Kitchen Reno',
+            //         contractorName: 'Shaunbrina Carpentry',
+            //         price: 167880,
+            //         status: 'held',
+            //     },
+            //     {
+            //         projectID: 4569,
+            //         projectName: 'Toilet Plumbing',
+            //         contractorName: "Joel's Toilets",
+            //         price: 25000,
+            //         status: 'pending',
+            //     },
+            //     {
+            //         projectID: 8970,
+            //         projectName: 'Cabinet in Master Bedroom',
+            //         contractorName: 'Moses & Bed',
+            //         price: 1000,
+            //         status: 'released',
+            //     },
+            //     {
+            //         projectID: 8930,
+            //         projectName: 'Windows for Bedroom',
+            //         contractorName: "Glenn's Windows and Doors",
+            //         price: 156700,
+            //         status: 'held',
+            //     },
+            // ],
         };
+    },
+    async created() {
+        await this.fetchJobs();
     },
     computed: {
         filteredProjects() {
             return this.renoPaymentItems.filter(
-                (project) => project.status === this.selectedButton
+                (project) => project.paidstatus === this.selectedButton
             );
         },
     },
     methods: {
+        async fetchJobs() {
+            try {
+                const jobCollection = await getDocs(collection(db, 'jobs'));
+                this.renoPaymentItems = jobCollection.docs.map(doc => ({
+                    id: doc.id, // Document ID
+                    ...doc.data() // Document data
+                }));
+                //console.log("success");
+            } catch (e) {
+                console.error("error fetching payments",e);
+            }
+        },
         selectButton(status) {
             this.selectedButton = status;
         },

@@ -19,7 +19,8 @@
 import NavBar from '@/components/NavBar.vue';
 import PaymentDetails from '@/components/Payment/PaymentDetails.vue';
 import PaymentForm from '@/components/Payment/PaymentForm.vue';
-
+import { db } from '../firebase'  // Ensure your firebase.js is correctly configured
+import { collection, getDocs } from 'firebase/firestore';
 export default {
     components: {
         NavBar,
@@ -29,50 +30,66 @@ export default {
     data() {
         return {
             project: null,
-            renoPaymentItems: [
-                {
-                    projectID: 1234,
-                    projectName: 'Hacking of Wall',
-                    contractorName: 'Adrian Tok & Co.',
-                    price: 100000,
-                    status: 'pending',
-                },
-                {
-                    projectID: 1299,
-                    projectName: 'Kitchen Reno',
-                    contractorName: 'Shaunbrina Carpentry',
-                    price: 167880,
-                    status: 'held',
-                },
-                {
-                    projectID: 4569,
-                    projectName: 'Toilet Plumbing',
-                    contractorName: "Joel's Toilets",
-                    price: 25000,
-                    status: 'pending',
-                },
-                {
-                    projectID: 8970,
-                    projectName: 'Cabinet in Master Bedroom',
-                    contractorName: 'Moses & Bed',
-                    price: 1000,
-                    status: 'released',
-                },
-                {
-                    projectID: 8930,
-                    projectName: 'Windows for Bedroom',
-                    contractorName: "Glenn's Windows and Doors",
-                    price: 156700,
-                    status: 'held',
-                },
-            ]
+            renoPaymentItems: [],
+            // renoPaymentItems: [
+            //     {
+            //         projectID: 1234,
+            //         projectName: 'Hacking of Wall',
+            //         contractorName: 'Adrian Tok & Co.',
+            //         price: 100000,
+            //         status: 'pending',
+            //     },
+            //     {
+            //         projectID: 1299,
+            //         projectName: 'Kitchen Reno',
+            //         contractorName: 'Shaunbrina Carpentry',
+            //         price: 167880,
+            //         status: 'held',
+            //     },
+            //     {
+            //         projectID: 4569,
+            //         projectName: 'Toilet Plumbing',
+            //         contractorName: "Joel's Toilets",
+            //         price: 25000,
+            //         status: 'pending',
+            //     },
+            //     {
+            //         projectID: 8970,
+            //         projectName: 'Cabinet in Master Bedroom',
+            //         contractorName: 'Moses & Bed',
+            //         price: 1000,
+            //         status: 'released',
+            //     },
+            //     {
+            //         projectID: 8930,
+            //         projectName: 'Windows for Bedroom',
+            //         contractorName: "Glenn's Windows and Doors",
+            //         price: 156700,
+            //         status: 'held',
+            //     },
+            // ]
         };
     },
-    created() {
-        const projectID = 1234; // Replace with this.$route.query.projectID if using routing
-        this.project = this.renoPaymentItems.find(p => p.projectID === projectID);
+    async created() {
+        await this.fetchJobs();
+        const projectID = Number(this.$route.query.projectID);
+        this.project = this.renoPaymentItems.find(p => p.jobID === projectID);
+
+    },
+    methods:{
+        async fetchJobs(){
+            try {
+                const jobCollection = await getDocs(collection(db, 'jobs'));
+                this.renoPaymentItems = jobCollection.docs.map(doc => ({
+                    id: doc.id, // Document ID
+                    ...doc.data() // Document data
+                }));
+                //console.log("success");
+            } catch (e) {
+                console.error("error fetching payments",e);
+            }
     }
-}
+}};
 </script>
 
 <style scoped>
