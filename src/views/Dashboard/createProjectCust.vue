@@ -1,11 +1,16 @@
 <script setup>
     import LogedInLayout from '@/components/logedInLayout.vue';
-    import {ref} from 'vue';
+    import { ref } from 'vue';
+    import ImageUpload from './imageUpload.vue'
 
     const location = ref()
     const description = ref()
     const projectStyle = ref([])
 
+    const handleImageUpload = (url) => {
+        console.log('Image uploaded:', url);
+        // Save URL to your database or use it as needed
+    };
 
 </script>
 
@@ -55,7 +60,7 @@
                 <div class="mb-5 row">
                     <div class="col-2 col-form-label py-auto">Photo(s)</div>
                     <div class="col-5">
-
+                        <ImageUpload @uploaded="handleImageUpload"/>
                     </div>
                 </div>
                 <button type="submit" class="btn btn-primary btn-lg d-flex justify-content-end" style="color: white; background-color: #769FCD;">Next</button>

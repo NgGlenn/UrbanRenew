@@ -1,5 +1,5 @@
 <script setup>
-    import LogedInLayout from '@/components/LogedInLayout.vue';
+    import LogedInLayout from '@/components/logedInLayout.vue';
 
     import { inject } from 'vue'
     import { collection, getDocs } from 'firebase/firestore'

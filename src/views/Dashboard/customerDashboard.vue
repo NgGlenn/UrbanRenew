@@ -8,24 +8,29 @@
     import { useGanttFormat } from '@/composables/useGanttFormat.js';
     import { useProgressFormat } from '@/composables/useProgressFormat.js';
     import { useProjectStore } from '@/stores/projectStore.js';
+    import { useUserStore } from '@/stores/userStore';
     
     import { storeToRefs } from 'pinia';
     import { ref, computed } from 'vue';
     import { onMounted } from 'vue';
 
     const projectStore = useProjectStore();
-    const { jobs, tasks } = storeToRefs(projectStore);
+    const { jobs, tasks, contractorCompany, contractorStaff } = storeToRefs(projectStore);
+
+    const userStore = useUserStore();
+    const isContractor = computed(() => userStore.role === 'contractor');
 
     //Using the composables
-    const { ganttData } = useGanttFormat(jobs, tasks);
-    console.log(ganttData)
+    const { ganttData } = useGanttFormat(jobs, tasks, contractorCompany, contractorStaff);
+    // console.log(ganttData)
+    // console.log(typeof(ganttData))
     const { projectProgress } = useProgressFormat(jobs, tasks);
     const { jobProgress } = useDonutFormat(jobs, tasks);
 
     //Template switch
     // const activeJobs = ref([1]);   //Variable to store active jobs
     const hasActiveJobs = computed(() => jobs.value.length > 0); //Variable to check active jobs
-    console.log(jobs)
+    // console.log(jobs)
     //Track active job index for donut chart to change as the job in the gantt chart changes
     const activeJobIndex = ref(0);
 
@@ -38,12 +43,19 @@
             });
         }
     })
+
 </script>
 
 <template>
     <customerNoProject v-if="!hasActiveJobs"/>
     <LogedInLayout v-else>
         <div class="container-fluid">
+            <div v-if="isContractor">
+                <span>Project ID: <span style="color: black; font-weight: normal;">{{  }}</span></span>
+                <span>Customer ID: <span style="color: black; font-weight: normal;">{{  }}</span></span>
+                <span>Customer Name ID: <span style="color: black; font-weight: normal;">asas{{  }}</span></span>
+                <span>Customer Home Location ID: <span style="color: black; font-weight: normal;">{{  }}</span></span>
+            </div>
             <div class="row mx-0 py-4">
                 <div class="font header">Progress</div>
             </div>
@@ -64,10 +76,23 @@
                 <div id="carouselControls" class="carousel slide carouselContainer font containerBorder"> 
                     <div class="carousel-inner"> 
                         <div v-for="(job, index) in ganttData" :key="job.jobId" :class="['carousel-item', index === 0 ? 'active' : '']"> 
+                            <div class="gantt-title">
+                                <h4>Job #{{ activeJobIndex+1 }}: {{ganttData[activeJobIndex]?.jobName}}</h4>
+                                <h4>Contractor Company and Contact Person: {{ganttData[activeJobIndex]?.contractorCompanyName}}, 
+                                    {{ganttData[activeJobIndex]?.contractorStaff}}</h4>
+                                
+                            </div>
                             <div class="gantt-container">
-                                <GanttChart class="left-container" :tasks="ganttData[activeJobIndex]?.task || []"/>
+                                <GanttChart 
+                                 class="left-container" :tasks="ganttData[activeJobIndex]?.task"/>
                             </div>
                         </div> 
+
+                        <!-- <div class= 'carousel-item active'> 
+                            <div class="gantt-container">
+                                <GanttChart class="left-container" :tasks="ganttData"/>
+                            </div>
+                        </div>  -->
                     </div> 
                     <button class="carousel-control-prev" type="button" data-bs-target="#carouselControls" data-bs-slide="prev"> 
                         <span class="carousel-control-prev-icon" aria-hidden="true"></span> 
@@ -194,12 +219,25 @@
         margin-right: auto; */
     }
 
+    .gantt-title{ 
+        text-align: center;
+        font-size: 24px;
+
+    }
     @media (min-width: 1550px){
+        .carousel-inner {
+            /* flex: 1; */
+            width: 100%;
+            height: 100%;
+
+            overflow: hidden;
+        }
         .customRow{
             display: flex;
             flex-direction: row;
             column-gap: 1%;
-            height: auto;
+            /* height: auto; */
+            min-height: 800px;
         }
 
          .carouselContainer {
@@ -219,6 +257,36 @@
             display: flex;
             flex-direction: column;
             min-height: 720px;
+        }
+
+         .gantt-container {
+            width: 100%;
+            height: 90%;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            align-items: center;
+            /* margin: auto; */
+            /* align-items: center;  */
+            /* margin: 10px auto; */
+        }
+
+        .left-container {
+            /* overflow: hidden;
+            position: relative;
+            height: 100%; */
+
+            /* position: relative; */
+            overflow: scroll;
+            /* display: flex;
+            flex-direction: column;
+            justify-content: center; */
+            
+            /* flex: 1; */
+            width: 95%;
+            height: 95%; 
+            /* margin-left: auto;
+            margin-right: auto; */
         }
     }
 

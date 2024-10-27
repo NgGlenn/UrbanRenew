@@ -7,7 +7,9 @@ export const useUserStore = defineStore('users', () => {
     // const currentUser = useCurrentUser();
 
     //Test data, auth has not set up yet
-    const currentUser = ref('mUFDiGa5nwk5F9Yfrmxf');
+    //customer = mUFDiGa5nwk5F9Yfrmxf
+    //contractor = BzxCM6Tke6S7vJ1eqZZB
+    const currentUser = ref('BzxCM6Tke6S7vJ1eqZZB');
 
     //Get userId
     //If userId exists and is not null or undefined, return its unique Id. 
