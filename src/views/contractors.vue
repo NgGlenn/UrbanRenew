@@ -73,8 +73,10 @@
     import ContractorCards from '@/components/ContractorCards.vue';
     import { useCollection } from 'vuefire';
     import { QueryEndAtConstraint, collection, documentId, orderBy, query, where } from 'firebase/firestore';
+    import { db } from '../firebase.js'
 
     export default{
+
         data() {
                 return {
                     contractors: this.getContractorDetails(), //array of JSON
@@ -97,7 +99,7 @@
                 },
 
                 getContractorDetails(){ // returns array of contractor JSON from database
-                    const contractors = useCollection(collection(db, 'contractors'));
+                    const contractorDoc = useCollection(collection(db, 'contractors'));
                     console.log(contractorDoc);
                     return [
                         //Contractor 2 details
