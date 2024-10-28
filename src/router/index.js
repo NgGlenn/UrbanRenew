@@ -2,6 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 import jobRequest from '@/views/userJobRequest.vue';
 import contractors from '@/views/contractors.vue';
+import viewContractorProfile from '@/views/viewContractorProfile.vue';
 import customerDashboard from '@/views/Dashboard/customerDashboard.vue';
 import userProfile from '@/views/userProfile.vue';
 import createProjectCust from '@/views/Dashboard/createProjectCust.vue';
@@ -24,9 +25,10 @@ const router = createRouter({
       component: contractors
     },
     { 
-      path: '/contractorProfile', 
-      name: 'contractorProfile',
-      component: contractors
+      path: '/contractors/:id', 
+      name: 'viewContractorProfile',
+      component: viewContractorProfile,
+      props: true
     },
     {
       path: '/customerDashboard',

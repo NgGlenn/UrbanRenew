@@ -34,6 +34,7 @@
 
                     <ContractorCards 
                     v-for="contractor of display"
+                    :id="contractor.id"
                     :image="processImage(contractor.image)"
                     :first-name="contractor.firstName"
                     :last-name="contractor.lastName"
@@ -41,7 +42,7 @@
                     :rating="contractor.rating"
                     :services-offered="contractor.services"
                     :styles-offered="contractor.styles"
-                    :profile-link="contractor.profileLink">
+                    @redirect="viewProfile">
                     </ContractorCards>
 
                 </div>
@@ -192,6 +193,10 @@
                         }
                     }
                     this.contractorsDisplay = results;
+                },
+
+                viewProfile(id){
+                    this.$router.push({ path: `/contractors/${id}` });
                 }
             },
 

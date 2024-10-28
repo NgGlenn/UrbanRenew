@@ -12,7 +12,7 @@
                 <p v-if="stylesOffered!=null"> Style(s): <span v-for="style of stylesOffered"> | {{style}} </span> | </p>
             </div>
             <div class="card-footer" style="text-align: center;">
-                <a v-bind:href="profileLink" target="_blank"><button style="padding-inline: 50px;"> View Profile </button></a>
+                <button @click="redirect" style="padding-inline: 50px;"> View Profile </button>
             </div>
         </div>
     </div>
@@ -20,7 +20,7 @@
 
 <script>
 export default{
-    props: [ 'image', 'firstName', 'lastName', 'company', 'rating', 'servicesOffered', 'stylesOffered', 'profileLink' ],
+    props: [ 'id', 'image', 'firstName', 'lastName', 'company', 'rating', 'servicesOffered', 'stylesOffered' ],
             // props: {
             //     img: string, 
             //     name: string, 
@@ -37,8 +37,8 @@ export default{
             }, // data
             
             methods: {
-                methodName() {
-                    
+                redirect() {
+                    this.$emit('redirect', this.id); // Emit the contractor ID when the button is clicked
                 }
             }, // methods
             
