@@ -97,6 +97,8 @@
                 },
 
                 getContractorDetails(){ // returns array of contractor JSON from database
+                    const contractors = useCollection(collection(db, 'contractors'));
+                    console.log(contractorDoc);
                     return [
                         //Contractor 2 details
                         {
