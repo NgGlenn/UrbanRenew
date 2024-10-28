@@ -1,17 +1,17 @@
 <template>
     <div class="col-12 col-sm-6 col-lg-4">
         <div class="card">
-            <div class="card-header">
-                <img v-bind:src="img" style="width: 100%;">
-                <h4 class="name"> {{name}} </h4>
+            <div class="card-header p-10" style="text-align: center;">
+                <img :src="image" style="width: 100%; margin-bottom: 15px; max-width: 300px; max-height: 250px;">
+                <h4 style="font-weight: bold;"> {{name}} </h4>
                 <p> Rating: {{rating}} / 5.0 </p>
             </div>
             <div class="card-body">
                 <p> Company: {{company}} </p>
                 <p> Service offered: {{serviceOffered}} </p>
-                <p v-if="stylesOffered.length!=0"> Style(s): <span v-for="style of stylesOffered"> {{style}} &nbsp</span> </p>
+                <p v-if="stylesOffered.length!=0"> Style(s): <span v-for="style of stylesOffered"> | {{style}} </span> | </p>
             </div>
-            <div class="card-footer">
+            <div class="card-footer" style="text-align: center;">
                 <a v-bind:href="profileLink" target="_blank"><button style="padding-inline: 50px;"> View Profile </button></a>
             </div>
         </div>
@@ -20,7 +20,7 @@
 
 <script>
 export default{
-    props: [ 'img', 'name', 'company', 'rating', 'serviceOffered', 'stylesOffered', 'profileLink' ],
+    props: [ 'image', 'name', 'company', 'rating', 'serviceOffered', 'stylesOffered', 'profileLink' ],
             // props: {
             //     img: string, 
             //     name: string, 
@@ -33,7 +33,6 @@ export default{
             data() {
                 return {
                     // key: value
-                    img: "../assets/UrbanRenew.png"
                 }
             }, // data
             
@@ -46,3 +45,7 @@ export default{
         
     }
 </script>
+
+<style scoped>
+
+</style>

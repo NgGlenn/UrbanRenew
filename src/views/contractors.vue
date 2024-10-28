@@ -6,12 +6,12 @@
             <!-- Search bar -->
             <div id="search">
                     <a href="#" class="icon" v-bind:id="filter_state" v-on:click="toggleFilter(filter_state)">
-                        <img src="../img/filter.png" style="width: 75%; margin: auto;">
+                        <img src="../assets/filter.png" style="width: 75%; margin: auto;">
                     </a>
 
-                    <input type="text" placeholder="Search for a specific contractor or company" id="searchbar"> 
+                    <input type="text" v-model="key" placeholder="Search for a specific contractor or company" id="searchbar"> 
 
-                    <button id="search-button">
+                    <button id="search-button" @click="Search(key)">
                         Search
                     </button>
             </div>
@@ -20,11 +20,11 @@
             <div id="filters-section" v-if="filter_state == 'filter-on'">
                 <p style="text-align: center; font-weight: bold;"> Select filter(s): </p>
                 <p>
-                    Service(s): <button class="filter" v-for="service of services" v-on:click="addFilter(service)"> {{service}} </button>
+                    Service(s): <button class="filter" v-for="service of services" @click="addFilter($event)"> {{service}} </button>
                 </p>
 
                 <p>
-                    Cosmetic style(s): <button class="filter" v-for="style of styles" v-on:click="addFilter(style)"> {{style}} </button>
+                    Cosmetic style(s): <button class="filter" v-for="style of styles" v-on:click="addFilter($event)"> {{style}} </button>
                 </p>
             </div>
 
@@ -34,7 +34,7 @@
                     <div class="col-12 col-sm-6 col-lg-4">
                         <div class="card">
                             <div class="card-header">
-                                <img v-bind:src="defaultImage" style="width: 100%;">
+                                <img src="../assets/UrbanRenew.png" style="width: 100%;">
                                 <h4 class="name"> Contractor 1 </h4>
                                 <p> Rating: <span class="rating"> 4.9 / 5.0 </span> </p>
                             </div>
@@ -50,8 +50,9 @@
                     </div>
 
                     <ContractorCards 
-                    v-for="contractor of contractors"
-                    v-bind:name="contractor.name"
+                    v-for="contractor of contractorsDisplay"
+                    :image="processImage(contractor.image)"
+                    :name="contractor.name"
                     :company="contractor.company"
                     :rating="contractor.rating"
                     :service-offered="contractor.serviceOffered"
@@ -70,14 +71,18 @@
     import NavBar from '@/components/NavBar.vue';
     import LogedInLayout from '@/components/LogedInLayout.vue';
     import ContractorCards from '@/components/ContractorCards.vue';
+    import { useCollection } from 'vuefire';
+    import { QueryEndAtConstraint, collection, documentId, orderBy, query, where } from 'firebase/firestore';
 
     export default{
         data() {
                 return {
-                    services: ["Cosmetic Works", "Electrical Works", "Plumbing Works"],
-                    styles: ["Vintage", "Modern", "Eclectric"],
+                    contractors: this.getContractorDetails(), //array of JSON
+                    contractorsDisplay: this.getContractorDetails(),
+                    services: this.getServices(),
+                    styles: this.getStyles(),
                     filter_state: "filter-off",
-                    contractors: this.getContractorDetails() //array of JSON
+                    filters: []
                 }
             },
 
@@ -95,6 +100,7 @@
                     return [
                         //Contractor 2 details
                         {
+                            'image': 'login1.jpg', //must be declared from root directory
                             'name': 'Contractor 2',
                             'company': 'A&A',
                             'rating': '4.9',
@@ -105,6 +111,7 @@
 
                         //Contractor 3 details
                         {
+                            'image': '',
                             'name': 'Contractor 3',
                             'company': 'XYZ',
                             'rating': '4.7',
@@ -113,8 +120,92 @@
                             'profileLink': 'https://www.google.com'
                         },
                     ]
+                },
+
+                getServices(){
+                    let contractors = this.getContractorDetails();
+                    let results = []
+                    for (let contractor of contractors){
+                        if (results.indexOf(contractor.serviceOffered) == -1){
+                            results.push(contractor.serviceOffered);
+                        }
+                        /*if (contractor.stylesOffered != []){
+                            for (style of contractor.stylesOffered){
+                                if (this.styles.indexOf(style) == -1){
+                                    this.styles.push(style)
+                                }
+                            }
+                        }*/
+                    }
+                    return results;
+                },
+
+                getStyles(){
+                    let contractors = this.getContractorDetails();
+                    let results = [];
+                    for (let contractor of contractors){
+                        console.log(contractor.stylesOffered)
+                        if (contractor.stylesOffered != []){
+                            for (let style of contractor.stylesOffered){
+                                if (results.indexOf(style) == -1){
+                                    results.push(style)
+                                }
+                            }
+                        }
+                    }
+                    return results;
+                },
+
+                processImage(image) {
+                    //file path must be from root directory
+                    if (image === '') {
+                        return "/src/assets/UrbanRenew.png";
+                    } else {
+                        //adjust to wherever the images will be stored
+                        return "/src/assets/" + image; 
+                    }
+                },
+
+
+                addFilter(event){
+                    console.log(event.target)
+                    let btn = event.target
+                    let filterName = btn.textContent
+                    if (btn.className == "filter"){
+                        btn.className = "filter selected";
+                        this.filters.push(filterName);
+                    }
+                    else{
+                        btn.className = "filter";
+                        let index = this.filters.indexOf(filterName);
+                        this.filters.splice(index, 1);
+                    }
+                    console.log(this.filters);
+                },
+
+                Search(key){
+                    key = key.toLowerCase()
+                    let contractors = this.contractors;
+                    let results = [];
+                    let filters = this.filters;
+                    for (let contractor of contractors){
+                        if ( contractor.name.toLowerCase().search(key) != -1 || contractor.company.toLowerCase().search(key) != -1){
+                            if (filters == []){
+                                for (filter of filters){
+                                    if (contractor.stylesOffered.indexOf(filter) != -1 || contractor.serviceOffered == filter){
+                                        results.push(contractor);
+                                    }
+                                }
+                            }
+                            else{
+                                results.push(contractor)
+                            }    
+                        }
+                    }
+                    this.contractorsDisplay = results;
                 }
             },
+
             components: {
                 NavBar,
                 LogedInLayout,
@@ -124,6 +215,10 @@
 </script>
 
 <style scoped>
+    .main-body{
+        padding: 30px;
+    }
+
         .icon{
             width: 35px;
             height: 40px;

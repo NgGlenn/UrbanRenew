@@ -1,6 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-import jobRequest from '@/views/jobRequest.vue';
+import jobRequest from '@/views/userJobRequest.vue';
 import contractors from '@/views/contractors.vue';
 import customerDashboard from '@/views/Dashboard/customerDashboard.vue';
 import userProfile from '@/views/userProfile.vue';
