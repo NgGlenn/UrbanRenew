@@ -6,7 +6,7 @@
         <div class="col-sm-6">
             <h5 class="mb-1">{{ project.projectName }}</h5>
             <p class="mb-1"><strong>Contractor:</strong> {{ project.contractorName }}</p>
-            <p class="mb-1"><strong>Price:</strong> ${{ project.price.toLocaleString() }}</p>
+            <p class="mb-1"><strong>Price:</strong> ${{ project.price}}</p>
         </div>
         <div class="col-sm-4 text-md-end">
             <button v-if="project.paidstatus === 'pending'" type="button" class="btn btn-primary" @click="goToPaymentPage">
