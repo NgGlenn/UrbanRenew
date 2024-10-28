@@ -10,9 +10,13 @@ export default {
       userEmail: "",
       defaultImage: "",
       companyName: "",
+      servicesOffered: [], // Store services as an array
+      address: "",
+      postalCode: "",
+      phone: "",
+      certificatesAndAwards: [], // Store awards as an array
       showEditProfileModal: false,
       showUpdatePasswordModal: false,
-      // Temporary fields to store the updated values
       updateFirstName: "",
       updateLastName: "",
       updatedEmail: "",
@@ -25,22 +29,46 @@ export default {
 
   methods: {
     openEditProfileModal() {
-      const names = this.userName.split(/\s+/).filter(Boolean); // Split the name by spaces and remove any empty strings
-
+      const names = this.userName.split(/\s+/).filter(Boolean);
       if (names.length > 1) {
-        this.updateFirstName = names.slice(0, names.length - 1).join(" "); // Join all but the last name for the first name
-        this.updateLastName = names[names.length - 1]; // Last name is the last part
+        this.updateFirstName = names.slice(0, names.length - 1).join(" ");
+        this.updateLastName = names[names.length - 1];
       } else {
-        // If there is only one name, treat it as the first name and leave last name empty
         this.updateFirstName = names[0];
         this.updateLastName = "";
       }
 
+      // Populate temporary fields with existing data
+      this.updatedCompanyName = this.companyName;
+      this.updatedServicesOffered = [...this.servicesOffered];
+      this.updatedAddress = this.address;
+      this.updatedPostalCode = this.postalCode;
+      // this.updatedPhone = this.phone;
+      this.updatedPhone = "";
+      this.updatedCertificatesAndAwards = [...this.certificatesAndAwards];
       this.showEditProfileModal = true;
     },
     saveProfile() {
-      this.userName = this.updatedName;
+      this.userName = `${this.updateFirstName} ${this.updateLastName}`;
+      this.companyName = this.updatedCompanyName;
+      this.servicesOffered = [...this.updatedServicesOffered];
+      this.address = this.updatedAddress;
+      this.postalCode = this.updatedPostalCode;
+      this.phone = this.updatedPhone;
+      this.certificatesAndAwards = [...this.updatedCertificatesAndAwards];
       this.showEditProfileModal = false;
+    },
+    addService() {
+      this.updatedServicesOffered.push("");
+    },
+    removeService(index) {
+      this.updatedServicesOffered.splice(index, 1);
+    },
+    addAward() {
+      this.updatedCertificatesAndAwards.push("");
+    },
+    removeAward(index) {
+      this.updatedCertificatesAndAwards.splice(index, 1);
     },
     openUpdatePasswordModal() {
       this.showUpdatePasswordModal = true;
@@ -53,7 +81,7 @@ export default {
       }
     },
   },
- mounted() {
+  mounted() {
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         const userDoc = doc(db, "users", user.uid);
@@ -64,21 +92,29 @@ export default {
           this.userName = `${userData.firstName} ${userData.lastName}`;
           this.userEmail = userData.email;
 
-          // Fetch contractor data based on user ID (assuming the doc ID is the same as user ID)
-          const contractorDoc = doc(db, "contractors", user.uid);
-          const contractorSnap = await getDoc(contractorDoc);
+          // Check if the user is a contractor
+          if (userData.role === "contractor") {
+            const contractorDoc = doc(db, "contractors", user.uid);
+            const contractorSnap = await getDoc(contractorDoc);
 
-          if (contractorSnap.exists()) {
-            const contractorData = contractorSnap.data();
-            this.companyName = contractorData.companyName || "N/A";
-            this.storeLocation = contractorData.storeLocation || "N/A";
-            this.phone = contractorData.phone || "N/A";
-            this.award1 = contractorData.awards ? contractorData.awards[0] : "N/A";
-            this.award2 = contractorData.awards ? contractorData.awards[1] : "N/A";
+            if (contractorSnap.exists()) {
+              const contractorData = contractorSnap.data();
+              this.companyName = contractorData.companyName || "N/A";
+              this.storeLocation = contractorData.storeLocation || "N/A";
+              this.phone = contractorData.phone || "N/A";
+              this.servicesOffered = contractorData.services?.length
+                ? contractorData.services
+                : ["None"];
+              this.certificatesAndAwards = contractorData.certsAndAwards?.length
+                ? contractorData.certsAndAwards
+                : ["None"];
+            } else {
+              console.error("No contractor document for user ID:", user.uid);
+            }
           } else {
-            console.error("No contractor document for user ID:", user.uid);
+            // Redirect to customer profile if the role is not contractor
+            this.$router.push("/customerProfile");
           }
-
           this.loading = false;
         } else {
           console.error("No user document for user ID:", user.uid);
@@ -148,14 +184,12 @@ export default {
                 <h6>Services Offered:</h6>
                 <!-- Services Offered Section -->
                 <ul class="list-unstyled">
-                  <li class="text-muted">
-                    <i class="fas fa-check-circle"></i> service1
-                  </li>
-                  <li class="text-muted">
-                    <i class="fas fa-check-circle"></i> service2
-                  </li>
-                  <li class="text-muted">
-                    <i class="fas fa-check-circle"></i> service3
+                  <li
+                    v-for="(service, index) in servicesOffered"
+                    :key="index"
+                    class="text-muted"
+                  >
+                    <i class="fas fa-check-circle"></i> {{ service }}
                   </li>
                 </ul>
 
@@ -171,33 +205,36 @@ export default {
 
                 <hr />
 
-
                 <h5 class="mt-4">
                   <i class="fas fa-address-card"></i> Contact Info
                 </h5>
 
-                <h6 class=""><i class="fas fa-phone-alt"></i> Phone: {{ phone }}</h6>
+                <h6 class="">
+                  <i class="fas fa-phone-alt"></i> Phone: {{ phone }}
+                </h6>
 
-                <h6 class=""><i class="fas fa-envelope"></i> Email: {{ userEmail }}</h6>  
+                <h6 class="">
+                  <i class="fas fa-envelope"></i> Email: {{ userEmail }}
+                </h6>
 
                 <hr />
-      
 
                 <h5 class="mt-4">
                   <i class="fas fa-trophy"></i> Certificates & Awards
                 </h5>
                 <!-- Certificates & Awards Section Title -->
+
                 <ul class="list-unstyled">
-                  <li class="text-muted">
-                    <i class="fas fa-award"></i> {{ award1 }}
-                  </li>
-                  <li class="text-muted">
-                    <i class="fas fa-award"></i> {{ award2 }}
+                  <li
+                    v-for="(award, index) in certificatesAndAwards"
+                    :key="index"
+                    class="text-muted"
+                  >
+                    <i class="fas fa-award"></i> {{ award }}
                   </li>
                 </ul>
               </div>
             </div>
-
           </div>
 
           <!-- Right Column -->
@@ -262,6 +299,76 @@ export default {
             class="form-control mb-2"
             placeholder="Last Name"
           />
+          <input
+            type="text"
+            v-model="updatedCompanyName"
+            class="form-control mb-2"
+            placeholder="Company Name"
+          />
+
+          <input
+            type="text"
+            v-model="updatedAddress"
+            class="form-control mb-2"
+            placeholder="Full Address"
+          />
+          <input
+            type="text"
+            v-model="updatedPostalCode"
+            class="form-control mb-2"
+            placeholder="Postal Code"
+          />
+          <input
+            type="text"
+            v-model="updatedPhone"
+            class="form-control mb-2"
+            placeholder="Phone"
+          />
+<hr>
+          <h6>Services Offered</h6>
+      <div id="itemList">
+            <div class="item">
+              Service 1 <span class="remove" onclick="removeItem(this)">X</span>
+            </div>
+            <div class="item">
+              Certificate A
+              <span class="remove" onclick="removeItem(this)">X</span>
+            </div>
+            <!-- More items can be added here -->
+          </div>
+
+          <div class="input-group">
+            <input
+              type="text"
+              id="newItem"
+              class="form-control mb-2"
+              placeholder="Add service/certificate"
+            />
+            <button onclick="addItem()">Add</button>
+          </div>
+<hr>
+          <h6>Certificates & Awards</h6>
+          <div id="itemList">
+            <div class="item">
+              Service 1 <span class="remove" onclick="removeItem(this)">X</span>
+            </div>
+            <div class="item">
+              Certificate A
+              <span class="remove" onclick="removeItem(this)">X</span>
+            </div>
+            <!-- More items can be added here -->
+          </div>
+
+          <div class="input-group">
+            <input
+              type="text"
+              id="newItem"
+              class="form-control mb-2"
+              placeholder="Add service/certificate"
+            />
+            <button onclick="addItem()">Add</button>
+          </div>
+<hr>
           <button class="btn btn-primary" @click="saveProfile">Save</button>
           <button
             class="btn btn-secondary"
@@ -276,6 +383,12 @@ export default {
       <div v-if="showUpdatePasswordModal" class="modal-overlay">
         <div class="modal-content">
           <h5>Update Password</h5>
+                   <input
+            type="password"
+            v-model="currentPassword"
+            class="form-control mb-2"
+            placeholder="Current Password"
+          />
           <input
             type="password"
             v-model="newPassword"
@@ -288,6 +401,10 @@ export default {
             class="form-control mb-2"
             placeholder="Confirm Password"
           />
+
+          <div v-if="passwordError" class="alert alert-danger mt-2">
+            {{ passwordError }}
+          </div>
           <button class="btn btn-primary" @click="updatePassword">
             Update
           </button>
@@ -379,11 +496,13 @@ h6 {
   z-index: 1000;
 }
 .modal-content {
+  max-height: 100vh; /* Adjust based on your design */
+  overflow-y: auto; /* Enable vertical scrolling */
   background-color: #ffffff;
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-  width: 300px;
+  width: 400px;
   text-align: center;
 }
 .modal-content h5 {
@@ -393,5 +512,22 @@ h6 {
 .modal-content .btn {
   width: 100%;
   margin-bottom: 10px;
+}
+
+.item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 5px 0;
+}
+.remove {
+  cursor: pointer;
+  color: red;
+  font-weight: bold;
+}
+.input-group {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
 }
 </style>

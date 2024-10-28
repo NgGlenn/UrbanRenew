@@ -15,6 +15,7 @@ export default {
         email: "",
         password: "",
         confirmPassword: "",
+        bio:""
       },
       contractor: {
         firstName: "",
@@ -112,11 +113,12 @@ if (Object.keys(this.errors).length === 0) {
           role: "customer",
           createdAt: serverTimestamp(),
           lastLogin: serverTimestamp(),
+          bio: "No bio available yet. Please edit your profile to update bio...",
         };
 
         // Add the user data to Firestore
         await setDoc(doc(db, "users", user.uid), userData);
-        console.log("User data saved to Firestore:", userData);
+        console.log("User data saved to Firestore:");
         alert("You have successfully created an account! Please login.");
         await signOut(auth);
         this.resetCustomerForm();

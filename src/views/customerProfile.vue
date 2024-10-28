@@ -2,7 +2,13 @@
 import LogedInLayout from "@/components/LogedInLayout.vue";
 import { db, auth } from "@/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc } from "firebase/firestore";
+import {
+  updatePassword,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+} from "firebase/auth";
+
 export default {
   data() {
     return {
@@ -25,6 +31,15 @@ export default {
   },
 
   methods: {
+    togglePasswordVisibility(field) {
+      if (field === "currentPassword") {
+        this.showCurrentPassword = !this.showCurrentPassword;
+      } else if (field === "newPassword") {
+        this.showNewPassword = !this.showNewPassword;
+      } else if (field === "confirmPassword") {
+        this.showConfirmPassword = !this.showConfirmPassword;
+      }
+    },
     openEditProfileModal() {
       const names = this.userName.split(/\s+/).filter(Boolean); // Split the name by spaces and remove any empty strings
 
@@ -40,19 +55,70 @@ export default {
       this.tempBio = this.userBio;
       this.showEditProfileModal = true;
     },
-    saveProfile() {
-      this.userName = this.updatedName;
-      this.userBio = this.tempBio;
-      this.showEditProfileModal = false;
+    async saveProfile() {
+      const user = auth.currentUser;
+      if (user) {
+        try {
+          // Reference to the user's document in Firestore
+          const userDocRef = doc(db, "users", user.uid);
+
+          // Update the document in Firestore with new values
+          await updateDoc(userDocRef, {
+            firstName: this.updateFirstName,
+            lastName: this.updateLastName,
+            bio: this.tempBio,
+          });
+
+          // Update local data to reflect changes immediately
+          this.userName = `${this.updateFirstName} ${this.updateLastName}`;
+          this.userBio = this.tempBio;
+
+          // Close the modal
+          this.showEditProfileModal = false;
+        } catch (error) {
+          console.error("Error updating profile:", error);
+          alert("Failed to update profile. Please try again.");
+        }
+      }
     },
     openUpdatePasswordModal() {
       this.showUpdatePasswordModal = true;
     },
-    updatePassword() {
-      if (this.newPassword === this.confirmPassword) {
+    async updatePassword() {
+      this.passwordError = "";
+
+      // Basic validation
+      if (this.newPassword !== this.confirmPassword) {
+        this.passwordError = "Passwords do not match.";
+        return;
+      }
+      if (this.newPassword.length < 6) {
+        this.passwordError = "Password must be at least 6 characters long.";
+        return;
+      }
+
+      // Reauthenticate before updating password
+      try {
+        const user = auth.currentUser;
+        if (!user) {
+          this.passwordError = "User not authenticated. Please log in again.";
+          return;
+        }
+
+        // Assuming user’s current email and password are available
+        const credential = EmailAuthProvider.credential(
+          user.email,
+          this.currentPassword // Add a field for the current password if needed
+        );
+        await reauthenticateWithCredential(user, credential);
+
+        // Update password
+        await updatePassword(user, this.newPassword);
+        alert("Password updated successfully.");
         this.showUpdatePasswordModal = false;
-      } else {
-        alert("Passwords do not match.");
+      } catch (error) {
+        console.error("Error updating password:", error);
+        this.passwordError = error.message;
       }
     },
   },
@@ -60,16 +126,22 @@ export default {
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         // Fetch user data based on the userID
-        const userDoc = doc(db, "users", user.uid); 
+        const userDoc = doc(db, "users", user.uid);
         const docSnap = await getDoc(userDoc);
         console.log("Document data:", docSnap.data());
 
         if (docSnap.exists()) {
           const userData = docSnap.data();
-          this.userName = `${userData.firstName} ${userData.lastName}`; 
+          this.userName = `${userData.firstName} ${userData.lastName}`;
           this.userEmail = userData.email;
-          this.userBio = userData.bio || "No bio available"; 
+          this.userBio = userData.bio || "No bio available";
+          this.userRole = userData.role || ""; // Retrieve the user's role
           this.loading = false;
+
+          // Redirect if the user is a contractor
+          if (this.userRole === "contractor") {
+            this.$router.push("/contractorProfile");
+          }
         } else {
           console.error("No such document for user ID:", user.uid);
         }
@@ -198,6 +270,12 @@ export default {
           <h5>Update Password</h5>
           <input
             type="password"
+            v-model="currentPassword"
+            class="form-control mb-2"
+            placeholder="Current Password"
+          />
+          <input
+            type="password"
             v-model="newPassword"
             class="form-control mb-2"
             placeholder="New Password"
@@ -208,6 +286,10 @@ export default {
             class="form-control mb-2"
             placeholder="Confirm Password"
           />
+
+          <div v-if="passwordError" class="alert alert-danger mt-2">
+            {{ passwordError }}
+          </div>
           <button class="btn btn-primary" @click="updatePassword">
             Update
           </button>
@@ -299,11 +381,13 @@ h6 {
   z-index: 1000;
 }
 .modal-content {
+  max-height: 100vh; /* Adjust based on your design */
+  overflow-y: auto;
   background-color: #ffffff;
   padding: 20px;
   border-radius: 8px;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
-  width: 300px;
+  width: 400px;
   text-align: center;
 }
 .modal-content h5 {
