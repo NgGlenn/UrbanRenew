@@ -8,7 +8,6 @@ export default {
     return {
       userName: "",
       userEmail: "",
-      userBio: "No bio available",
       defaultImage: "",
       companyName: "",
       showEditProfileModal: false,
@@ -17,7 +16,6 @@ export default {
       updateFirstName: "",
       updateLastName: "",
       updatedEmail: "",
-      tempBio: "",
       tempEmail: "",
       newPassword: "",
       confirmPassword: "",
@@ -38,12 +36,10 @@ export default {
         this.updateLastName = "";
       }
 
-      this.tempBio = this.userBio;
       this.showEditProfileModal = true;
     },
     saveProfile() {
       this.userName = this.updatedName;
-      this.userBio = this.tempBio;
       this.showEditProfileModal = false;
     },
     openUpdatePasswordModal() {
@@ -57,22 +53,35 @@ export default {
       }
     },
   },
-  mounted() {
+ mounted() {
     onAuthStateChanged(auth, async (user) => {
       if (user) {
-        // Fetch user data based on the userID
         const userDoc = doc(db, "users", user.uid);
         const docSnap = await getDoc(userDoc);
-        console.log("Document data:", docSnap.data());
 
         if (docSnap.exists()) {
           const userData = docSnap.data();
           this.userName = `${userData.firstName} ${userData.lastName}`;
           this.userEmail = userData.email;
-          this.userBio = userData.bio || "No bio available";
+
+          // Fetch contractor data based on user ID (assuming the doc ID is the same as user ID)
+          const contractorDoc = doc(db, "contractors", user.uid);
+          const contractorSnap = await getDoc(contractorDoc);
+
+          if (contractorSnap.exists()) {
+            const contractorData = contractorSnap.data();
+            this.companyName = contractorData.companyName || "N/A";
+            this.storeLocation = contractorData.storeLocation || "N/A";
+            this.phone = contractorData.phone || "N/A";
+            this.award1 = contractorData.awards ? contractorData.awards[0] : "N/A";
+            this.award2 = contractorData.awards ? contractorData.awards[1] : "N/A";
+          } else {
+            console.error("No contractor document for user ID:", user.uid);
+          }
+
           this.loading = false;
         } else {
-          console.error("No such document for user ID:", user.uid);
+          console.error("No user document for user ID:", user.uid);
         }
       } else {
         console.log("User not logged in. Redirecting to login page.");
@@ -169,7 +178,7 @@ export default {
 
                 <h6 class=""><i class="fas fa-phone-alt"></i> Phone: {{ phone }}</h6>
 
-                <h6 class=""><i class="fas fa-envelope"></i> Email: {{ email }}</h6>  
+                <h6 class=""><i class="fas fa-envelope"></i> Email: {{ userEmail }}</h6>  
 
                 <hr />
       
@@ -194,10 +203,10 @@ export default {
           <!-- Right Column -->
           <div class="col-md-6">
             <div class="card mb-4">
-              <div class="card-header">Transaction History</div>
+              <div class="card-header">Past Renovation Projects</div>
               <div class="card-body">
                 <div class="transaction-item">
-                  <p class="bio-placeholder">No transactions available.</p>
+                  <p class="bio-placeholder">No past projects available.</p>
                 </div>
               </div>
             </div>
@@ -253,11 +262,6 @@ export default {
             class="form-control mb-2"
             placeholder="Last Name"
           />
-          <textarea
-            class="form-control mb-3"
-            v-model="tempBio"
-            placeholder="Bio"
-          ></textarea>
           <button class="btn btn-primary" @click="saveProfile">Save</button>
           <button
             class="btn btn-secondary"
