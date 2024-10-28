@@ -77,7 +77,7 @@
 
 <script>
 import { db } from '../../firebase'  // Ensure your firebase.js is correctly configured
-import { collection, addDoc, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, doc, updateDoc } from 'firebase/firestore';
 export default {
     props: {
         project: {
@@ -92,6 +92,7 @@ export default {
     },
     methods: {
         async handleSubmit() {
+            //console.log( this.project); 
             this.project.paidstatus = 'paid';
             await addDoc(collection(db, 'payments'), {
                 projectname: this.project.Jobname,
@@ -103,15 +104,27 @@ export default {
                 projstatus: this.project.paidstatus,
                 paidOn: new Date(),
             });
-            if (this.paymentMethod === 'paynow') {
-                alert('Proceeding with PayNow for amount: $' + this.formattedPrice);
-                this.$router.push({ name: 'completePayment' });
-            } else if (this.paymentMethod === 'creditcard') {
-                alert('Proceeding with Credit Card payment for amount: $' + this.formattedPrice);
-                this.$router.push({ name: 'completePayment' });
-                // More handling can be added here if necessary
-            } else {
-                alert('Please select a payment method.');
+            // Step 2: Update the 'paidstatus' field in the 'jobs' collection for the specific job
+            const jobRef = doc(db, 'jobs', this.project.id);
+            try {
+                await updateDoc(jobRef, {
+                    paidstatus: 'paid' // Update the paidstatus field
+                });
+                console.log("Job's paidstatus updated successfully");
+
+                // Show success message and navigate to the next page based on payment method
+                if (this.paymentMethod === 'paynow') {
+                    alert('Proceeding with PayNow for amount: $' + this.formattedPrice);
+                    this.$router.push({ name: 'completePayment' });
+                } else if (this.paymentMethod === 'creditcard') {
+                    alert('Proceeding with Credit Card payment for amount: $' + this.formattedPrice);
+                    this.$router.push({ name: 'completePayment' });
+                } else {
+                    alert('Please select a payment method.');
+                }
+            } catch (error) {
+                console.error('Error updating job status:', error);
+                alert('Failed to update the job status. Please try again.');
             }
         },
         

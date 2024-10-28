@@ -4,7 +4,7 @@
             <img src="../icons/moodeng.png" alt="Contractor Logo" class="contractor-logo">
         </div>
         <div class="col-sm-6">
-            <h5 class="mb-1">{{ project.projectName }}</h5>
+            <h5 class="mb-1">{{ project.id }}</h5>
             <p class="mb-1"><strong>Contractor:</strong> {{ project.contractorName }}</p>
             <p class="mb-1"><strong>Price:</strong> ${{ project.price}}</p>
         </div>
@@ -27,6 +27,7 @@ export default {
     },
     methods: {
         goToPaymentPage() {
+            //console.log("Project object:", this.project);
             const queryParams = new URLSearchParams({
                 projectID: this.project.jobID,
             }).toString();
