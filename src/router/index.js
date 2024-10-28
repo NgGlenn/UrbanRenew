@@ -23,6 +23,11 @@ const router = createRouter({
       name: 'contractors',
       component: contractors
     },
+    { 
+      path: '/contractorProfile', 
+      name: 'contractorProfile',
+      component: contractors
+    },
     {
       path: '/customerDashboard',
       name: 'customerDashboard',
