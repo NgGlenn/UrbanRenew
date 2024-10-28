@@ -31,35 +31,19 @@
             <!-- Placeholder cards -->
             <div id="contractors-section">
                 <div class="row">
-                    <div class="col-12 col-sm-6 col-lg-4">
-                        <div class="card">
-                            <div class="card-header">
-                                <img src="../assets/UrbanRenew.png" style="width: 100%;">
-                                <h4 class="name"> Contractor 1 </h4>
-                                <p> Rating: <span class="rating"> 4.9 / 5.0 </span> </p>
-                            </div>
-                            <div class="card-body">
-                                <p> Company: <span class="company"> ABC </span> </p>
-                                <p> Service offered: <span class="service"> Cosmetic Works </span> </p>
-                                <p> Style(s): <span class="styles"> Modern, Vintage </span> </p>
-                            </div>
-                            <div class="card-footer">
-                                <a href="#"><button style="padding-inline: 50px;"> View Profile </button></a>
-                            </div>
-                        </div>
-                    </div>
 
                     <ContractorCards 
-                    v-for="contractor of contractorsDisplay"
+                    v-for="contractor of display"
                     :image="processImage(contractor.image)"
-                    :name="contractor.name"
-                    :company="contractor.company"
+                    :first-name="contractor.firstName"
+                    :last-name="contractor.lastName"
+                    :company="contractor.companyName"
                     :rating="contractor.rating"
-                    :service-offered="contractor.serviceOffered"
-                    :styles-offered="contractor.stylesOffered"
+                    :services-offered="contractor.services"
+                    :styles-offered="contractor.styles"
                     :profile-link="contractor.profileLink">
                     </ContractorCards>
-                    
+
                 </div>
             </div>
             
@@ -81,6 +65,7 @@
                 return {
                     contractors: this.getContractorDetails(), //array of JSON
                     contractorsDisplay: this.getContractorDetails(),
+                    display: useCollection(collection(db, 'contractors')),
                     services: this.getServices(),
                     styles: this.getStyles(),
                     filter_state: "filter-off",

@@ -3,13 +3,13 @@
         <div class="card">
             <div class="card-header p-10" style="text-align: center;">
                 <img :src="image" style="width: 100%; margin-bottom: 15px; max-width: 300px; max-height: 250px;">
-                <h4 style="font-weight: bold;"> {{name}} </h4>
+                <h4 style="font-weight: bold;"> {{firstName}}  {{ lastName }} </h4>
                 <p> Rating: {{rating}} / 5.0 </p>
             </div>
             <div class="card-body">
                 <p> Company: {{company}} </p>
-                <p> Service offered: {{serviceOffered}} </p>
-                <p v-if="stylesOffered.length!=0"> Style(s): <span v-for="style of stylesOffered"> | {{style}} </span> | </p>
+                <p> Service offered: <span v-for="service of servicesOffered"> {{ service }} </span> </p>
+                <p v-if="stylesOffered!=null"> Style(s): <span v-for="style of stylesOffered"> | {{style}} </span> | </p>
             </div>
             <div class="card-footer" style="text-align: center;">
                 <a v-bind:href="profileLink" target="_blank"><button style="padding-inline: 50px;"> View Profile </button></a>
@@ -20,7 +20,7 @@
 
 <script>
 export default{
-    props: [ 'image', 'name', 'company', 'rating', 'serviceOffered', 'stylesOffered', 'profileLink' ],
+    props: [ 'image', 'firstName', 'lastName', 'company', 'rating', 'servicesOffered', 'stylesOffered', 'profileLink' ],
             // props: {
             //     img: string, 
             //     name: string, 
