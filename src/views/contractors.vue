@@ -9,9 +9,9 @@
                         <img src="../assets/filter.png" style="width: 75%; margin: auto;">
                     </a>
 
-                    <input type="text" v-model="key" placeholder="Search for a specific contractor or company" id="searchbar"> 
+                    <input type="text" v-model="search_key" placeholder="Search for a specific contractor or company" id="searchbar"> 
 
-                    <button id="search-button" @click="Search(key)">
+                    <button id="search-button" @click="Search(search_key)">
                         Search
                     </button>
             </div>
@@ -33,7 +33,7 @@
                 <div class="row">
 
                     <ContractorCards 
-                    v-for="contractor of display"
+                    v-for="contractor of contractorsDisplay"
                     :id="contractor.id"
                     :image="processImage(contractor.image)"
                     :first-name="contractor.firstName"
@@ -56,19 +56,52 @@
     import NavBar from '@/components/NavBar.vue';
     import LogedInLayout from '@/components/LogedInLayout.vue';
     import ContractorCards from '@/components/ContractorCards.vue';
+    import { onMounted, ref, watch } from 'vue'
     import { useCollection } from 'vuefire';
     import { QueryEndAtConstraint, collection, documentId, orderBy, query, where } from 'firebase/firestore';
     import { db } from '../firebase.js'
 
     export default{
+        setup(){
+            const contractors = useCollection(collection(db, 'contractors'));
+            var contractorsDisplay = useCollection(collection(db, 'contractors'));
+            var services = ref([]); // Make services reactive
+            var styles = ref([]); // Make styles reactive
+
+            // Watch for changes in contractors and update services & styles once contractors has data
+            watch(contractors, (newContractors) => {
+            if (newContractors && newContractors.length) {
+                services.value = getServices(newContractors);
+                styles.value = getStyles(newContractors)
+            }
+            });
+
+            const getServices = (contractors) => {
+                const results = [];
+                for (let contractor of contractors) {
+                    if (contractor.services) {
+                    results.push(...contractor.services);
+                    }
+                }
+                return results;
+            };
+
+            const getStyles = (contractors) => {
+                const results = [];
+                for (let contractor of contractors) {
+                    if (contractor.styles) {
+                    results.push(...contractor.styles);
+                    }
+                }
+                return results;
+            };
+
+            return {contractors, contractorsDisplay, services, styles}
+        },
 
         data() {
                 return {
-                    contractors: this.getContractorDetails(), //array of JSON
-                    contractorsDisplay: this.getContractorDetails(),
-                    display: useCollection(collection(db, 'contractors')),
-                    services: this.getServices(),
-                    styles: this.getStyles(),
+                    search_key: "",
                     filter_state: "filter-off",
                     filters: []
                 }
@@ -84,71 +117,9 @@
                     }
                 },
 
-                getContractorDetails(){ // returns array of contractor JSON from database
-                    const contractorDoc = useCollection(collection(db, 'contractors'));
-                    console.log(contractorDoc);
-                    return [
-                        //Contractor 2 details
-                        {
-                            'image': 'login1.jpg', //must be declared from root directory
-                            'name': 'Contractor 2',
-                            'company': 'A&A',
-                            'rating': '4.9',
-                            'serviceOffered': "Additions & Alterations",
-                            'stylesOffered': ["Modern", "Eclectric"],
-                            'profileLink': 'https://www.facebook.com'
-                        },
-
-                        //Contractor 3 details
-                        {
-                            'image': '',
-                            'name': 'Contractor 3',
-                            'company': 'XYZ',
-                            'rating': '4.7',
-                            'serviceOffered': "Flooring Works",
-                            'stylesOffered': [],
-                            'profileLink': 'https://www.google.com'
-                        },
-                    ]
-                },
-
-                getServices(){
-                    let contractors = this.getContractorDetails();
-                    let results = []
-                    for (let contractor of contractors){
-                        if (results.indexOf(contractor.serviceOffered) == -1){
-                            results.push(contractor.serviceOffered);
-                        }
-                        /*if (contractor.stylesOffered != []){
-                            for (style of contractor.stylesOffered){
-                                if (this.styles.indexOf(style) == -1){
-                                    this.styles.push(style)
-                                }
-                            }
-                        }*/
-                    }
-                    return results;
-                },
-
-                getStyles(){
-                    let contractors = this.getContractorDetails();
-                    let results = [];
-                    for (let contractor of contractors){
-                        console.log(contractor.stylesOffered)
-                        if (contractor.stylesOffered != []){
-                            for (let style of contractor.stylesOffered){
-                                if (results.indexOf(style) == -1){
-                                    results.push(style)
-                                }
-                            }
-                        }
-                    }
-                    return results;
-                },
-
                 processImage(image) {
                     //file path must be from root directory
-                    if (image === '') {
+                    if (image == null) {
                         return "/src/assets/UrbanRenew.png";
                     } else {
                         //adjust to wherever the images will be stored
@@ -158,7 +129,6 @@
 
 
                 addFilter(event){
-                    console.log(event.target)
                     let btn = event.target
                     let filterName = btn.textContent
                     if (btn.className == "filter"){
@@ -174,20 +144,30 @@
                 },
 
                 Search(key){
+                    //console.log(key);
                     key = key.toLowerCase()
                     let contractors = this.contractors;
                     let results = [];
                     let filters = this.filters;
                     for (let contractor of contractors){
-                        if ( contractor.name.toLowerCase().search(key) != -1 || contractor.company.toLowerCase().search(key) != -1){
-                            if (filters == []){
-                                for (filter of filters){
-                                    if (contractor.stylesOffered.indexOf(filter) != -1 || contractor.serviceOffered == filter){
+                        let name = contractor.firstName + " " + contractor.lastName;
+                        if ( name.toLowerCase().search(key) != -1 || contractor.companyName.toLowerCase().search(key) != -1){
+                            if (filters.length != 0){
+                                for (let filter of filters){
+                                    // Check if any selected service is provided
+                                    if (contractor.services.indexOf(filter) != -1){
                                         results.push(contractor);
+                                    }
+                                    // Check if any selected style is provided
+                                    if (contractor.styles){
+                                        if (contractor.styles.indexOf(filter) != -1){
+                                            results.push(contractor);
+                                        }
                                     }
                                 }
                             }
-                            else{
+                            else{ 
+                                // Append all results without further checks
                                 results.push(contractor)
                             }    
                         }

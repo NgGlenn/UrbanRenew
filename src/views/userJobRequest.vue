@@ -1,6 +1,10 @@
 <script>
     import LogedInLayout from '@/components/LogedInLayout.vue';
     import UserJobRequests from '@/components/UserJobRequests.vue';
+    import { doc, getDoc, getDocs } from "firebase/firestore";
+    import { useCollection } from 'vuefire';
+    import { QueryEndAtConstraint, collection, documentId, orderBy, query, where } from 'firebase/firestore';
+
 
     export default{
         data(){

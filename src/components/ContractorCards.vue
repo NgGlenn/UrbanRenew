@@ -4,12 +4,12 @@
             <div class="card-header p-10" style="text-align: center;">
                 <img :src="image" style="width: 100%; margin-bottom: 15px; max-width: 300px; max-height: 250px;">
                 <h4 style="font-weight: bold;"> {{firstName}}  {{ lastName }} </h4>
-                <p> Rating: {{rating}} / 5.0 </p>
+                <p> Rating: {{rating.toFixed(1)}} / 5.0 </p>
             </div>
             <div class="card-body">
                 <p> Company: {{company}} </p>
-                <p> Service offered: <span v-for="service of servicesOffered"> {{ service }} </span> </p>
-                <p v-if="stylesOffered!=null"> Style(s): <span v-for="style of stylesOffered"> | {{style}} </span> | </p>
+                <p> Service offered: {{servicesOffered.join(", ")}} </p>
+                <p v-if="stylesOffered!=null"> Style(s): {{stylesOffered.join(", ")}} </p>
             </div>
             <div class="card-footer" style="text-align: center;">
                 <button @click="redirect" style="padding-inline: 50px;"> View Profile </button>

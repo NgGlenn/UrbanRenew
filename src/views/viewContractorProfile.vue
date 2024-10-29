@@ -2,7 +2,7 @@
 import LogedInLayout from "@/components/LogedInLayout.vue";
 import { db, auth } from "@/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, getDocs } from "firebase/firestore";
 import { useCollection } from 'vuefire';
 import { QueryEndAtConstraint, collection, documentId, orderBy, query, where } from 'firebase/firestore';
 
@@ -12,16 +12,18 @@ export default {
     return {
       id: this.$route.params.id,
       details: null,
+      reviews: null,
       loading: true
     };
   },
 
   methods: {
-    async fetchContractor(id) {
+
+    async initPage(id) {
       try {
-        // Create a reference to the document
-        const docRef = doc(db, "contractors", id); // "contractors" is the collection name
-        const docSnap = await getDoc(docRef);
+        // Get Contractors
+        const contractors = doc(db, "contractors", id); 
+        const docSnap = await getDoc(contractors);
 
         // Check if the document exists
         if (docSnap.exists()) {
@@ -29,16 +31,37 @@ export default {
           this.details = docSnap.data();
           this.loading = false;
         } else {
-          console.log("No such document!");
+          console.log("No such document");
         }
-      } catch (error) {
+
+        // Get Reviews
+        const reviews = collection(db, "reviews");
+        const q = query(reviews, where("contractorName", "==", this.details.firstName + " " + this.details.lastName));
+
+        // Execute query
+        const querySnapshot = await getDocs(q);
+        const results = [];
+        
+        querySnapshot.forEach((doc) => {
+          results.push(doc.data()); // Collect data and ID for each document
+        });
+
+        this.reviews = results;
+      } 
+      catch (error) {
         console.error("Error fetching document:", error);
       }
     },
   },
 
+  computed: {
+    storeLocation(){
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(this.details.storeAddress)}`
+    }
+  },
+
  mounted() {
-  this.fetchContractor(this.id);
+  this.initPage(this.id);
 
     /*onAuthStateChanged(auth, async (user) => {
       if (user) {
@@ -83,9 +106,9 @@ export default {
 
 <template>
   <LogedInLayout>
-    {{ id }} - {{ details }}
     <div v-if="loading"></div>
     <div v-else>
+      {{ console.log(JSON.stringify(reviews)) }}
       <div class="container mt-5">
         <div class="row">
           <!-- Left Column -->
@@ -112,8 +135,7 @@ export default {
 
                 <h6 class="">Company Name:</h6>
                 <!-- Company Name -->
-                <p class="text-muted">{{ details.companyName }}</p>
-                <!-- Placeholder for company name -->
+                <p>{{ details.companyName }}</p>
 
                 <h6>Services Offered:</h6>
                 <!-- Services Offered Section -->
@@ -121,11 +143,18 @@ export default {
                   <li v-for="service of details.services"> {{ service }} </li>
                 </ul>
 
+                <p v-if="details.styles!=null">
+                  <h6>Styles:</h6>
+                  <!-- Services Offered Section -->
+                  {{ details.styles.join(', ') }}
+                </p>
+                
+
                 <h6>Store Location:</h6>
                 <!-- Store Location Section -->
                 {{ details.storeAddress }} <br>
                 <a
-                  href="https://www.google.com/maps/search/?api=1&query={{ details.storeAddress }}"
+                  :href="storeLocation"
                   target="_blank"
                   class="text-primary hover-text-decoration-underline"
                 >
@@ -151,7 +180,7 @@ export default {
                 </h5>
                 <!-- Certificates & Awards Section Title -->
                 <ul class="list-unstyled">
-                  <li v-for="award of Awards"> {{ award }} </li>
+                  <li v-for="award of details.Awards"> <i class="fas fa-award"></i> {{ award }} </li>
                 </ul>
               </div>
             </div>
@@ -171,7 +200,8 @@ export default {
             <div class="card mb-4 review-card">
               <div class="card-header">Reviews</div>
               <div class="card-body">
-                <div class="review-item mb-4 border-bottom pb-3">
+                <p v-if="reviews.length==0" class="bio-placeholder"> No reviews yet. </p>
+                <div v-else class="review-item mb-4 border-bottom pb-3" v-for="review of reviews">
                   <div class="d-flex align-items-center">
                     <img
                       src="../assets/home_testi3.jpg"
@@ -181,7 +211,10 @@ export default {
                     />
                     <!-- Increased image size -->
                     <div class="flex-grow-1">
-                      <h6 class="mb-0 text-muted">John Doe</h6>
+                      <h6 class="mb-0 text-muted"> 
+                        <span v-if="review.reviewerName"> {{ review.reviewerName }} </span> 
+                        <span v-else> Anonymous </span>
+                      </h6>
                       <!-- Changed to h6 for smaller text -->
                       <div class="rating">
                         <span class="text-warning">&#9733;</span>
@@ -192,10 +225,11 @@ export default {
                       </div>
                     </div>
                   </div>
-                  <p class="mt-2 small text-muted">
-                    <!-- Added margin start (ms) for indentation -->
-                    Great experience! The service was fantastic and I would
-                    highly recommend it to others.
+                  <p class="mt-2 small text-muted"> 
+                    Quality of work: {{ review.qualityOfWork }} / 5 <br>
+                    Communication: {{ review.communication }} / 5 <br>
+                    Budget Adherence: {{ review.budgetAdherence }} / 5 <br>
+                    Problem Resolution: {{ review.problemResolution }} / 5
                   </p>
                 </div>
               </div>
