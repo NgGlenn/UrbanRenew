@@ -2,7 +2,13 @@
 import LogedInLayout from "@/components/LogedInLayout.vue";
 import { db, auth } from "@/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc, arrayUnion  } from "firebase/firestore";
+import {
+  updatePassword,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+} from "firebase/auth";
+
 export default {
   data() {
     return {
@@ -11,10 +17,12 @@ export default {
       defaultImage: "",
       companyName: "",
       servicesOffered: [], // Store services as an array
+      newServiceItem: "",
       address: "",
       postalCode: "",
       phone: "",
       certificatesAndAwards: [], // Store awards as an array
+      newCertItem: "",
       showEditProfileModal: false,
       showUpdatePasswordModal: false,
       updateFirstName: "",
@@ -23,61 +31,145 @@ export default {
       tempEmail: "",
       newPassword: "",
       confirmPassword: "",
+      updatedServicesOffered: [], // Store updated services as an array
+      updatedCertificatesAndAwards: [], // Store updated awards as an array
       loading: true, // Set loading to true initially
     };
   },
 
   methods: {
-    openEditProfileModal() {
-      const names = this.userName.split(/\s+/).filter(Boolean);
-      if (names.length > 1) {
-        this.updateFirstName = names.slice(0, names.length - 1).join(" ");
-        this.updateLastName = names[names.length - 1];
-      } else {
-        this.updateFirstName = names[0];
-        this.updateLastName = "";
-      }
+  addCertItem() {
+    if (this.newCertItem.trim()) {
+      this.updatedCertificatesAndAwards.push(this.newCertItem.trim());
+      this.newCertItem = ""; // Clear input after adding
+    }
+  },
+  // Method to delete a certificate/award by index
+  deleteCertItem(index) {
+    this.updatedCertificatesAndAwards.splice(index, 1);
+  },
+  addServiceItem() {
+    if (this.newServiceItem.trim()) {
+      this.updatedServicesOffered.push(this.newServiceItem.trim());
+      this.newServiceItem = ""; // Clear input after adding
+    }
+  },
+  // Method to delete a service by index
+  deleteServiceItem(index) {
+    this.updatedServicesOffered.splice(index, 1);
+  },
+  openEditProfileModal() {
+    // Populate temporary fields with existing data
+    const names = this.userName.split(/\s+/).filter(Boolean);
+    this.updateFirstName = names.length > 1 ? names.slice(0, -1).join(" ") : names[0];
+    this.updateLastName = names.length > 1 ? names[names.length - 1] : "";
+    this.updatedCompanyName = this.companyName;
+    this.updatedServicesOffered = [...this.servicesOffered]; // Copy the original arrays here
+    this.updatedCertificatesAndAwards = [...this.certificatesAndAwards];
+    this.updatedAddress = this.address || "";
+    this.updatedPostalCode = this.postalCode || "";
+    this.updatedPhone = this.phone || "";
+    this.showEditProfileModal = true;
+  },
+  saveProfile: async function () {
+    // Assign updated values to main state fields
+    this.userName = `${this.updateFirstName} ${this.updateLastName}`;
+    this.companyName = this.updatedCompanyName;
+    this.servicesOffered = [...this.updatedServicesOffered]; // Update main state with modified values
+    this.certificatesAndAwards = [...this.updatedCertificatesAndAwards];
+    this.address = this.updatedAddress;
+    this.postalCode = this.updatedPostalCode;
+    this.phone = this.updatedPhone;
+    this.showEditProfileModal = false;
 
-      // Populate temporary fields with existing data
-      this.updatedCompanyName = this.companyName;
-      this.updatedServicesOffered = [...this.servicesOffered];
-      this.updatedAddress = this.address;
-      this.updatedPostalCode = this.postalCode;
-      // this.updatedPhone = this.phone;
-      this.updatedPhone = "";
-      this.updatedCertificatesAndAwards = [...this.certificatesAndAwards];
-      this.showEditProfileModal = true;
-    },
-    saveProfile() {
-      this.userName = `${this.updateFirstName} ${this.updateLastName}`;
-      this.companyName = this.updatedCompanyName;
-      this.servicesOffered = [...this.updatedServicesOffered];
-      this.address = this.updatedAddress;
-      this.postalCode = this.updatedPostalCode;
-      this.phone = this.updatedPhone;
-      this.certificatesAndAwards = [...this.updatedCertificatesAndAwards];
-      this.showEditProfileModal = false;
-    },
-    addService() {
-      this.updatedServicesOffered.push("");
-    },
-    removeService(index) {
-      this.updatedServicesOffered.splice(index, 1);
-    },
-    addAward() {
-      this.updatedCertificatesAndAwards.push("");
-    },
-    removeAward(index) {
-      this.updatedCertificatesAndAwards.splice(index, 1);
-    },
+    const user = auth.currentUser;
+    if (user) {
+      const userDocRef = doc(db, "users", user.uid);
+      const contractorDocRef = doc(db, "contractors", user.uid);
+
+      try {
+        // Update user information
+        await updateDoc(userDocRef, {
+          firstName: this.updateFirstName,
+          lastName: this.updateLastName,
+          email: this.userEmail, // Keep the existing email
+        });
+
+        // Update contractor information
+        await updateDoc(contractorDocRef, {
+          firstName: this.updateFirstName,
+          lastName: this.updateLastName,
+          companyName: this.updatedCompanyName,
+          phoneNumber: this.updatedPhone,
+          postalCode: this.updatedPostalCode,
+          services: this.servicesOffered, // Save the final array directly
+          certsAndAwards: this.certificatesAndAwards, // Save the final array directly
+          storeAddress: this.updatedAddress,
+        });
+
+        alert("Profile updated successfully.");
+      } catch (error) {
+        console.error("Error updating profile:", error);
+        alert("Failed to update profile. Please try again.");
+      }
+    } else {
+      console.error("User not authenticated. Cannot update profile.");
+    }
+  },
+    // addService() {
+    //   this.updatedServicesOffered.push("");
+    // },
+    // removeService(index) {
+    //   this.updatedServicesOffered.splice(index, 1);
+    // },
+    // addAward() {
+    //   this.updatedCertificatesAndAwards.push("");
+    // },
+    // removeAward(index) {
+    //   this.updatedCertificatesAndAwards.splice(index, 1);
+    // },
     openUpdatePasswordModal() {
       this.showUpdatePasswordModal = true;
     },
-    updatePassword() {
-      if (this.newPassword === this.confirmPassword) {
+    async updatePassword() {
+      this.passwordError = "";
+
+      // Basic validation
+      if (this.newPassword !== this.confirmPassword) {
+        this.passwordError = "Passwords do not match.";
+        return;
+      }
+      if (this.newPassword.length < 6) {
+        this.passwordError = "Password must be at least 6 characters long.";
+        return;
+      }
+
+      // Reauthenticate before updating password
+      try {
+        const user = auth.currentUser;
+        if (!user) {
+          this.passwordError = "User not authenticated. Please log in again.";
+          return;
+        }
+
+        // Assuming user’s current email and password are available
+        const credential = EmailAuthProvider.credential(
+          user.email,
+          this.currentPassword // Add a field for the current password if needed
+        );
+        await reauthenticateWithCredential(user, credential);
+
+        // Update password
+        await updatePassword(user, this.newPassword);
+
+        alert("Password updated successfully.");
+        this.currentPassword = "";
+        this.newPassword = "";
+        this.confirmPassword = "";
         this.showUpdatePasswordModal = false;
-      } else {
-        alert("Passwords do not match.");
+      } catch (error) {
+        console.error("Error updating password:", error);
+        this.passwordError = error.message;
       }
     },
   },
@@ -100,8 +192,9 @@ export default {
             if (contractorSnap.exists()) {
               const contractorData = contractorSnap.data();
               this.companyName = contractorData.companyName || "N/A";
-              this.storeLocation = contractorData.storeLocation || "N/A";
-              this.phone = contractorData.phone || "N/A";
+              this.phone = contractorData.phoneNumber || "N/A";
+              this.postalCode = contractorData.postalCode || "N/A";
+              this.address = contractorData.storeAddress || "N/A";
               this.servicesOffered = contractorData.services?.length
                 ? contractorData.services
                 : ["None"];
@@ -195,6 +288,7 @@ export default {
 
                 <h6>Store Location:</h6>
                 <!-- Store Location Section -->
+                 <p class="text-muted">{{ address }}, S{{ postalCode }}</p>
                 <a
                   href="https://www.google.com/maps/search/?api=1&query={{ storeLocation }}"
                   target="_blank"
@@ -324,51 +418,69 @@ export default {
             class="form-control mb-2"
             placeholder="Phone"
           />
-<hr>
-          <h6>Services Offered</h6>
-      <div id="itemList">
-            <div class="item">
-              Service 1 <span class="remove" onclick="removeItem(this)">X</span>
+          <hr />
+          <h6>Services</h6>
+          <div id="itemList">
+            <!-- Display each service with an "X" to delete -->
+            <div
+              class="item"
+              v-for="(service, index) in updatedServicesOffered"
+              :key="index"
+            >
+              {{ service }}
+              <span class="remove" @click="deleteServiceItem(index)">X</span>
             </div>
-            <div class="item">
-              Certificate A
-              <span class="remove" onclick="removeItem(this)">X</span>
-            </div>
-            <!-- More items can be added here -->
           </div>
 
+          <!-- Input field and button to add new services -->
           <div class="input-group">
             <input
               type="text"
               id="newItem"
               class="form-control mb-2"
+              v-model="newServiceItem"
               placeholder="Add service/certificate"
             />
-            <button onclick="addItem()">Add</button>
+            <button
+              class="buttonEditProfile"
+              @click="addServiceItem"
+              id="addServiceItem"
+            >
+              Add
+            </button>
           </div>
-<hr>
+          <hr />
           <h6>Certificates & Awards</h6>
           <div id="itemList">
-            <div class="item">
-              Service 1 <span class="remove" onclick="removeItem(this)">X</span>
+            <!-- Display each certificate/award with an "X" to delete -->
+            <div
+              class="item"
+              v-for="(award, index) in updatedCertificatesAndAwards"
+              :key="index"
+            >
+              {{ award }}
+              <span class="remove" @click="deleteCertItem(index)">X</span>
             </div>
-            <div class="item">
-              Certificate A
-              <span class="remove" onclick="removeItem(this)">X</span>
-            </div>
-            <!-- More items can be added here -->
           </div>
 
+          <!-- Input field and button to add new certificates/awards -->
           <div class="input-group">
             <input
               type="text"
               id="newItem"
               class="form-control mb-2"
+              v-model="newCertItem"
               placeholder="Add service/certificate"
             />
-            <button onclick="addItem()">Add</button>
+            <button
+              class="buttonEditProfile"
+              @click="addCertItem"
+              id="addCertItem"
+            >
+              Add
+            </button>
           </div>
-<hr>
+          <hr />
           <button class="btn btn-primary" @click="saveProfile">Save</button>
           <button
             class="btn btn-secondary"
@@ -383,7 +495,7 @@ export default {
       <div v-if="showUpdatePasswordModal" class="modal-overlay">
         <div class="modal-content">
           <h5>Update Password</h5>
-                   <input
+          <input
             type="password"
             v-model="currentPassword"
             class="form-control mb-2"
@@ -408,10 +520,7 @@ export default {
           <button class="btn btn-primary" @click="updatePassword">
             Update
           </button>
-          <button
-            class="btn btn-secondary"
-            @click="showUpdatePasswordModal = false"
-          >
+          <button class="btn btn-secondary" @click="handleCancel">
             Cancel
           </button>
         </div>

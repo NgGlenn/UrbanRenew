@@ -176,6 +176,7 @@ if (Object.keys(this.errors).length === 0) {
           searchComposite: `${this.contractor.companyName.toLowerCase().replace(/ /g, "_")}_0_singapore`, // Create a composite search string
           services: this.contractor.services || [], // Default to empty array if not provided
           storeAddress: this.contractor.storeAddress || '', // Default to empty string if not provided
+          postalCode: this.contractor.postalCode || '',
           createdAt: serverTimestamp(),
           lastLogin: serverTimestamp(),
         };

@@ -115,6 +115,9 @@ export default {
         // Update password
         await updatePassword(user, this.newPassword);
         alert("Password updated successfully.");
+        this.currentPassword = "";
+        this.newPassword = "";
+        this.confirmPassword = "";
         this.showUpdatePasswordModal = false;
       } catch (error) {
         console.error("Error updating password:", error);

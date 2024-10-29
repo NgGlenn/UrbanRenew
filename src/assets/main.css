@@ -61,6 +61,15 @@ button{
   padding-inline: 10px;
 }
 
+.buttonEditProfile {
+  background-color: #769FCD;
+  color: white;
+  border: 0px;
+  border-radius: 2px;
+  height: 38px;
+  padding-inline: 10px;
+}
+
 /* a,
 .green {
   text-decoration: none;
