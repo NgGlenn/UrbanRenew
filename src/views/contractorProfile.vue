@@ -2,13 +2,12 @@
 import LogedInLayout from "@/components/LogedInLayout.vue";
 import { db, auth } from "@/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc, updateDoc, arrayUnion  } from "firebase/firestore";
-import {
-  updatePassword,
-  EmailAuthProvider,
-  reauthenticateWithCredential,
-} from "firebase/auth";
-
+import { doc, getDoc, updateDoc, setDoc } from "firebase/firestore";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import defaultProfileIcon from "@/assets/defaultProfileIcon.jpg"; //to display default picture if no profile picture set
+import { updatePassword, EmailAuthProvider, reauthenticateWithCredential} from "firebase/auth";
+import Cropper from "cropperjs";
+import "cropperjs/dist/cropper.css";
 export default {
   data() {
     return {
@@ -33,108 +32,101 @@ export default {
       confirmPassword: "",
       updatedServicesOffered: [], // Store updated services as an array
       updatedCertificatesAndAwards: [], // Store updated awards as an array
+      showEditImageModal: false,
+      selectedImage: null,
+      imageUrl: "",
+      cropper: null,
+      profilePictureUrl: "",
       loading: true, // Set loading to true initially
     };
   },
 
   methods: {
-  addCertItem() {
-    if (this.newCertItem.trim()) {
-      this.updatedCertificatesAndAwards.push(this.newCertItem.trim());
-      this.newCertItem = ""; // Clear input after adding
-    }
-  },
-  // Method to delete a certificate/award by index
-  deleteCertItem(index) {
-    this.updatedCertificatesAndAwards.splice(index, 1);
-  },
-  addServiceItem() {
-    if (this.newServiceItem.trim()) {
-      this.updatedServicesOffered.push(this.newServiceItem.trim());
-      this.newServiceItem = ""; // Clear input after adding
-    }
-  },
-  // Method to delete a service by index
-  deleteServiceItem(index) {
-    this.updatedServicesOffered.splice(index, 1);
-  },
-  openEditProfileModal() {
-    // Populate temporary fields with existing data
-    const names = this.userName.split(/\s+/).filter(Boolean);
-    this.updateFirstName = names.length > 1 ? names.slice(0, -1).join(" ") : names[0];
-    this.updateLastName = names.length > 1 ? names[names.length - 1] : "";
-    this.updatedCompanyName = this.companyName;
-    this.updatedServicesOffered = [...this.servicesOffered]; // Copy the original arrays here
-    this.updatedCertificatesAndAwards = [...this.certificatesAndAwards];
-    this.updatedAddress = this.address || "";
-    this.updatedPostalCode = this.postalCode || "";
-    this.updatedPhone = this.phone || "";
-    this.showEditProfileModal = true;
-  },
-  saveProfile: async function () {
-    // Assign updated values to main state fields
-    this.userName = `${this.updateFirstName} ${this.updateLastName}`;
-    this.companyName = this.updatedCompanyName;
-    this.servicesOffered = [...this.updatedServicesOffered]; // Update main state with modified values
-    this.certificatesAndAwards = [...this.updatedCertificatesAndAwards];
-    this.address = this.updatedAddress;
-    this.postalCode = this.updatedPostalCode;
-    this.phone = this.updatedPhone;
-    this.showEditProfileModal = false;
-
-    const user = auth.currentUser;
-    if (user) {
-      const userDocRef = doc(db, "users", user.uid);
-      const contractorDocRef = doc(db, "contractors", user.uid);
-
-      try {
-        // Update user information
-        await updateDoc(userDocRef, {
-          firstName: this.updateFirstName,
-          lastName: this.updateLastName,
-          email: this.userEmail, // Keep the existing email
-        });
-
-        // Update contractor information
-        await updateDoc(contractorDocRef, {
-          firstName: this.updateFirstName,
-          lastName: this.updateLastName,
-          companyName: this.updatedCompanyName,
-          phoneNumber: this.updatedPhone,
-          postalCode: this.updatedPostalCode,
-          services: this.servicesOffered, // Save the final array directly
-          certsAndAwards: this.certificatesAndAwards, // Save the final array directly
-          storeAddress: this.updatedAddress,
-        });
-
-        alert("Profile updated successfully.");
-      } catch (error) {
-        console.error("Error updating profile:", error);
-        alert("Failed to update profile. Please try again.");
+    addCertItem() {
+      if (this.newCertItem.trim()) {
+        this.updatedCertificatesAndAwards.push(this.newCertItem.trim());
+        this.newCertItem = ""; // Clear input after adding
       }
-    } else {
-      console.error("User not authenticated. Cannot update profile.");
-    }
-  },
-    // addService() {
-    //   this.updatedServicesOffered.push("");
-    // },
-    // removeService(index) {
-    //   this.updatedServicesOffered.splice(index, 1);
-    // },
-    // addAward() {
-    //   this.updatedCertificatesAndAwards.push("");
-    // },
-    // removeAward(index) {
-    //   this.updatedCertificatesAndAwards.splice(index, 1);
-    // },
+    },
+    // Method to delete a certificate/award by index
+    deleteCertItem(index) {
+      this.updatedCertificatesAndAwards.splice(index, 1);
+    },
+    addServiceItem() {
+      if (this.newServiceItem.trim()) {
+        this.updatedServicesOffered.push(this.newServiceItem.trim());
+        this.newServiceItem = ""; // Clear input after adding
+      }
+    },
+    // Method to delete a service by index
+    deleteServiceItem(index) {
+      this.updatedServicesOffered.splice(index, 1);
+    },
+    openEditProfileModal() {
+      // Populate temporary fields with existing data
+      const names = this.userName.split(/\s+/).filter(Boolean);
+      this.updateFirstName =
+        names.length > 1 ? names.slice(0, -1).join(" ") : names[0];
+      this.updateLastName = names.length > 1 ? names[names.length - 1] : "";
+      this.updatedCompanyName = this.companyName;
+      this.updatedServicesOffered = [...this.servicesOffered]; // Copy the original arrays here
+      this.updatedCertificatesAndAwards = [...this.certificatesAndAwards];
+      this.updatedAddress = this.address || "";
+      this.updatedPostalCode = this.postalCode || "";
+      this.updatedPhone = this.phone || "";
+      this.showEditProfileModal = true;
+    },
+    saveProfile: async function () {
+      // Assign updated values to main state fields
+      this.userName = `${this.updateFirstName} ${this.updateLastName}`;
+      this.companyName = this.updatedCompanyName;
+      this.servicesOffered = [...this.updatedServicesOffered];
+      this.certificatesAndAwards = [...this.updatedCertificatesAndAwards];
+      this.address = this.updatedAddress;
+      this.postalCode = this.updatedPostalCode;
+      this.phone = this.updatedPhone;
+      this.showEditProfileModal = false;
+
+      const user = auth.currentUser;
+      if (user) {
+        const userDocRef = doc(db, "users", user.uid);
+        const contractorDocRef = doc(db, "contractors", user.uid);
+
+        try {
+          // Update user information
+          await updateDoc(userDocRef, {
+            firstName: this.updateFirstName,
+            lastName: this.updateLastName,
+            email: this.userEmail, // Keep the existing email
+          });
+
+          // Update contractor information
+          await updateDoc(contractorDocRef, {
+            firstName: this.updateFirstName,
+            lastName: this.updateLastName,
+            companyName: this.updatedCompanyName,
+            phoneNumber: this.updatedPhone,
+            postalCode: this.updatedPostalCode,
+            services: this.servicesOffered, // Save the final array directly
+            certsAndAwards: this.certificatesAndAwards, // Save the final array directly
+            storeAddress: this.updatedAddress,
+          });
+
+          alert("Profile updated successfully.");
+        } catch (error) {
+          console.error("Error updating profile:", error);
+          alert("Failed to update profile. Please try again.");
+        }
+      } else {
+        console.error("User not authenticated. Cannot update profile.");
+      }
+    },
     openUpdatePasswordModal() {
       this.showUpdatePasswordModal = true;
     },
     async updatePassword() {
       this.passwordError = "";
 
-      // Basic validation
       if (this.newPassword !== this.confirmPassword) {
         this.passwordError = "Passwords do not match.";
         return;
@@ -172,6 +164,93 @@ export default {
         this.passwordError = error.message;
       }
     },
+    openEditImageModal() {
+      this.showEditImageModal = true;
+    },
+    closeEditImageModal() {
+      this.showEditImageModal = false;
+      this.imageUrl = null; // Reset image URL
+      if (this.cropper) {
+        this.cropper.destroy(); // Clean up Cropper instance
+        this.cropper = null;
+      }
+    },
+    handleImageUpload(event) {
+      const file = event.target.files[0];
+      console.log("Selected file:", file); // Log the selected file
+      if (file) {
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+          this.imageUrl = e.target.result; // Set the data URL
+          console.log("Image URL:", this.imageUrl); // Log the data URL
+          this.$nextTick(() => {
+            this.initializeCropper(); // Ensure DOM is updated before initializing
+          });
+        };
+
+        reader.readAsDataURL(file); // Read the file as a data URL
+      }
+    },
+    initializeCropper() {
+      // Initialize Cropper after the image has fully loaded
+      if (this.$refs.imageToCrop) {
+        this.cropper = new Cropper(this.$refs.imageToCrop, {
+          aspectRatio: 1, // Adjust aspect ratio as needed (1 for square)
+          viewMode: 1,
+          autoCropArea: 1, // Ensures the entire image area is selectable
+        });
+      }
+    },
+    async saveCroppedImage() {
+      if (this.cropper) {
+        this.cropper.getCroppedCanvas().toBlob(async (blob) => {
+          if (blob) {
+            // Create a blob URL for the cropped image (optional)
+            const croppedImageURL = URL.createObjectURL(blob);
+            this.imageUrl = croppedImageURL;
+
+            // Upload the image to Firebase Storage
+            const storage = getStorage();
+            const storageRef = ref(storage, `images/${Date.now()}.png`); // Use a unique filename
+
+            try {
+              // Upload the blob to Firebase Storage
+              const uploadTask = await uploadBytes(storageRef, blob);
+              const downloadURL = await getDownloadURL(uploadTask.ref);
+              console.log("File available at", downloadURL);
+
+              // Save the download URL to Firestore in the existing user document
+              await this.saveImageUrlToFirestore(downloadURL);
+
+              // Close the modal after saving
+              this.closeEditImageModal();
+
+              // Free the blob URL
+              URL.revokeObjectURL(croppedImageURL); // Revoke the blob URL
+            } catch (error) {
+              console.error("Error uploading image:", error);
+            }
+          } else {
+            console.error("Blob is null or undefined.");
+          }
+        });
+      }
+    },
+    async saveImageUrlToFirestore(downloadURL) {
+      const userId = auth.currentUser.uid; // Get the current user ID
+      const userDocRef = doc(db, "users", userId); // Reference to the user's document in Firestore
+
+      try {
+        // Use setDoc with merge: true to add the imageUrl field without overwriting other fields
+        await setDoc(userDocRef, { imageUrl: downloadURL }, { merge: true });
+        alert("Image successfully updated");
+        console.log("Image URL successfully saved to Firestore.");
+        window.location.reload(); // This will reload the current page
+      } catch (error) {
+        console.error("Error saving image URL to Firestore:", error);
+      }
+    },
   },
   mounted() {
     onAuthStateChanged(auth, async (user) => {
@@ -183,6 +262,7 @@ export default {
           const userData = docSnap.data();
           this.userName = `${userData.firstName} ${userData.lastName}`;
           this.userEmail = userData.email;
+          this.profilePictureUrl = userData.imageUrl || defaultProfileIcon;
 
           // Check if the user is a contractor
           if (userData.role === "contractor") {
@@ -234,11 +314,19 @@ export default {
           <div class="col-md-6">
             <div class="card mb-4">
               <div class="text-center mb-3">
-                <img
-                  src="https://via.placeholder.com/150"
-                  alt="User Profile"
-                  class="rounded-circle profile-image mb-3"
-                />
+                <div
+                  class="profile-image-container"
+                  @click="openEditImageModal"
+                >
+                  <img
+                    :src="profilePictureUrl"
+                    alt="User Profile"
+                    class="rounded-circle profile-image mb-3"
+                  />
+                  <span class="edit-icon">
+                    <i class="fas fa-edit"></i>
+                  </span>
+                </div>
                 <h5 class="card-title">
                   <i class="fas fa-user-circle"></i> {{ userName }}
                 </h5>
@@ -261,6 +349,7 @@ export default {
                 </div>
               </div>
             </div>
+
             <div class="card mb-4">
               <div class="card-header">Company Information</div>
               <div class="card-body">
@@ -288,7 +377,7 @@ export default {
 
                 <h6>Store Location:</h6>
                 <!-- Store Location Section -->
-                 <p class="text-muted">{{ address }}, S{{ postalCode }}</p>
+                <p class="text-muted">{{ address }}, S{{ postalCode }}</p>
                 <a
                   href="https://www.google.com/maps/search/?api=1&query={{ storeLocation }}"
                   target="_blank"
@@ -525,6 +614,38 @@ export default {
           </button>
         </div>
       </div>
+
+      <div v-if="showEditImageModal" class="modal-overlay">
+        <div class="modal-content">
+          <h5>Upload and Crop Image</h5>
+
+          <!-- File Upload Input -->
+          <input
+            type="file"
+            ref="fileInput"
+            @change="handleImageUpload"
+            class="form-control mb-2"
+            accept=".jpg,.jpeg,.png"
+          />
+          <!-- Image Preview for Cropping -->
+          <div v-if="imageUrl" class="image-crop-container">
+            <img
+              ref="imageToCrop"
+              :src="imageUrl"
+              alt="Base64 Image"
+              class="selected-image-preview"
+            />
+          </div>
+
+          <!-- Save and Cancel Buttons -->
+          <button class="btn btn-primary" @click="saveCroppedImage">
+            Save
+          </button>
+          <button class="btn btn-secondary" @click="closeEditImageModal">
+            Cancel
+          </button>
+        </div>
+      </div>
     </div>
   </LogedInLayout>
   <!-- <div v-else class="loading-spinner">Please Login to account...</div> -->
@@ -638,5 +759,32 @@ h6 {
   display: flex;
   justify-content: space-between;
   margin-top: 10px;
+}
+
+.profile-image-container {
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
+}
+
+.edit-icon {
+  position: absolute;
+  bottom: 10px;
+  right: 10px;
+  background-color: white;
+  border-radius: 50%;
+  padding: 5px;
+  color: #007bff;
+  font-size: 1.2em;
+}
+
+.image-crop-container {
+  max-width: 100%;
+  max-height: 300px;
+  overflow: hidden;
+}
+
+.selected-image-preview {
+  width: 100%; /* Adjust this as necessary */
 }
 </style>
