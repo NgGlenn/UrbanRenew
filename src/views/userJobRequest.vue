@@ -7,9 +7,13 @@
 
 
     export default{
+        setup(){
+            const jobRequests = useCollection(collection(db, 'jobRequests'));
+        },
+
         data(){
             return {
-                jobRequests: this.getJobRequests()
+                
             }
         },
 
