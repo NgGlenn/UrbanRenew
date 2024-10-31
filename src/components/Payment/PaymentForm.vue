@@ -106,6 +106,9 @@ export default {
             });
             // Step 2: Update the 'paidstatus' field in the 'jobs' collection for the specific job
             const jobRef = doc(db, 'jobs', this.project.id);
+            const queryParams = new URLSearchParams({
+                contractorID: this.project.contractorId,
+            }).toString();
             try {
                 await updateDoc(jobRef, {
                     paidstatus: 'paid' // Update the paidstatus field
@@ -115,10 +118,10 @@ export default {
                 // Show success message and navigate to the next page based on payment method
                 if (this.paymentMethod === 'paynow') {
                     alert('Proceeding with PayNow for amount: $' + this.formattedPrice);
-                    this.$router.push({ name: 'completePayment' });
+                    this.$router.push(`/contractorReview?${queryParams}`);
                 } else if (this.paymentMethod === 'creditcard') {
                     alert('Proceeding with Credit Card payment for amount: $' + this.formattedPrice);
-                    this.$router.push({ name: 'completePayment' });
+                    this.$router.push(`/contractorReview?${queryParams}`);
                 } else {
                     alert('Please select a payment method.');
                 }
