@@ -10,7 +10,6 @@ import router from './router'
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
-
 import { firebaseApp, db, auth} from './firebase.js';
 
 //Vuefire

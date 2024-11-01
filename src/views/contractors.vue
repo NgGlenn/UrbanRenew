@@ -6,12 +6,12 @@
             <!-- Search bar -->
             <div id="search">
                     <a href="#" class="icon" v-bind:id="filter_state" v-on:click="toggleFilter(filter_state)">
-                        <img src="../img/filter.png" style="width: 75%; margin: auto;">
+                        <img src="../assets/filter.png" style="width: 75%; margin: auto;">
                     </a>
 
-                    <input type="text" placeholder="Search for a specific contractor or company" id="searchbar"> 
+                    <input type="text" v-model="search_key" placeholder="Search for a specific contractor or company" id="searchbar"> 
 
-                    <button id="search-button">
+                    <button id="search-button" @click="Search(search_key)">
                         Search
                     </button>
             </div>
@@ -20,45 +20,31 @@
             <div id="filters-section" v-if="filter_state == 'filter-on'">
                 <p style="text-align: center; font-weight: bold;"> Select filter(s): </p>
                 <p>
-                    Service(s): <button class="filter" v-for="service of services" v-on:click="addFilter(service)"> {{service}} </button>
+                    Service(s): <button class="filter" v-for="service of services" @click="addFilter($event)"> {{service}} </button>
                 </p>
 
                 <p>
-                    Cosmetic style(s): <button class="filter" v-for="style of styles" v-on:click="addFilter(style)"> {{style}} </button>
+                    Cosmetic style(s): <button class="filter" v-for="style of styles" v-on:click="addFilter($event)"> {{style}} </button>
                 </p>
             </div>
 
             <!-- Placeholder cards -->
             <div id="contractors-section">
                 <div class="row">
-                    <div class="col-12 col-sm-6 col-lg-4">
-                        <div class="card">
-                            <div class="card-header">
-                                <img v-bind:src="defaultImage" style="width: 100%;">
-                                <h4 class="name"> Contractor 1 </h4>
-                                <p> Rating: <span class="rating"> 4.9 / 5.0 </span> </p>
-                            </div>
-                            <div class="card-body">
-                                <p> Company: <span class="company"> ABC </span> </p>
-                                <p> Service offered: <span class="service"> Cosmetic Works </span> </p>
-                                <p> Style(s): <span class="styles"> Modern, Vintage </span> </p>
-                            </div>
-                            <div class="card-footer">
-                                <a href="#"><button style="padding-inline: 50px;"> View Profile </button></a>
-                            </div>
-                        </div>
-                    </div>
 
                     <ContractorCards 
-                    v-for="contractor of contractors"
-                    v-bind:name="contractor.name"
-                    :company="contractor.company"
+                    v-for="contractor of contractorsDisplay"
+                    :id="contractor.id"
+                    :image="processImage(contractor.image)"
+                    :first-name="contractor.firstName"
+                    :last-name="contractor.lastName"
+                    :company="contractor.companyName"
                     :rating="contractor.rating"
-                    :service-offered="contractor.serviceOffered"
-                    :styles-offered="contractor.stylesOffered"
-                    :profile-link="contractor.profileLink">
+                    :services-offered="contractor.services"
+                    :styles-offered="contractor.styles"
+                    @redirect="viewProfile">
                     </ContractorCards>
-                    
+
                 </div>
             </div>
             
@@ -70,14 +56,54 @@
     import NavBar from '@/components/NavBar.vue';
     import LogedInLayout from '@/components/logedInLayout.vue';
     import ContractorCards from '@/components/ContractorCards.vue';
+    import { ref, watch } from 'vue'
+    import { useCollection } from 'vuefire';
+    import { QueryEndAtConstraint, collection, documentId, orderBy, query, where } from 'firebase/firestore';
+    import { db } from '../firebase.js'
 
     export default{
+        setup(){
+            const contractors = useCollection(collection(db, 'contractors'));
+            var contractorsDisplay = useCollection(collection(db, 'contractors'));
+            var services = ref([]); // Make services reactive
+            var styles = ref([]); // Make styles reactive
+
+            // Watch for changes in contractors and update services & styles once contractors has data
+            watch(contractors, (newContractors) => {
+            if (newContractors && newContractors.length) {
+                services.value = getServices(newContractors);
+                styles.value = getStyles(newContractors)
+            }
+            });
+
+            const getServices = (contractors) => {
+                const results = [];
+                for (let contractor of contractors) {
+                    if (contractor.services) {
+                    results.push(...contractor.services);
+                    }
+                }
+                return results;
+            };
+
+            const getStyles = (contractors) => {
+                const results = [];
+                for (let contractor of contractors) {
+                    if (contractor.styles) {
+                    results.push(...contractor.styles);
+                    }
+                }
+                return results;
+            };
+
+            return {contractors, contractorsDisplay, services, styles}
+        },
+
         data() {
                 return {
-                    services: ["Cosmetic Works", "Electrical Works", "Plumbing Works"],
-                    styles: ["Vintage", "Modern", "Eclectric"],
+                    search_key: "",
                     filter_state: "filter-off",
-                    contractors: this.getContractorDetails() //array of JSON
+                    filters: []
                 }
             },
 
@@ -91,30 +117,69 @@
                     }
                 },
 
-                getContractorDetails(){ // returns array of contractor JSON from database
-                    return [
-                        //Contractor 2 details
-                        {
-                            'name': 'Contractor 2',
-                            'company': 'A&A',
-                            'rating': '4.9',
-                            'serviceOffered': "Additions & Alterations",
-                            'stylesOffered': ["Modern", "Eclectric"],
-                            'profileLink': 'https://www.facebook.com'
-                        },
+                processImage(image) {
+                    //file path must be from root directory
+                    if (image == null) {
+                        return "/src/assets/UrbanRenew.png";
+                    } else {
+                        //adjust to wherever the images will be stored
+                        return "/src/assets/" + image; 
+                    }
+                },
 
-                        //Contractor 3 details
-                        {
-                            'name': 'Contractor 3',
-                            'company': 'XYZ',
-                            'rating': '4.7',
-                            'serviceOffered': "Flooring Works",
-                            'stylesOffered': [],
-                            'profileLink': 'https://www.google.com'
-                        },
-                    ]
+
+                addFilter(event){
+                    let btn = event.target
+                    let filterName = btn.textContent
+                    if (btn.className == "filter"){
+                        btn.className = "filter selected";
+                        this.filters.push(filterName);
+                    }
+                    else{
+                        btn.className = "filter";
+                        let index = this.filters.indexOf(filterName);
+                        this.filters.splice(index, 1);
+                    }
+                    console.log(this.filters);
+                },
+
+                Search(key){
+                    //console.log(key);
+                    key = key.toLowerCase()
+                    let contractors = this.contractors;
+                    let results = [];
+                    let filters = this.filters;
+                    for (let contractor of contractors){
+                        let name = contractor.firstName + " " + contractor.lastName;
+                        if ( name.toLowerCase().search(key) != -1 || contractor.companyName.toLowerCase().search(key) != -1){
+                            if (filters.length != 0){
+                                for (let filter of filters){
+                                    // Check if any selected service is provided
+                                    if (contractor.services.indexOf(filter) != -1){
+                                        results.push(contractor);
+                                    }
+                                    // Check if any selected style is provided
+                                    if (contractor.styles){
+                                        if (contractor.styles.indexOf(filter) != -1){
+                                            results.push(contractor);
+                                        }
+                                    }
+                                }
+                            }
+                            else{ 
+                                // Append all results without further checks
+                                results.push(contractor)
+                            }    
+                        }
+                    }
+                    this.contractorsDisplay = results;
+                },
+
+                viewProfile(id){
+                    this.$router.push({ path: `/contractors/${id}` });
                 }
             },
+
             components: {
                 NavBar,
                 LogedInLayout,
@@ -124,6 +189,10 @@
 </script>
 
 <style scoped>
+        .main-body{
+            padding: 30px;
+        }
+
         .icon{
             width: 35px;
             height: 40px;

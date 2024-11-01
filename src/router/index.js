@@ -1,8 +1,10 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { auth } from "@/firebase";
 
-import jobRequest from '@/views/jobRequest.vue';
+import jobRequest from '@/views/userJobRequest.vue';
 import contractors from '@/views/contractors.vue';
+import viewContractorProfile from '@/views/viewContractorProfile.vue';
+import createJobRequest from '@/views/createJobRequest.vue';
 import customerDashboard from '@/views/Dashboard/customerDashboard.vue';
 import customerProfile from '@/views/customerProfile.vue';
 import createProjectCust from '@/views/Dashboard/createProjectCust.vue';
@@ -80,7 +82,18 @@ const router = createRouter({
       component: contractorProfile,
       meta: { requiresAuth: true }
     },
-
+    { 
+      path: '/contractors/:id', 
+      name: 'viewContractorProfile',
+      component: viewContractorProfile,
+      props: true
+    },
+    { 
+      path: '/jobRequest/newRequest/:contractor_id', 
+      name: 'createJobRequest',
+      component: createJobRequest,
+      props: true
+    },
     {
       path: '/contractorProjectList',
       name: 'contractorProjectList',
