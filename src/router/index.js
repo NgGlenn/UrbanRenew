@@ -3,14 +3,14 @@ import { auth } from "@/firebase";
 
 import jobRequest from '@/views/jobRequest.vue';
 import contractors from '@/views/contractors.vue';
-// import customerDashboard from '@/views/Dashboard/customerDashboard.vue';
-// import customerProfile from '@/views/customerProfile.vue';
+import customerDashboard from '@/views/Dashboard/customerDashboard.vue';
+import customerProfile from '@/views/customerProfile.vue';
 import createProjectCust from '@/views/Dashboard/createProjectCust.vue';
-import login from '@/views/login.vue';
-import register from '@/views/register.vue';
-import home from '@/views/home.vue';
-// import contractorProfile from '@/views/contractorProfile.vue';
-import contractorReview from '@/views/contractorReview.vue';
+import login from '@/views/login.vue'
+import register from '@/views/register.vue'
+import home from '@/views/home.vue'
+import contractorProfile from '@/views/contractorProfile.vue';
+import contractorReview from '@/views/contractorReview.vue'
 
 import contractorProjectList from '@/views/Dashboard/contractorProjectList.vue';
 import contractorDashboard from '@/views/Dashboard/contractorDashboard.vue';
@@ -68,6 +68,14 @@ const router = createRouter({
       // component: contractorDashboard,
       meta: { requiresAuth: true, requiresContractor: true }
     },
+
+    {
+      path: '/contractorProfile',
+      name: 'contractorProfile',
+      component: contractorProfile,
+      meta: { requiresAuth: true }
+    },
+
     {
       path: '/contractorProjectList',
       name: 'contractorProjectList',

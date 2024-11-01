@@ -1,53 +1,51 @@
 <script>
-    import { db, auth } from "@/firebase";
-    import { onAuthStateChanged } from "firebase/auth";
-    import { doc, getDoc } from "firebase/firestore";
-    export default {
-        name: 'YourComponentName',
-        data() {
-            return {
-                    userRole: null, // Variable to store the user role
-                };
-            },
-        mounted() {
-            // Check the authentication state when the component mounts
-            onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                const userDoc = await getDoc(doc(db, "users", user.uid)); // Adjust the collection and document path as necessary
-                if (userDoc.exists()) {
-                    this.userRole = userDoc.data().role; // Adjust the field name as necessary
-                console.log("User role:", this.userRole);
-                } else {
-                console.error("No such document!");
-                }
-            }
-            });
-        },
-            computed: {
-            profileLink() {
-            // Determine which profile link to display based on the user role
-                if (this.userRole === 'customer') {
-                    // return { name: 'customerProfile' };
-                    return { name: 'dashboard' };
-                } else if (this.userRole === 'contractor') {
-                    // return { name: 'contractorProfile' };
-                    return { name: 'dashboard' };
-                }
-                return null; // No link if userRole is neither
-            }
-        },
-        methods: {
-            logout(e) {
-            e.preventDefault(); 
-            auth.signOut().then(() => {
-                console.log('User signed out');
-                this.$router.push({ name: 'login' });
-            }).catch(error => {
-                console.error('Error signing out: ', error);
-            });
-            }
+import { db, auth } from "@/firebase";
+import { onAuthStateChanged } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+export default {
+  name: 'YourComponentName',
+  data() {
+    return {
+      userRole: null, // Variable to store the user role
+    };
+    },
+  mounted() {
+    // Check the authentication state when the component mounts
+    onAuthStateChanged(auth, async (user) => {
+      if (user) {
+        const userDoc = await getDoc(doc(db, "users", user.uid)); // Adjust the collection and document path as necessary
+        if (userDoc.exists()) {
+            this.userRole = userDoc.data().role; // Adjust the field name as necessary
+          console.log("User role:", this.userRole);
+        } else {
+          console.error("No such document!");
         }
+      }
+    });
+  },
+    computed: {
+    profileLink() {
+      // Determine which profile link to display based on the user role
+      if (this.userRole === 'customer') {
+        return { name: 'customerProfile' };
+      } else if (this.userRole === 'contractor') {
+        return { name: 'contractorProfile' };
+      }
+      return null; // No link if userRole is neither
     }
+  },
+  methods: {
+    logout(e) {
+      e.preventDefault(); 
+      auth.signOut().then(() => {
+        console.log('User signed out');
+        this.$router.push({ name: 'login' });
+      }).catch(error => {
+        console.error('Error signing out: ', error);
+      });
+    }
+  }
+}
 </script>
 
 <template>

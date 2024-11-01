@@ -119,8 +119,6 @@ export default {
 </template>
 
 <style scoped>
-
-
 .mainDiv {
   margin-top: 130px;
 }

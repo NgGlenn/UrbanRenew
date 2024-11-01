@@ -92,8 +92,24 @@ export default {
   <!-- End Header/Navigation -->
 </template>
 
-<style scoped>
+<script>
+export default {
+  data() {
+    return {
+      currentYear: new Date().getFullYear(),
+      mapCenter: "37.4220656,-122.0840897",
+      mapZoom: 10,
+    };
+  },
+  methods: {
+    isActive(page) {
+      return this.$route.path === "/home" && this.$route.hash === `#${page}`;
+    },
+  },
+};
+</script>
 
+<style scoped>
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
 nav {
   font-family: "Inter", sans-serif;

@@ -6,6 +6,7 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { onAuthStateChanged } from "firebase/auth";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 const db = getFirestore(); // Ensure Firestore is initialized here
+
 export default {
   data() {
     return {
@@ -54,11 +55,9 @@ export default {
 
           // Redirect based on role
           if (userRole === "customer") {
-            // this.$router.push('/customerProfile');
-            this.$router.push('/dashboard');
+            this.$router.push('/customerProfile');
           } else if (userRole === "contractor") {
-            // this.$router.push('/contractorProfile');
-            this.$router.push('/dashboard');
+            this.$router.push('/contractorProfile');
           } else {
             console.error("Unknown role:", userRole);
             alert("Invalid role assigned to user.");
