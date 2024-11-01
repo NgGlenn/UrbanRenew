@@ -106,29 +106,13 @@ const router = createRouter({
     //   component: profile,
     //   meta: { requiresAuth: true }
     // },
-    // {
-    //   path: '/customerProfile',
-    //   name: 'customerProfile',
-    //   component: customerProfile,
-    //   meta: { requiresAuth: true }
-    // },
-
-    // {
-    //   path: '/contractorProfile',
-    //   name: 'contractorProfile',
-    //   component: contractorProfile,
-    //   meta: { requiresAuth: true }
-    // },
-   
-
+    {
+      path: '/customerProfile',
+      name: 'customerProfile',
+      component: customerProfile,
+      meta: { requiresAuth: true }
+    },
  
-    // {
-    //   path: '/',
-    //   name: 'customerDashboard',
-    //   component: customerDashboard,
-    //   meta: { requiresAuth: true }
-    // },
-
   ],
   scrollBehavior(to, from, savedPosition) {
     // Check if the target route has a hash (an anchor link)

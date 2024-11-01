@@ -1,4 +1,4 @@
-<script>
+<!-- <script>
 export default {
   data() {
     return {
@@ -13,7 +13,7 @@ export default {
     },
   },
 };
-</script>
+</script> -->
 <template>
   <!-- Start Header/Navigation -->
   <nav
