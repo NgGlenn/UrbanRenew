@@ -12,6 +12,11 @@ import home from '@/views/home.vue'
 import contractorProfile from '@/views/contractorProfile.vue';
 import contractorReview from '@/views/contractorReview.vue'
 
+import paymentOverview from '@/views/paymentOverview.vue'
+import Payment2 from '@/views/payment2.vue';
+import ReviewView from '@/views/ReviewView.vue';
+
+
 import contractorProjectList from '@/views/Dashboard/contractorProjectList.vue';
 import contractorDashboard from '@/views/Dashboard/contractorDashboard.vue';
 // import customerDashboard from '@/views/Dashboard/customerDashboard.vue';
@@ -112,7 +117,32 @@ const router = createRouter({
       component: customerProfile,
       meta: { requiresAuth: true }
     },
- 
+    {
+      path: '/contractorReview',
+      name: 'contractorReview',
+      component: contractorReview
+    },
+    {
+
+      path: '/paymentOverview', 
+      name: 'paymentOverview', 
+      component: paymentOverview
+    },
+    {
+      path: '/payment2', 
+      name: 'payment2', 
+      component: Payment2
+    },
+
+    {
+      path: '/ReviewView',
+      name: 'ReviewView',
+      component: ReviewView,
+      props: true
+    },
+
+   
+    ]  
   ],
   scrollBehavior(to, from, savedPosition) {
     // Check if the target route has a hash (an anchor link)
