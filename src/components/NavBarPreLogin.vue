@@ -1,19 +1,4 @@
-<!-- <script>
-export default {
-  data() {
-    return {
-      currentYear: new Date().getFullYear(),
-      mapCenter: "37.4220656,-122.0840897",
-      mapZoom: 10,
-    };
-  },
-  methods: {
-    isActive(page) {
-      return this.$route.path === "/home" && this.$route.hash === `#${page}`;
-    },
-  },
-};
-</script> -->
+
 <template>
   <!-- Start Header/Navigation -->
   <nav
@@ -21,7 +6,7 @@ export default {
     aria-label="Furni navigation bar"
   >
     <div class="container-fluid">
-      <a class="navbar-brand" href="/home">
+      <a class="navbar-brand" href="/">
         <img
           src="../assets/UrbanRenew.png"
           width="80px"
@@ -47,7 +32,7 @@ export default {
             <router-link
               class="nav-link"
               :class="{ active: isActive('about') }"
-              to="/home#about"
+              to="/#about"
               ><i class="fa-solid fa-building"></i> About Us</router-link
             >
           </li>
@@ -55,7 +40,7 @@ export default {
             <router-link
               class="nav-link"
               :class="{ active: isActive('services') }"
-              to="/home#services"
+              to="/#services"
               ><i class="fa-solid fa-list-check"></i> Services</router-link
             >
           </li>
@@ -64,7 +49,7 @@ export default {
             <router-link
               class="nav-link"
               :class="{ active: isActive('testimonials') }"
-              to="/home#testimonials"
+              to="/#testimonials"
               ><i class="fa-solid fa-trophy"></i> Testimonials</router-link
             >
           </li>
@@ -73,7 +58,7 @@ export default {
             <router-link
               class="nav-link"
               :class="{ active: isActive('contactus') }"
-              to="/home#contactus"
+              to="/#contactus"
               ><i class="fa-solid fa-address-book"></i> Contact us</router-link
             >
           </li>
@@ -103,7 +88,7 @@ export default {
   },
   methods: {
     isActive(page) {
-      return this.$route.path === "/home" && this.$route.hash === `#${page}`;
+      return this.$route.path === "/" && this.$route.hash === `#${page}`;
     },
   },
 };
