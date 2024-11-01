@@ -7,9 +7,9 @@
                 <p> Rating: {{rating.toFixed(1)}} / 5.0 </p>
             </div>
             <div class="card-body">
-                <p> Company: {{company}} </p>
-                <p> Service offered: {{servicesOffered.join(", ")}} </p>
-                <p v-if="stylesOffered!=null"> Style(s): {{stylesOffered.join(", ")}} </p>
+                <p> Company: <span style="font-style: italic;"> {{company}} </span> </p>
+                <p> Service offered: <span style="font-style: italic;"> {{servicesOffered.join(", ")}} </span> </p>
+                <p v-if="stylesOffered!=null"> Style(s): <span style="font-style: italic;"> {{stylesOffered.join(", ")}} </span> </p>
             </div>
             <div class="card-footer" style="text-align: center;">
                 <button @click="redirect" style="padding-inline: 50px;"> View Profile </button>
@@ -47,5 +47,9 @@ export default{
 </script>
 
 <style scoped>
-
+    .card{
+        margin-top: 10px;
+        margin-bottom: 10px;
+        min-height: 560px;
+    }
 </style>

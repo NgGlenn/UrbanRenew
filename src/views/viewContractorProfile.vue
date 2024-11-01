@@ -52,6 +52,11 @@ export default {
         console.error("Error fetching document:", error);
       }
     },
+
+    createRequest(id){
+      this.$router.push({ path: `/jobRequest/newRequest/${id}` });
+      this.$emit(this.createRequest, id);
+    }
   },
 
   computed: {
@@ -123,6 +128,7 @@ export default {
                 <h5 class="card-title">
                   <i class="fas fa-user-circle"></i> {{ details.firstName}} {{ details.lastName }}
                 </h5>
+                <button @click="createRequest(id)" style="margin: 5px;"> Send Job Request </button>
               </div>
             </div>
             <div class="card mb-4">

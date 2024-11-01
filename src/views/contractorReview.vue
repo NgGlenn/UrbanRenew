@@ -1,43 +1,7 @@
 <template>
   <div class="page-container">
-    <nav
-        class="custom-navbar navbar navbar navbar-expand-md navbar-light bg-light"
-        arial-label="Furni navigation bar"
-      >
-        <div class="container-fluid">
-          <a class="navbar-brand" href="index.html"
-            ><img src="../img/UrbanRenew.png" width="80px" alt="" />
-          </a>
-
-          <button
-            class="navbar-toggler"
-            type="button"
-            data-bs-toggle="collapse"
-            data-bs-target="#navbarsFurni"
-            aria-controls="navbarsFurni"
-            aria-expanded="false"
-            aria-label="Toggle navigation"
-          >
-            <span class="navbar-toggler-icon"></span>
-          </button>
-
-          <div class="collapse navbar-collapse" id="navbarsFurni">
-            <ul class="custom-navbar-nav navbar-nav ms-auto mb-2 mb-md-0">
-              <li class="nav-item active">
-                <a class="nav-link" href="">About us</a>
-              </li>
-              <li><a class="nav-link" href="">Services</a></li>
-              <li><a class="nav-link" href="">Testimonials</a></li>
-              <li><a class="nav-link" href="">Contact us</a></li>
-              <li>
-                <a class="nav-link" href=""
-                  ><i class="fa-solid fa-user"></i> Log In</a
-                >
-              </li>
-            </ul>
-          </div>
-        </div>
-      </nav>
+    <Navbar></Navbar>
+        
     <div id="app" class=" review-container">
     <div class="row">
       <div class="col-md-12 col-lg-12 col-sm-12">
@@ -144,7 +108,11 @@
 </template>
   
   <script>
+  import Navbar from '@/components/NavBar.vue';
   export default {
+    components: {
+      Navbar,
+    },
     data() {
       return {
         contractorName: '',
@@ -233,8 +201,10 @@
           border-radius: 10px;
           padding:2%;
           width: 80%;
-          margin-left: auto;
-          margin-right: auto;
+          margin-left: 10%;
+          margin-right: 10%;
+          margin-top: 10%;
+          margin-bottom: 10%;
         }
         .review-container h1 {
             font-size: 30px;
@@ -256,6 +226,7 @@
             transition: background-color 0.3s ease;
             width: 100%;
             text-align: center;
+            height:50px;
         }
 
         button:hover {

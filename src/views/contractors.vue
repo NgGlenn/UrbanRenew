@@ -56,7 +56,7 @@
     import NavBar from '@/components/NavBar.vue';
     import LogedInLayout from '@/components/LogedInLayout.vue';
     import ContractorCards from '@/components/ContractorCards.vue';
-    import { onMounted, ref, watch } from 'vue'
+    import { ref, watch } from 'vue'
     import { useCollection } from 'vuefire';
     import { QueryEndAtConstraint, collection, documentId, orderBy, query, where } from 'firebase/firestore';
     import { db } from '../firebase.js'
@@ -189,9 +189,9 @@
 </script>
 
 <style scoped>
-    .main-body{
-        padding: 30px;
-    }
+        .main-body{
+            padding: 30px;
+        }
 
         .icon{
             width: 35px;
