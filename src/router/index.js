@@ -12,10 +12,37 @@ import home from '@/views/home.vue'
 import contractorProfile from '@/views/contractorProfile.vue';
 import contractorReview from '@/views/contractorReview.vue'
 
+import contractorProjectList from '@/views/Dashboard/contractorProjectList.vue';
+import contractorDashboard from '@/views/Dashboard/contractorDashboard.vue';
+// import customerDashboard from '@/views/Dashboard/customerDashboard.vue';
+import dashboard from '@/views/Dashboard/dashboard.vue';
+import Payment from '@/views/Payment.vue';
+import customerProjectList from '@/views/Dashboard/customerProjectList.vue';
+
+import { useUserStore } from '@/stores/userStore';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    // {
+    //   path: '/',
+    //   redirect: '/home'
+    // },
+    {
+      path: '/',
+      name: 'home',
+      component: home
+    },
+    {
+      path: '/login',
+      name: 'login',
+      component: login
+    },
+    {
+      path: '/register',
+      name: 'register',
+      component: register
+    },
     {
       path: '/jobRequest',
       name: 'jobRequest',
@@ -29,16 +56,17 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
-      path: '/customerDashboard',
-      name: 'customerDashboard',
-      component: customerDashboard,
+      path: '/dashboard',
+      name: 'dashboard',
+      component: dashboard,
       meta: { requiresAuth: true }
     },
     {
-      path: '/customerProfile',
-      name: 'customerProfile',
-      component: customerProfile,
-      meta: { requiresAuth: true }
+      path: '/job/:jobId',
+      name: 'JobDetails',
+      component: () => import('@/views/Dashboard/contractorDashboard.vue'),
+      // component: contractorDashboard,
+      meta: { requiresAuth: true, requiresContractor: true }
     },
 
     {
@@ -49,32 +77,58 @@ const router = createRouter({
     },
 
     {
+      path: '/contractorProjectList',
+      name: 'contractorProjectList',
+      component: contractorProjectList,
+      meta: { requiresAuth: true, requiresContractor: true }
+    },
+    {
+      path: '/customerProjectList',
+      name: 'customerProjectList',
+      component: customerProjectList,
+      meta: { requiresAuth: true }
+    },
+    {
       path: '/createProjectCust',
       name: 'createProjectCust',
       component: createProjectCust,
       meta: { requiresAuth: true }
     },
     {
-      path: '/login',
-      name: 'login',
-      component: login
-    },
-    {
-      path: '/register',
-      name: 'register',
-      component: register
-    },
-    {
-      path: '/',
-      name: 'customerDashboard',
-      component: customerDashboard,
+      path: '/Payment',
+      name: 'Payment',
+      component: Payment,
       meta: { requiresAuth: true }
     },
-    {
-      path: '/home',
-      name: 'home',
-      component: home
-    }
+    // {
+    //   path: '/profile',
+    //   name: 'profile',
+    //   component: profile,
+    //   meta: { requiresAuth: true }
+    // },
+    // {
+    //   path: '/customerProfile',
+    //   name: 'customerProfile',
+    //   component: customerProfile,
+    //   meta: { requiresAuth: true }
+    // },
+
+    // {
+    //   path: '/contractorProfile',
+    //   name: 'contractorProfile',
+    //   component: contractorProfile,
+    //   meta: { requiresAuth: true }
+    // },
+   
+
+ 
+    // {
+    //   path: '/',
+    //   name: 'customerDashboard',
+    //   component: customerDashboard,
+    //   meta: { requiresAuth: true }
+    // },
+
   ],
   scrollBehavior(to, from, savedPosition) {
     // Check if the target route has a hash (an anchor link)
@@ -93,16 +147,48 @@ const router = createRouter({
   },
 });
 
-router.beforeEach((to, from, next) => {
-  // Check if Firebase has initialized authentication
-  auth.onAuthStateChanged((user) => {
-    if (to.meta.requiresAuth && !user) {
-      // Redirect to login if user is not authenticated
+// router.beforeEach((to, from, next) => {
+//   const userStore = useUserStore();
+//   // const isAuthenticated = userStore.isAuthenticated;
+//   const userRole = userStore.userRole;
+
+//   // Check if Firebase has initialized authentication
+//   auth.onAuthStateChanged((user) => {
+//     if (to.meta.requiresAuth && !user) {
+//       // Redirect to login if user is not authenticated
+//       next('/login');
+//     } else if (to.meta.requiresContractor && userRole !== 'contractor') {
+//       next('/dashboard');
+//     }  
+//     else {
+//       next(); // Proceed if user is authenticated or route does not require auth
+//     }
+//   });
+// });
+
+router.beforeEach(async (to, from, next) => {
+  const userStore = useUserStore();
+
+  // Wait for Firebase auth state
+  try {
+    await new Promise((resolve) => {
+      const unsubscribe = auth.onAuthStateChanged((user) => {
+        unsubscribe();
+        resolve(user);
+      });
+    });
+
+    if (to.meta.requiresAuth && !auth.currentUser) {
       next('/login');
+    } else if (to.meta.requiresContractor && userStore.userRole !== 'contractor') {
+      next('/dashboard');
     } else {
-      next(); // Proceed if user is authenticated or route does not require auth
+      next();
     }
-  });
+  } catch (error) {
+    console.error('Auth error:', error);
+    next('/login');
+  }
 });
 
 export default router

@@ -56,7 +56,7 @@ export default {
       arial-label="Furni navigation bar"
     >
       <div class="container-fluid">
-        <router-link class="nav-link" :to="{ name: 'customerDashboard' }" active-class="active">
+        <router-link class="nav-link" :to="{ name: 'dashboard' }" active-class="active">
             <img src="../assets/UrbanRenew.png" width="80px" alt="" />
         </router-link >
 
@@ -81,7 +81,7 @@ export default {
                 <router-link class="nav-link" :to="{ name: 'contractors' }" active-class="active"><i class="fa-solid fa-helmet-safety"></i> Contractors</router-link >
             </li>
             <li>
-                <router-link class="nav-link" :to="{ name: 'customerDashboard' }" exact-active-class="active"> <i class="fa-solid fa-chart-gantt"></i> Dashboard</router-link >
+                <router-link class="nav-link" :to="{ name: 'dashboard' }" exact-active-class="active"> <i class="fa-solid fa-chart-gantt"></i> Dashboard</router-link >
             </li>
             <li>
                 <router-link class="nav-link" :to="profileLink" active-class="active"> <i class="fa-solid fa-user"></i> Profile</router-link >

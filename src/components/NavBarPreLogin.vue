@@ -1,3 +1,19 @@
+<script>
+export default {
+  data() {
+    return {
+      currentYear: new Date().getFullYear(),
+      mapCenter: "37.4220656,-122.0840897",
+      mapZoom: 10,
+    };
+  },
+  methods: {
+    isActive(page) {
+      return this.$route.path === "/home" && this.$route.hash === `#${page}`;
+    },
+  },
+};
+</script>
 <template>
   <!-- Start Header/Navigation -->
   <nav

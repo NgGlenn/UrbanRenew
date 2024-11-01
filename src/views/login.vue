@@ -1,4 +1,3 @@
-<!-- Remove setup if you are using options API. options API is the style we are learning in school -->
 <script>
 import NavBarPreLogin from '@/components/NavBarPreLogin.vue';
 import FooterPreLogin from '@/components/FooterPreLogin.vue';
@@ -371,4 +370,3 @@ export default {
   }
 }
 </style>
-
