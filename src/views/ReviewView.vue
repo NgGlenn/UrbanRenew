@@ -1,106 +1,103 @@
 <template>
-    <div class="review-summary-container">
+  <NavBar></NavBar>
+  <div class="review-summary-container">
+    <div class="review-card">
       <h1>Thank you for your review!</h1>
-  
-      <!-- Display the review summary -->
-      <div class="review-summary">
-        <h3>Contractor's Name: {{ reviewData.contractorName }}</h3>
-        
-        <div class="rating-item">
-          <p><strong>Quality of Work:</strong> {{ reviewData.qualityOfWork }}/5</p>
-        </div>
-  
-        <div class="rating-item">
-          <p><strong>Timeliness:</strong> {{ reviewData.timeliness }}/5</p>
-        </div>
-  
-        <!-- Repeat for all 5 components -->
-        <div class="rating-item">
-          <p><strong>Communication:</strong> {{ reviewData.communication }}/5</p>
-        </div>
-  
-        <div class="rating-item">
-          <p><strong>Problem Resolution:</strong> {{ reviewData.problemResolution }}/5</p>
-        </div>
-  
-        <div class="rating-item">
-          <p><strong>Budget Adherence:</strong> {{ reviewData.budgetAdherence }}/5</p>
-        </div>
-  
-        <!-- Display the overall average rating -->
+      
+      <!-- Display the overall average rating -->
+      <div class="average-rating">
         <h2>Overall Rating: {{ overallRating }}/5</h2>
       </div>
-  
+      
       <!-- Button to go back to homepage -->
       <button @click="goToHome">Back to Homepage</button>
     </div>
-  </template>
-  
-  <script>
-  
-  export default {
-    props: {
-    reviewData: {
-      type: Object,
-      //required: true,
-      default: () => ({
-        contractorName: '',
-        qualityOfWork: 0,
-        timeliness: 0,
-        communication: 0,
-        problemResolution: 0,
-        budgetAdherence: 0
-      })
+  </div>
+</template>
+
+<script>
+import NavBar from '@/components/NavBar.vue';
+export default {
+  components: {
+    NavBar
+  },
+  data() {
+    return {
+      averageRating: null
+    };
+  },
+  created() {
+    // Get the average rating from query parameters
+    this.averageRating = this.$route.query.averageRating || 'N/A';
+  },
+  computed: {
+    overallRating() {
+      return this.averageRating;
     }
   },
-    computed: {
-      overallRating() {
-        // Compute the average rating based on 5 rating components
-        const ratings = [
-          this.reviewData.qualityOfWork,
-          this.reviewData.timeliness,
-          this.reviewData.communication,
-          this.reviewData.problemResolution,
-          this.reviewData.budgetAdherence
-        ];
-        const totalRating = ratings.reduce((sum, rating) => sum + rating, 0);
-        return (totalRating / ratings.length).toFixed(1); // Calculate and round to one decimal place
-      }
-    },
+  methods: {
+    goToHome() {
+      // Redirect to home.vue
+      this.$router.push({ name: 'home' });
+    }
+  }
+};
+</script>
 
-    methods: {
-      goToHome() {
-        // Redirect to home.vue
-        this.$router.push({ name: 'home' });
-      }
-    },
-   
-  };
-  </script>
-  
-  <style>
-  .review-summary-container {
-    text-align: center;
-    padding: 20px;
+<style scoped>
+.review-summary-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  background-color: #f3f4f6;
+}
+
+.review-card {
+  max-width: 400px;
+  width: 90%;
+  background-color: #ffffff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+h1 {
+  font-size: 1.5rem;
+  color: #4A4A4A;
+  margin-bottom: 20px;
+}
+
+.average-rating h2 {
+  font-size: 2rem;
+  color: #6A42C7;
+  margin-bottom: 20px;
+}
+
+
+
+button:hover {
+  background-color: #5734a5;
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .review-card {
+    padding: 15px;
   }
-  
-  .rating-item {
-    margin: 10px 0;
+
+  h1 {
+    font-size: 1.3rem;
   }
-  
+
+  .average-rating h2 {
+    font-size: 1.8rem;
+  }
+
   button {
-            background-color: #6A42C7;
-            color: white;
-            border: none;
-            padding: 15px;
-            border-radius: 10%;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            width: 100%;
-            text-align: center;
-            height:auto;
-        }
-  </style>
+    padding: 8px 15px;
+  }
+}
+</style>
   

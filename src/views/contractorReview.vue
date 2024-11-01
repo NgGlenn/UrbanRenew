@@ -10,8 +10,8 @@
         <form @submit.prevent="submitReview">
           <h1>Review Contractor</h1>
             <label class="metric-label">Contractor's Name:</label>
-            <input type="text" v-model="contractorName" placeholder="Enter contractor name" required>
-
+            <input type="text" :value="contractorName" disabled>
+            <!-- <input type="text" class="form-control" id="amount" :value="formattedPrice" disabled /> -->
             <!-- Star Rating for Quality of Work -->
             <label class="metric-label">Quality of Work</label>
             <p class="metric-description">Quality of the final result of the renovation</p>
@@ -101,7 +101,7 @@
   <script>
   import Navbar from '@/components/NavBar.vue';
   import { db } from '../firebase';  // Ensure your firebase.js is correctly configured
-  import { collection, addDoc } from 'firebase/firestore';
+  import { collection, addDoc, getDoc, query, where, doc } from 'firebase/firestore';
 
   export default {
     components: {
@@ -124,6 +124,34 @@
         submitted: false,
       };
     },
+    async created() {
+    // Retrieve contractorID from the query parameters
+    const contractorID = this.$route.query.contractorID;
+    console.log('Contractor ID from URL:', contractorID);
+
+    if (contractorID) {
+      try {
+        // Directly reference the document by its ID
+        const contractorRef = doc(db, 'contractors', contractorID);
+        const contractorDoc = await getDoc(contractorRef);
+
+        // Check if the document exists, and combine firstName and lastName
+        if (contractorDoc.exists()) {
+          const contractorData = contractorDoc.data();
+          console.log('Fetched contractor data:', contractorData);
+
+          // Combine firstName and lastName with a space
+          this.contractorName = `${contractorData.firstName} ${contractorData.lastName}`;
+        } else {
+          console.warn('No contractor found with the provided ID.');
+        }
+      } catch (error) {
+        console.error('Error fetching contractor:', error);
+      }
+    } else {
+      console.warn('No contractorID provided in the query parameters.');
+    }
+  },
     methods: {
       setRating(metric, value) {
         this[metric] = value; // Set the rating on click
@@ -150,8 +178,21 @@
             return '';
         }
       },
+      computeAverageRating() {
+    // Calculate the average rating based on the 5 rating components
+    const ratings = [
+      this.qualityOfWork,
+      this.timeliness,
+      this.communication,
+      this.problemResolution,
+      this.budgetAdherence
+    ];
+    const totalRating = ratings.reduce((sum, rating) => sum + rating, 0);
+    return (totalRating / ratings.length).toFixed(1); // Calculate and round to one decimal place
+  },
       async submitReview() {
         try {
+          const averageRating = this.computeAverageRating();
             // Save the review data to Firestore
             const reviewData = {
               contractorName: this.contractorName,
@@ -160,11 +201,13 @@
               communication: this.communication,
               problemResolution: this.problemResolution,
               budgetAdherence: this.budgetAdherence,
-              createdAt: new Date()
+              createdAt: new Date(),
+              contractorID: this.$route.query.contractorID,
+              averageRating: averageRating,
             };
             this.$router.push({
             name: 'ReviewView',
-            params: { reviewData: reviewData}
+            query: { averageRating: averageRating },
             });
             await addDoc(collection(db, 'reviews'), reviewData);
             this.submitted = true;
@@ -181,11 +224,8 @@
   </script>
   
   <style scoped>
-        #app{
-          background-color: #ffd580;;
-        }
+  
         .page-container {
-        background-color: #ffd580;
         padding: 50px;
         margin: 0;
         padding: 0;
@@ -221,20 +261,6 @@
             margin-bottom: 40px;
         }
 
-        button {
-            background-color: #6A42C7;
-            color: white;
-            border: none;
-            padding: 15px;
-            border-radius: 30px;
-            font-size: 18px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            width: 100%;
-            text-align: center;
-            height:auto;
-        }
 
         button:hover {
             background-color: #5333a0;
