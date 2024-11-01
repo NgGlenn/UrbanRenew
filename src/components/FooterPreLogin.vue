@@ -53,8 +53,8 @@ export default {
   data() {
     return {
       currentYear: new Date().getFullYear(),
-      mapCenter: { lat: 37.4220656, lng: -122.0840897 }, // Googleplex coordinates
-      mapZoom: 10
+      mapCenter: { lat: 1.2976501377673197, lng: 103.84940346208505 }, // Googleplex coordinates  
+      mapZoom: 13
     };
   },
   mounted() {
@@ -67,7 +67,7 @@ export default {
         // Create a new script tag
         const script = document.createElement("script");
         script.id = "google-maps-script";
-        script.src = `https://maps.googleapis.com/maps/api/js?key=YOUR_API_KEY&callback=initMap`;
+        script.src = `https://maps.googleapis.com/maps/api/js?key=`+import.meta.env.VITE_GOOGLEMAPS_API_KEY+`&callback=initMap&v=weekly&libraries=marker`;
         script.async = true;
         script.defer = true;
 
@@ -87,7 +87,20 @@ export default {
         center: this.mapCenter,
         zoom: this.mapZoom,
       };
-      new google.maps.Map(document.getElementById("map"), mapOptions);
+      const map = new google.maps.Map(document.getElementById("map"), mapOptions);
+
+      const marker = new google.maps.Marker({
+        map: map,
+        position: { lat: 1.2976501377673197, lng: 103.84940346208505 },
+        title: 'UrbanRenew',
+      });
+
+      const infoWindow = new google.maps.InfoWindow({
+          content: '<div style="font-weight: bold;">UrbanRenew Office</div>'
+      });
+
+      // Open InfoWindow by default
+      infoWindow.open(map, marker);
     }
   }
 };
