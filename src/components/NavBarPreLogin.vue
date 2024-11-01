@@ -14,7 +14,6 @@ export default {
   },
 };
 </script>
-
 <template>
   <!-- Start Header/Navigation -->
   <nav
@@ -94,6 +93,7 @@ export default {
 </template>
 
 <style scoped>
+
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
 nav {
   font-family: "Inter", sans-serif;

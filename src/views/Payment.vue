@@ -161,6 +161,7 @@
     font-weight: bold;
     cursor: pointer;
     transition: background-color 0.3s ease;
+    height:auto;
   }
   
   button:hover {

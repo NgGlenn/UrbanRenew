@@ -247,6 +247,7 @@ if (Object.keys(this.errors).length === 0) {
 };
 </script>
 
+
 <template>
   <NavBarPreLogin></NavBarPreLogin>
   <div class="container-fluid p-0">
@@ -395,7 +396,6 @@ if (Object.keys(this.errors).length === 0) {
               </button>
             </div>
           </div>
-
           <div v-if="accountType === 'contractor'" id="contractorFields">
             <div class="mb-3">
               <label for="firstNameC" class="form-label">First Name</label>
@@ -575,6 +575,7 @@ if (Object.keys(this.errors).length === 0) {
   </div>
   <FooterPreLogin></FooterPreLogin>
 </template>
+
 
 <style scoped>
 .registration-form {

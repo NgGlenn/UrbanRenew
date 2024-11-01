@@ -6,7 +6,6 @@ import FooterPreLogin from '@/components/FooterPreLogin.vue';
 export default {
   data() {
     return {
- 
     };
   },
   methods: {},
@@ -120,6 +119,7 @@ export default {
 </template>
 
 <style scoped>
+
 
 .mainDiv {
   margin-top: 130px;
@@ -288,3 +288,4 @@ export default {
     border-radius: 50%;
   }
 </style>
+

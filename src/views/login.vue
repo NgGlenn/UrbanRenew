@@ -6,7 +6,6 @@ import { signInWithEmailAndPassword } from "firebase/auth";
 import { onAuthStateChanged } from "firebase/auth";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
 const db = getFirestore(); // Ensure Firestore is initialized here
-
 export default {
   data() {
     return {
