@@ -1,18 +1,18 @@
 <template>
     <div class="col-12 col-sm-6 col-lg-4">
         <div class="card">
-            <div class="card-header">
-                <img v-bind:src="img" style="width: 100%;">
-                <h4 class="name"> {{name}} </h4>
-                <p> Rating: {{rating}} / 5.0 </p>
+            <div class="card-header p-10" style="text-align: center;">
+                <img :src="image" style="width: 100%; margin-bottom: 15px; max-width: 300px; max-height: 250px;">
+                <h4 style="font-weight: bold;"> {{firstName}}  {{ lastName }} </h4>
+                <p> Rating: {{rating.toFixed(1)}} / 5.0 </p>
             </div>
             <div class="card-body">
-                <p> Company: {{company}} </p>
-                <p> Service offered: {{serviceOffered}} </p>
-                <p v-if="stylesOffered.length!=0"> Style(s): <span v-for="style of stylesOffered"> {{style}} &nbsp</span> </p>
+                <p> Company: <span style="font-style: italic;"> {{company}} </span> </p>
+                <p> Service offered: <span style="font-style: italic;"> {{servicesOffered.join(", ")}} </span> </p>
+                <p v-if="stylesOffered!=null"> Style(s): <span style="font-style: italic;"> {{stylesOffered.join(", ")}} </span> </p>
             </div>
-            <div class="card-footer">
-                <a v-bind:href="profileLink" target="_blank"><button style="padding-inline: 50px;"> View Profile </button></a>
+            <div class="card-footer" style="text-align: center;">
+                <button @click="redirect" style="padding-inline: 50px;"> View Profile </button>
             </div>
         </div>
     </div>
@@ -20,7 +20,7 @@
 
 <script>
 export default{
-    props: [ 'img', 'name', 'company', 'rating', 'serviceOffered', 'stylesOffered', 'profileLink' ],
+    props: [ 'id', 'image', 'firstName', 'lastName', 'company', 'rating', 'servicesOffered', 'stylesOffered' ],
             // props: {
             //     img: string, 
             //     name: string, 
@@ -33,16 +33,23 @@ export default{
             data() {
                 return {
                     // key: value
-                    img: "../assets/UrbanRenew.png"
                 }
             }, // data
             
             methods: {
-                methodName() {
-                    
+                redirect() {
+                    this.$emit('redirect', this.id); // Emit the contractor ID when the button is clicked
                 }
             }, // methods
             
         
     }
 </script>
+
+<style scoped>
+    .card{
+        margin-top: 10px;
+        margin-bottom: 10px;
+        min-height: 560px;
+    }
+</style>
