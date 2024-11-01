@@ -1,11 +1,32 @@
+<!-- <script>
+export default {
+  data() {
+    return {
+      currentYear: new Date().getFullYear(),
+      mapCenter: "37.4220656,-122.0840897",
+      mapZoom: 10,
+    };
+  },
+  methods: {
+    isActive(page) {
+      return this.$route.path === "/home" && this.$route.hash === `#${page}`;
+    },
+  },
+};
+</script> -->
 <template>
   <!-- Start Header/Navigation -->
   <nav
     class="custom-navbar navbar navbar-expand-md navbar-light bg-light fixed-top"
-    aria-label="Furni navigation bar">
+    aria-label="Furni navigation bar"
+  >
     <div class="container-fluid">
-      <a class="navbar-brand" href="/login">
-        <img src="../assets/UrbanRenew.png" width="80px" alt="UrbanRenew Logo" />
+      <a class="navbar-brand" href="/home">
+        <img
+          src="../assets/UrbanRenew.png"
+          width="80px"
+          alt="UrbanRenew Logo"
+        />
       </a>
 
       <button
@@ -15,29 +36,60 @@
         data-bs-target="#navbarsFurni"
         aria-controls="navbarsFurni"
         aria-expanded="false"
-        aria-label="Toggle navigation">
+        aria-label="Toggle navigation"
+      >
         <span class="navbar-toggler-icon"></span>
       </button>
 
       <div class="collapse navbar-collapse" id="navbarsFurni">
         <ul class="custom-navbar-nav navbar-nav ms-auto mb-2 mb-md-0">
           <li class="nav-item">
-            <a class="nav-link" href="#">About us</a>
+            <router-link
+              class="nav-link"
+              :class="{ active: isActive('about') }"
+              to="/home#about"
+              ><i class="fa-solid fa-building"></i> About Us</router-link
+            >
           </li>
-          <li><a class="nav-link" href="#">Services</a></li>
-          <li><a class="nav-link" href="#">Testimonials</a></li>
-          <li><a class="nav-link" href="#">Contact us</a></li>
+          <li class="nav-item">
+            <router-link
+              class="nav-link"
+              :class="{ active: isActive('services') }"
+              to="/home#services"
+              ><i class="fa-solid fa-list-check"></i> Services</router-link
+            >
+          </li>
+
+          <li class="nav-item">
+            <router-link
+              class="nav-link"
+              :class="{ active: isActive('testimonials') }"
+              to="/home#testimonials"
+              ><i class="fa-solid fa-trophy"></i> Testimonials</router-link
+            >
+          </li>
+
+          <li class="nav-item">
+            <router-link
+              class="nav-link"
+              :class="{ active: isActive('contactus') }"
+              to="/home#contactus"
+              ><i class="fa-solid fa-address-book"></i> Contact us</router-link
+            >
+          </li>
           <li>
-            <!-- <a class="nav-link" href="#"><i class="fa-solid fa-user"></i> Log In</a> -->
-            <router-link class="nav-link" :to="{ name: 'login' }" active-class="active"><i class="fa-solid fa-user"></i> Log In</router-link >
+            <router-link
+              class="nav-link"
+              :to="{ name: 'login' }"
+              active-class="active"
+              ><i class="fa-solid fa-user"></i> Log In</router-link
+            >
           </li>
         </ul>
       </div>
     </div>
   </nav>
   <!-- End Header/Navigation -->
-
- 
 </template>
 
 <script>
@@ -46,21 +98,18 @@ export default {
     return {
       currentYear: new Date().getFullYear(),
       mapCenter: "37.4220656,-122.0840897",
-      mapZoom: 10
+      mapZoom: 10,
     };
   },
   methods: {
     isActive(page) {
-      // Dummy method to check active page for nav items
-      // Replace with actual routing logic when available
-      return page === 'about';
-    }
-  }
+      return this.$route.path === "/home" && this.$route.hash === `#${page}`;
+    },
+  },
 };
 </script>
 
 <style scoped>
-
 @import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap");
 nav {
   font-family: "Inter", sans-serif;
@@ -77,7 +126,7 @@ a {
 }
 
 .custom-navbar {
-  background: #F7FBFC !important;
+  background: #f7fbfc !important;
   padding-top: 20px;
   padding-bottom: 20px;
 }
@@ -106,7 +155,7 @@ a {
 
 .custom-navbar .custom-navbar-nav li a {
   font-weight: 500;
-  color: #769FCD !important;
+  color: #769fcd !important;
   opacity: 0.5;
   transition: 0.3s all ease;
   position: relative;
@@ -167,30 +216,29 @@ a {
 }
 
 .custom-navbar .custom-navbar-nav li a {
-    position: relative;
-    display: inline-block;
+  position: relative;
+  display: inline-block;
 }
 
 .custom-navbar .custom-navbar-nav li a:before {
-    content: "";
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    background: #f9bf29; /* Gold color for the underline */
-    height: 5px;
-    width: 0;
-    transition: width 0.3s ease-out;
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  background: #f9bf29; /* Gold color for the underline */
+  height: 5px;
+  width: 0;
+  transition: width 0.3s ease-out;
 }
 
 .custom-navbar .custom-navbar-nav li a:hover:before,
 .custom-navbar .custom-navbar-nav li a.active:before {
-    width: 100%; /* Underline should match the width of the text */
-    background-color: #f9bf29;
+  width: 100%; /* Underline should match the width of the text */
+  background-color: #f9bf29;
 }
 
 .custom-navbar .custom-navbar-nav li a.active {
-    color: #f9bf29; /* Gold color for active links */
-    font-weight: 600; /* Bold the active link */
+  color: #f9bf29; /* Gold color for active links */
+  font-weight: 600; /* Bold the active link */
 }
-
 </style>
