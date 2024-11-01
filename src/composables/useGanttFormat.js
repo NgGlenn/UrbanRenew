@@ -14,18 +14,50 @@ export function useGanttFormat(jobs, tasks, contractorCompany, contractorStaff) 
     }
     
     const ganttData = computed(() => {
-        if (!jobs.value || !tasks.value) return {data: [], links: []};
+        // if (!jobs.value || !tasks.value) return {data: [], links: []};
+        if (!jobs?.value || !tasks?.value) {
+            console.log('Missing job or task data:', { jobs, tasks });
+            return [{
+                jobId: '',
+                jobName: '',
+                contractorCompanyName: '',
+                contractorStaff: '',
+                task: []
+            }];
+        }
 
         //return formated data for each job
         return jobs.value.map(job => {
             //Retrieveing company name
-            const contractorCompanyName = contractorCompany.value.find(contractor => job.contractorId === contractor.id);
+            // const contractorCompanyName = contractorCompany.value.find(contractor => job.contractorId === contractor.id);
             
             //Retrieveing staff incharge name
-            const contractorStaffName = contractorStaff.value.find(staff => job.contractorId === staff.id);
-            const contractorPOC = contractorStaffName
-                ? `${contractorStaffName?.lastName || ''} ${contractorStaffName?.firstName || ''}`.trim()
-                : 'No POC assigned';
+            // const contractorStaffName = contractorStaff.value.find(staff => job.contractorId === staff.id);
+            // const contractorPOC = contractorStaffName
+            //     ? `${contractorStaffName?.lastName || ''} ${contractorStaffName?.firstName || ''}`.trim()
+            //     : 'No POC assigned';
+            let companyName = '';
+            if (Array.isArray(contractorCompany?.value)) {
+                // Customer view - array of companies
+                const company = contractorCompany.value.find(contractor => job.contractorId === contractor.id);
+                companyName = company?.companyName || '';
+            } else {
+                // Contractor view - single company
+                companyName = contractorCompany?.value?.companyName || '';
+            }
+
+            // Handle both array and single object scenarios for staff
+            let staffName = '';
+            if (Array.isArray(contractorStaff?.value)) {
+                // Customer view - array of staff
+                const staff = contractorStaff.value.find(staff => job.contractorId === staff.id);
+                staffName = staff ? `${staff.lastName || ''} ${staff.firstName || ''}`.trim() : 'No POC assigned';
+            } else {
+                // Contractor view - single staff member
+                staffName = contractorStaff?.value ?
+                    `${contractorStaff.value.lastName || ''} ${contractorStaff.value.firstName || ''}`.trim() :
+                    'No POC assigned';
+            }
 
             //Get tasks for this specific job
             const jobTasks = tasks.value.filter(task => task.jobId === job.id);
@@ -64,10 +96,15 @@ export function useGanttFormat(jobs, tasks, contractorCompany, contractorStaff) 
 
 
             return {
+                // jobId: job.id,
+                // jobName: job.description,
+                // contractorCompanyName: contractorCompanyName.companyName,
+                // contractorStaff: contractorPOC,
+                // task: formattedTasks
                 jobId: job.id,
                 jobName: job.description,
-                contractorCompanyName: contractorCompanyName.companyName,
-                contractorStaff: contractorPOC,
+                contractorCompanyName: companyName,
+                contractorStaff: staffName,
                 task: formattedTasks
             }
 

@@ -1,20 +1,25 @@
-<!-- Remove setup if you are using options API. options API is the style we are learning in school -->
 <script>
-import LogedInLayout from '@/components/LogedInLayout.vue';
-import NavBar from '@/components/NavBar.vue';
+import NavBarPreLogin from '@/components/NavBarPreLogin.vue';
+import FooterPreLogin from '@/components/FooterPreLogin.vue';
+import { auth } from "@/firebase";
+import { signInWithEmailAndPassword } from "firebase/auth";
+import { onAuthStateChanged } from "firebase/auth";
+import { getFirestore, doc, getDoc } from "firebase/firestore";
+const db = getFirestore(); // Ensure Firestore is initialized here
+
 export default {
   data() {
     return {
+      email: '', // State to hold the user's email
+      password: '', // State to hold the user's password
       passwordVisible: false, // State to track password visibility
     };
   },
   methods: {
     togglePasswordVisibility() {
-      // Get the password input and eye icon elements
       const passwordInput = document.getElementById('password');
       const eyeIcon = document.getElementById('eye-icon');
 
-      // Toggle the password field type
       if (passwordInput.type === 'password') {
         passwordInput.type = 'text';
         eyeIcon.classList.remove('fa-eye');
@@ -25,15 +30,60 @@ export default {
         eyeIcon.classList.add('fa-eye');
       }
     },
+    // onAuthStateChanged(user) {
+    //   if (user) {
+    //     console.log('user logged in: ', user);
+    //     this.$router.push('/userProfile');
+    //   }
+    //   else {
+    //     console.log('user logged out');
+    //   }
+    // },
+  async login(e) {
+      e.preventDefault();
+      try {
+        // Attempt to sign in
+        const cred = await signInWithEmailAndPassword(auth, this.email, this.password);
+        
+        // After successful login, get the user's role from Firestore
+        const userDocRef = doc(db, "users", cred.user.uid); // Adjust collection name if necessary
+        const userDoc = await getDoc(userDocRef);
+
+        if (userDoc.exists()) {
+          const userData = userDoc.data();
+          const userRole = userData.role; // Ensure 'role' exists in the document
+
+          // Redirect based on role
+          if (userRole === "customer") {
+            // this.$router.push('/customerProfile');
+            this.$router.push('/dashboard');
+          } else if (userRole === "contractor") {
+            // this.$router.push('/contractorProfile');
+            this.$router.push('/dashboard');
+          } else {
+            console.error("Unknown role:", userRole);
+            alert("Invalid role assigned to user.");
+          }
+        } else {
+          console.error("User document not found in Firestore");
+          alert("User profile data not found.");
+        }
+      } catch (error) {
+        console.error("Error signing in:", error);
+        alert("Incorrect Email or Password");
+      }
     },
-   components: {
-    LogedInLayout, // Register the NavBar component
+  },
+
+  components: {
+    NavBarPreLogin,
+    FooterPreLogin,
   },
 };
 </script>
 
 <template> 
-<LogedInLayout>    
+<NavBarPreLogin></NavBarPreLogin>    
   <div class="container-fluid p-0">
       <div class="row g-0">
         <div class="col-lg-6 col-12 login-container">
@@ -48,6 +98,7 @@ export default {
                 id="email"
                 placeholder="Enter your email"
                 required
+                v-model="email"
               />
             </div>
 
@@ -60,6 +111,7 @@ export default {
                   id="password"
                   placeholder="Enter your password"
                   required
+                  v-model="password"
                 />
                 <span
                   class="input-group-text show-password"
@@ -71,7 +123,7 @@ export default {
             </div>
 
             <div class="d-grid mb-2">
-              <button class="btn login-btn" type="button">Login</button>
+              <button class="btn login-btn" type="button" @click="login">Login</button>
             </div>
 
             <div class="d-grid mb-3">
@@ -124,36 +176,18 @@ export default {
               </div>
             </div>
           </div>
-          <button
-            class="carousel-control-prev"
-            type="button"
-            data-bs-target="#carouselExample"
-            data-bs-slide="prev"
-          >
-            <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Previous</span>
-          </button>
-          <button
-            class="carousel-control-next"
-            type="button"
-            data-bs-target="#carouselExample"
-            data-bs-slide="next"
-          >
-            <span class="carousel-control-next-icon" aria-hidden="true"></span>
-            <span class="visually-hidden">Next</span>
-          </button>
+  
         </div>
       </div>
     </div>
-</LogedInLayout>
+
+<FooterPreLogin></FooterPreLogin>
 </template>
 
 <style scoped>
-body {
-     background-color: #F7FBFC;
-     height: 100vh;
-     margin: 0;
- }
+.container-fluid{
+  margin-top: 130px;
+}
 
  .carousel-item img {
      height: 100vh;
@@ -270,6 +304,7 @@ body {
  /*mobile and tablet view */
  @media (max-width: 768px) {
      .login-container {
+        margin-top: 130px;
          position: absolute;
          top: 50%;
          left: 50%;
@@ -321,5 +356,19 @@ body {
  .show-password {
      cursor: pointer;
  }
-</style>
 
+ @media (max-width: 768px) {
+  .footer-section {
+    margin-top: 700px;
+    }
+  }
+
+ @media (max-width: 375px) {
+  .login-container {
+    margin-top: 130px;
+  }
+  .footer-section {
+    margin-top: 680px;
+  }
+}
+</style>

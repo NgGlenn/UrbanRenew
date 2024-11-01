@@ -1,148 +1,90 @@
 <script setup>
-    import LogedInLayout from '@/components/logedInLayout.vue';
+    console.log('contractorDashboard loading')
+    import { useRoute, useRouter } from 'vue-router';
+    import { computed, onMounted, watch } from 'vue';
+    import projectDashboard from '@/components/projectDashboard.vue';
+    import { useProjectStore } from '@/stores/projectStore';
+    import { storeToRefs } from 'pinia';
 
-    import { inject } from 'vue'
-    import { collection, getDocs } from 'firebase/firestore'
+    console.log('Script starting'); // Check if script runs at all
 
-    const db = inject('db')
+    const route = useRoute();
+    console.log('Current route:', route);
+    console.log('Current URL:', window.location.href);
+    const router = useRouter();
+    const projectStore = useProjectStore();
+    const { currentJob, currentTask, contractorCompany, contractorStaff } = storeToRefs(projectStore);
+    // const jobs = currentJob;
+    // console.log(jobs)
+    // console.log(typeof(jobs))
+    // const tasks = currentTask;
+    // console.log(tasks)
+    // console.log(typeof(tasks))
+    
+    // onMounted(() => {
+    //     console.log(route.params)
+    //     projectStore.setCurrentJob(route.params.jobId);
+    // });
 
-    const fetchData = async () => {
-    const querySnapshot = await getDocs(collection(db, 'contractors'))
-    // Process the data...
-    }
+    watch(
+        () => route.params.jobId,
+        (newJobId) => {
+            console.log('JobId from route:', newJobId);
+            if (newJobId) {
+                projectStore.setCurrentJob(newJobId);
+            }
+        },
+        { immediate: true } // This makes it run immediately when component is created
+    );
+
+
+    //Data to pass to ProjectDashboard component
+    const projectData = computed(() => ({
+        // currentJob: currentJob?.value || null,
+        // currentTask: currentTask?.value || null,
+        // contractorCompany: contractorCompany?.value || null,
+        // contractorStaff: contractorStaff?.value || null,
+        // jobId: route.params.jobId
+        jobs: { value: [currentJob.value] },  // Wrap single job in array
+        tasks: { value: currentTask.value },
+        contractorCompany: { value: currentJob.value.company },
+        contractorStaff: { value: currentJob.value.contractorName },
+        projectId: route.params.jobId
+    }));
+    console.log(route.params.jobId)
+    console.log(projectData.value)
+
+    const customerDetails = computed(() => ({
+        id: currentJob.value.customerId,
+        name: currentJob.value.customerName,
+        location: currentJob.value.location,
+        paidStatus: currentJob.value.paidstatus,
+        status: currentJob.value.status,
+    }))
 </script>
 
 <template>
-    <LogedInLayout>
-        <div class="dashboardContent">
-            <div class="row mx-0 py-4">
-                <div class="font header">Progress of Project {{  }}</div>
-            </div>
-            <div class="row mx-0 py-2 font containerBorder" style="text-align: left;">
-                <span>Project ID: <span style="color: black; font-weight: normal;">{{  }}</span></span>
-                <span>Customer ID: <span style="color: black; font-weight: normal;">{{  }}</span></span>
-                <span>Customer Name ID: <span style="color: black; font-weight: normal;">asas{{  }}</span></span>
-                <span>Customer Home Location ID: <span style="color: black; font-weight: normal;">{{  }}</span></span>
-            </div>
-            <div class="row mx-0 my-3">
-                <div class="font containerBorder">Overall Progression<br>
-                    Overall Progression<br>
-                    Overall Progression<br>
-                    Overall Progression<br>Overall Progression<br>
-                </div>
-            </div>
-            <div class="customRow">
-                <div class="carouselContainer font containerBorder">
-                    <!-- BS carousel: start --> 
-                    <div id="carouselExampleControls" class="carousel slide" data-bs-ride="carousel" data-bs-theme="dark"> 
-                        <div class="carousel-inner"> 
-                            <div class="carousel-item active" data-bs-interval="0"> 
-                                <img src="../assets/gt3rs.png" alt="" style="width:710px;height:600px;">
-                                <div class="carousel-caption d-none d-md-block">
-                                    <h5>Porsche 911 GT3 RS</h5>
-                                    <p>Porsche's most hardcore track car.</p>
-                                </div>
-                            </div> 
-                            <div class="carousel-item" data-bs-interval="0"> 
-                            <img src="../assets/gt3.webp" alt="" style="width:710px;height:600px;">
-                                <div class="carousel-caption d-none d-md-block">
-                                    <h5>Porsche 911 GT3</h5>
-                                    <p>Porsche track car for the road.</p>
-                                </div>
-                            </div> 
-                            <div class="carousel-item" data-bs-interval="0"> 
-                                <img src="../assets/logo.png" alt="" style="width:710px;height:600px;">
-                                <div class="carousel-caption d-none d-md-block">
-                                    <h5>Logo of Vue</h5>
-                                    <p>Logo lmao</p>
-                                </div>
-                            </div> 
-                        </div> 
-                        <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="prev"> 
-                            <span class="carousel-control-prev-icon" aria-hidden="true"></span> 
-                            <span class="visually-hidden">Previous</span> 
-                        </button> 
-                        <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleControls" data-bs-slide="next">  
-                            <span class="carousel-control-next-icon" aria-hidden="true"></span> 
-                            <span class="visually-hidden">Next</span> 
-                        </button> 
-                    </div> 
-                     <!-- BS carousel: end --> 
-                </div>
-                <div class="jobProgressionContainer font containerBorder"> Overall Progression for Job</div>
-            </div>
+    <!-- <div>
+        {{ console.log('Template rendering') }}
+        <button @click="handleBack" class="btn btn-secondary back-btn mb-3">
+            ← Back to Projects
+        </button>
+        
+        <div v-if="route.params.jobId">
+            <p>Job ID: {{ route.params.jobId }}</p>
+            <projectDashboard :project-data="projectData" :is-contractor="true"/>
         </div>
-    </LogedInLayout>
+        <div v-else>
+            <p>No job ID found in route params</p>
+        </div>
+    </div> -->
+    <div>
+        <projectDashboard :project-data="projectData" :is-contractor="true" :customer-details="customerDetails"/>
+    </div>
 </template>
 
 <style scoped>
-    h5, p{
-        color: #769FCD;
+    .back-btn {
+        margin-left: 1rem;
     }
-    
-    .font{
-        font-family: 'Roboto', sans-serif;
-        font-weight: bold;
-        font-size: 20px;
-        color: #769FCD;
-        text-align: center;
-        
-    }
-    .font.header{
-        text-decoration: underline;
-        font-size: 50px;
-    }
-
-    .dashboardContent {
-        min-height: 100vh;
-        width: 100%;
-        /* padding: 0px; */
-        padding-left: 1%;
-        padding-right: 1%;
-    }
-
-    .containerBorder {
-        border: 3px solid ;
-        border-radius: 10px;
-    }
-
-    .carousel-control-next, .carousel-control-prev{
-        width: 10%;
-    }
-
-    .customRow{
-        display: flex;
-        flex-direction: column;
-        
-    }
-
-    .carouselContainer, .jobProgressionContainer{
-        width: 100%;
-        margin-top: 16px;
-        margin-bottom: 16px;
-    }
-
-    .carousel-item {
-        width: 100%;
-        height: auto;
-    }
-
-    @media (min-width: 1300px){
-        .customRow{
-            display: flex;
-            flex-direction: row;
-            column-gap: 1%;
-        }
-
-         .carouselContainer {
-            width: 80%; 
-            margin-bottom: 0px; 
-        }
-
-        .jobProgressionContainer {
-            width: 19%; 
-            margin-bottom: 0px;
-        }
-    }
-
 </style>

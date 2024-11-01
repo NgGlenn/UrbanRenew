@@ -68,7 +68,7 @@
 
 <script>
     import NavBar from '@/components/NavBar.vue';
-    import LogedInLayout from '@/components/LogedInLayout.vue';
+    import LogedInLayout from '@/components/logedInLayout.vue';
     import ContractorCards from '@/components/ContractorCards.vue';
 
     export default{

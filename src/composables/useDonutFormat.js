@@ -3,7 +3,14 @@ import { computed } from "vue";
 //Composable to format data to donut chart library format
 export function useDonutFormat(jobs, tasks) {
     const jobProgress = computed(() => {
-        if (!jobs.value || !tasks.value) return [];
+        // if (!jobs.value || !tasks.value) return [];
+        if (!jobs?.value || !tasks?.value) {
+            console.log('No jobs or tasks data:', { jobs, tasks });
+            return [{
+                donutSections: [],
+                completionPercentage: 0
+            }];
+        }
 
         return jobs.value.map(job => {
             //Get tasks for this job
@@ -18,7 +25,7 @@ export function useDonutFormat(jobs, tasks) {
                     return sum + taskProgress;
                 }, 0);
 
-                completionPercentage = totalProgress/jobTasks.length;
+                completionPercentage = (totalProgress/jobTasks.length).toFixed(0);
                 // completionPercentage = averageProgress*100;
             }else{
                 completionPercentage = 0;

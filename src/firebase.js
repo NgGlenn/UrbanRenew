@@ -4,10 +4,6 @@ import { getFirestore } from 'firebase/firestore';
 import { getAuth } from "firebase/auth";
 import { getStorage, ref } from "firebase/storage";
 
-//vuefire, makes retrieving docuements from firestore easier
-import { VueFire } from 'vuefire';
-
-
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -25,21 +21,13 @@ const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
+export const firebaseApp = initializeApp(firebaseConfig);
 
 // Initialize Firebase services
-const db = getFirestore(app)
-const auth = getAuth(app)
+const db = getFirestore(firebaseApp)
+const auth = getAuth(firebaseApp)
 
-const vuefireOptions = {
-    firestore: db
-}
-
-export function installVuefire(vueApp) {
-    vueApp.use(VueFire, vuefireOptions)
-}
-
-const storage = getStorage();
+const storage = getStorage(firebaseApp);
 const storageRef = ref(storage);
 
 // Export the services
