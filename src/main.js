@@ -28,8 +28,8 @@ app.use(VueFire, {
     ]
 })
 
-// app.provide('db', db)
-// app.provide('auth', auth)
+app.provide('db', db)
+app.provide('auth', auth)
 app.use(router)
 
 
