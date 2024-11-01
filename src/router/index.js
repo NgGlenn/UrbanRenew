@@ -139,10 +139,7 @@ const router = createRouter({
       name: 'ReviewView',
       component: ReviewView,
       props: true
-    },
-
-   
-    ]  
+    }
   ],
   scrollBehavior(to, from, savedPosition) {
     // Check if the target route has a hash (an anchor link)
