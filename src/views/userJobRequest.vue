@@ -1,13 +1,15 @@
 <script>
-    import LogedInLayout from '@/components/LogedInLayout.vue';
+    import LogedInLayout from '@/components/logedInLayout.vue';
     import UserJobRequests from '@/components/UserJobRequests.vue';
     import { doc, getDoc, getDocs } from "firebase/firestore";
     import { useCollection } from 'vuefire';
     import { QueryEndAtConstraint, collection, documentId, orderBy, query, where } from 'firebase/firestore';
+    import { inject } from 'vue';
 
 
     export default{
         setup(){
+            const db = inject('db');
             const jobRequests = useCollection(collection(db, 'jobRequests'));
         },
 

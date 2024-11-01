@@ -21,6 +21,7 @@ import PaymentDetails from '@/components/Payment/PaymentDetails.vue';
 import PaymentForm from '@/components/Payment/PaymentForm.vue';
 import { db } from '../firebase'  // Ensure your firebase.js is correctly configured
 import { collection, getDocs } from 'firebase/firestore';
+import { useRoute } from 'vue-router';
 export default {
     components: {
         NavBar,
@@ -72,8 +73,17 @@ export default {
     },
     async created() {
         await this.fetchJobs();
-        const projectID = Number(this.$route.query.projectID);
-        this.project = this.renoPaymentItems.find(p => p.jobID === projectID);
+        const jobID = this.$route.query.jobID;
+        console.log(jobID)
+        // const jobId = this.$route.query.jobId || this.$route.query.projectID;
+        
+        // if (jobId) {
+        //     this.project = this.renoPaymentItems.find(p => 
+        //         p.jobID === jobId || 
+        //         p.jobID === Number(jobId)
+        //     );
+        // }
+        this.project = this.renoPaymentItems.find(p => p.id === jobID);
 
     },
     methods:{

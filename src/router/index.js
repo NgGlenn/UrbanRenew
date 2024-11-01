@@ -23,8 +23,11 @@ import contractorProjectList from '@/views/Dashboard/contractorProjectList.vue';
 import contractorDashboard from '@/views/Dashboard/contractorDashboard.vue';
 // import customerDashboard from '@/views/Dashboard/customerDashboard.vue';
 import dashboard from '@/views/Dashboard/dashboard.vue';
-import Payment from '@/views/Payment.vue';
+// import Payment from '@/views/Payment.vue';
 import customerProjectList from '@/views/Dashboard/customerProjectList.vue';
+
+import contractorJobRequests from '@/views/contractorJobRequests.vue';
+import sendQuotation from '@/views/sendQuotation.vue';
 
 import { useUserStore } from '@/stores/userStore';
 
@@ -113,18 +116,6 @@ const router = createRouter({
       meta: { requiresAuth: true }
     },
     {
-      path: '/Payment',
-      name: 'Payment',
-      component: Payment,
-      meta: { requiresAuth: true }
-    },
-    // {
-    //   path: '/profile',
-    //   name: 'profile',
-    //   component: profile,
-    //   meta: { requiresAuth: true }
-    // },
-    {
       path: '/customerProfile',
       name: 'customerProfile',
       component: customerProfile,
@@ -146,12 +137,21 @@ const router = createRouter({
       name: 'payment2', 
       component: Payment2
     },
-
     {
       path: '/ReviewView',
       name: 'ReviewView',
       component: ReviewView,
       props: true
+    },
+    {
+      path: '/contractorJobRequests',
+      name: 'contractorJobRequests',
+      component: contractorJobRequests
+    },
+    {
+      path: '/sendQuotation',
+      name: 'sendQuotation',
+      component: sendQuotation
     }
   ],
   scrollBehavior(to, from, savedPosition) {

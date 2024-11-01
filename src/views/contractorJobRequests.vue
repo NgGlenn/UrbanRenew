@@ -1,5 +1,5 @@
 <script>
-    import LogedInLayout from '@/components/LogedInLayout.vue';
+    import LogedInLayout from '@/components/logedInLayout.vue';
     import ContractorJobRequest from '@/components/ContractorJobRequest.vue';
     import { doc, getDoc, getDocs } from "firebase/firestore";
     import { useCollection } from 'vuefire';

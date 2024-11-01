@@ -159,7 +159,7 @@
                                     props.projectData.jobs.value[index] && 
                                     props.projectData.jobs.value[index].status === 'completed' && 
                                     props.projectData.jobs.value[index].paidstatus === 'pending'" >
-                                    <RouterLink :to="{name: 'Payment', state: {jobId: props.projectData.jobs.value[index]?.jobId}}">
+                                    <RouterLink :to="{name: 'payment2', query: {jobID: props.projectData.jobs.value[index]?.id}}">
                                         Job completed. Please complete payment&nbsp;<button>Payment</button>
                                     </RouterLink>
                                 </div>

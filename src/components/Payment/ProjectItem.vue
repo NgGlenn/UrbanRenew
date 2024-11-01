@@ -29,7 +29,7 @@ export default {
         goToPaymentPage() {
             //console.log("Project object:", this.project);
             const queryParams = new URLSearchParams({
-                projectID: this.project.jobID,
+                jobID: this.project.id,
             }).toString();
 
             this.$router.push(`/payment2?${queryParams}`);

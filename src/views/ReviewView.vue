@@ -38,7 +38,7 @@ export default {
   methods: {
     goToHome() {
       // Redirect to home.vue
-      this.$router.push({ name: 'home' });
+      this.$router.push({ name: 'dashboard' });
     }
   }
 };

@@ -49,7 +49,7 @@ export default {
                     quoteReceived: 'quoteReceived',
                 });
                 alert('Quotation submitted successfully.');
-                this.$router.push({ name: 'customerDashboard' }); // Redirect to the desired page after submission
+                this.$router.push({ name: 'dashboard' }); // Redirect to the desired page after submission
             } catch (error) {
                 console.error('Error submitting quotation:', error);
                 alert('Failed to submit quotation. Please try again.');
