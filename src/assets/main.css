@@ -10,6 +10,11 @@ Colour scheme (lightest to darkest)
 
   background-color: lightgray; 
 } */
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
 
 #app {
   min-width: 100%;
@@ -23,8 +28,8 @@ Colour scheme (lightest to darkest)
   flex-direction: column;
   margin: 0;
   padding: 0;
-  min-height: 100vh;
-  overflow: scroll;
+  overflow-y: auto;
+  overflow-x: hidden;
 
 }
 
@@ -53,6 +58,15 @@ button{
   border: 0px;
   border-radius: 2px;
   height: 35px;
+  padding-inline: 10px;
+}
+
+.buttonEditProfile {
+  background-color: #769FCD;
+  color: white;
+  border: 0px;
+  border-radius: 2px;
+  height: 38px;
   padding-inline: 10px;
 }
 

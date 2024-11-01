@@ -1,22 +1,31 @@
 import './assets/main.css'
 
 import { createApp } from 'vue'
+import { createPinia } from 'pinia';
 import App from './App.vue'
 import router from './router'
+
 
 //Bootstrap
 import 'bootstrap/dist/css/bootstrap.min.css';
 import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 
-//Firestore
-import {db, auth} from './firebase.js';
+import { firebaseApp, db, auth} from './firebase.js';
 
-//VueFire
-import { installVuefire } from './firebase'
+//Vuefire
+import { VueFire, VueFireAuth } from 'vuefire';
 
 const app = createApp(App)
 
-installVuefire(app)
+const pinia = createPinia()
+app.use(pinia)
+
+app.use(VueFire, {
+    firebaseApp,
+    modules: [
+        VueFireAuth()
+    ]
+})
 
 app.provide('db', db)
 app.provide('auth', auth)
