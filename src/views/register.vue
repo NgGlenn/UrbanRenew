@@ -80,9 +80,7 @@ export default {
           : "";
     },
     registerUser() {
-      // Reset errors
       this.errors = {};
-      // Basic validation
       if (!this.customer.firstName)
         this.errors.firstName = "First name is required";
       if (!this.customer.lastName)
@@ -99,13 +97,10 @@ export default {
       }
 
 if (Object.keys(this.errors).length === 0) {
-    // Register user with Firebase Auth
     createUserWithEmailAndPassword(auth, this.customer.email, this.customer.password)
       .then(async (credential) => {
         const user = credential.user;
         console.log("User registered:", user);
-
-        // Prepare data to store in Firestore
         const userData = {
           firstName: this.customer.firstName,
           lastName: this.customer.lastName,
@@ -115,8 +110,6 @@ if (Object.keys(this.errors).length === 0) {
           lastLogin: serverTimestamp(),
           bio: "No bio available yet. Please edit your profile to update bio...",
         };
-
-        // Add the user data to Firestore
         await setDoc(doc(db, "users", user.uid), userData);
         console.log("User data saved to Firestore:");
         alert("You have successfully created an account! Please login.");
@@ -130,9 +123,7 @@ if (Object.keys(this.errors).length === 0) {
   }
     },
     registerUserC() {
-      // Reset errors
       this.errors = {};
-      // Basic validation
       if (!this.contractor.firstName)
         this.errors.firstNameC = "First name is required";
       if (!this.contractor.lastName)
@@ -145,8 +136,6 @@ if (Object.keys(this.errors).length === 0) {
         this.errors.passwordC = "Password is required";
       if (this.contractor.password !== this.contractor.confirmPassword)
         this.errors.confirmPasswordC = "Passwords do not match";
-
-      // Validate email format
       const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (
         this.contractor.companyEmail &&
@@ -167,15 +156,15 @@ if (Object.keys(this.errors).length === 0) {
           firstName: this.contractor.firstName,
           lastName: this.contractor.lastName,
           companyName: this.contractor.companyName,
-          businessEmail: this.contractor.companyEmail, // Assuming companyEmail is the business email
+          businessEmail: this.contractor.companyEmail, // companyEmail is the business email
           phoneNumber: this.contractor.phoneNumber || '', // Default to empty string if not provided
-          certsAndAwards: this.contractor.certsAndAwards || [], // Default to empty array if not provided
-          portfolioImages: [], // Initialize as empty array for now
-          rating: 0, // Default rating if not provided
-          reviewCount: 0, // Default review count if not provided
-          searchComposite: `${this.contractor.companyName.toLowerCase().replace(/ /g, "_")}_0_singapore`, // Create a composite search string
-          services: this.contractor.services || [], // Default to empty array if not provided
-          storeAddress: this.contractor.storeAddress || '', // Default to empty string if not provided
+          certsAndAwards: this.contractor.certsAndAwards || [], 
+          portfolioImages: [], 
+          rating: 0, 
+          reviewCount: 0, 
+          searchComposite: `${this.contractor.companyName.toLowerCase().replace(/ /g, "_")}_0_singapore`,
+          services: this.contractor.services || [], 
+          storeAddress: this.contractor.storeAddress || '', 
           postalCode: this.contractor.postalCode || '',
           createdAt: serverTimestamp(),
           lastLogin: serverTimestamp(),
@@ -185,7 +174,7 @@ if (Object.keys(this.errors).length === 0) {
         await setDoc(doc(db, "contractors", user.uid), contractorData);
         console.log("Contractor data saved to Firestore:", contractorData);
 
-        // Add user data to the 'users' collection as well
+
         const userData = {
           firstName: this.contractor.firstName,
           lastName: this.contractor.lastName,
@@ -195,20 +184,16 @@ if (Object.keys(this.errors).length === 0) {
           lastLogin: serverTimestamp(),
         };
 
-        // Add the user data to Firestore
+
         await setDoc(doc(db, "users", user.uid), userData);
         console.log("User data saved to Firestore:", userData);
 
-        // Show success message
         alert("You have successfully created a contractor account!");
 
-        // Logout the user
         await signOut(auth);
 
-        // Reset form
         this.resetContractorForm();
 
-        // Redirect to login page
         this.$router.push("/login");
       })
       .catch((error) => {
@@ -240,10 +225,10 @@ if (Object.keys(this.errors).length === 0) {
   },
   components: {
     NavBarPreLogin,
-    FooterPreLogin, // Register the NavBar component
+    FooterPreLogin, 
   },
   mounted() {
-    this.toggleFields(); // Initialize fields based on default account type
+    this.toggleFields(); 
   },
 };
 </script>

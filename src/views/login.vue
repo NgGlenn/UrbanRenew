@@ -5,14 +5,14 @@ import { auth } from "@/firebase";
 import { signInWithEmailAndPassword } from "firebase/auth";
 import { onAuthStateChanged } from "firebase/auth";
 import { getFirestore, doc, getDoc } from "firebase/firestore";
-const db = getFirestore(); // Ensure Firestore is initialized here
+const db = getFirestore(); 
 
 export default {
   data() {
     return {
-      email: '', // State to hold the user's email
-      password: '', // State to hold the user's password
-      passwordVisible: false, // State to track password visibility
+      email: '', 
+      password: '', 
+      passwordVisible: false, 
     };
   },
   methods: {
@@ -42,18 +42,18 @@ export default {
   async login(e) {
       e.preventDefault();
       try {
-        // Attempt to sign in
+
         const cred = await signInWithEmailAndPassword(auth, this.email, this.password);
         
-        // After successful login, get the user's role from Firestore
-        const userDocRef = doc(db, "users", cred.user.uid); // Adjust collection name if necessary
+        
+        const userDocRef = doc(db, "users", cred.user.uid); 
         const userDoc = await getDoc(userDocRef);
 
         if (userDoc.exists()) {
           const userData = userDoc.data();
-          const userRole = userData.role; // Ensure 'role' exists in the document
+          const userRole = userData.role; 
 
-          // Redirect based on role
+   
           if (userRole === "customer") {
             this.$router.push('/customerProfile');
           } else if (userRole === "contractor") {

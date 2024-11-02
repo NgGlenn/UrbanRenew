@@ -20,7 +20,7 @@ export default {
       address: "",
       postalCode: "",
       phone: "",
-      certificatesAndAwards: [], // Store awards as an array
+      certificatesAndAwards: [], 
       newCertItem: "",
       showEditProfileModal: false,
       showUpdatePasswordModal: false,
@@ -31,14 +31,14 @@ export default {
       tempEmail: "",
       newPassword: "",
       confirmPassword: "",
-      updatedServicesOffered: [], // Store updated services as an array
-      updatedCertificatesAndAwards: [], // Store updated awards as an array
+      updatedServicesOffered: [], 
+      updatedCertificatesAndAwards: [], 
       showEditImageModal: false,
       selectedImage: null,
       imageUrl: "",
       cropper: null,
       profilePictureUrl: "",
-      loading: true, // Set loading to true initially
+      loading: true, 
     };
   },
 
@@ -46,31 +46,31 @@ export default {
     addCertItem() {
       if (this.newCertItem.trim()) {
         this.updatedCertificatesAndAwards.push(this.newCertItem.trim());
-        this.newCertItem = ""; // Clear input after adding
+        this.newCertItem = ""; 
       }
     },
-    // Method to delete a certificate/award by index
+
     deleteCertItem(index) {
       this.updatedCertificatesAndAwards.splice(index, 1);
     },
     addServiceItem() {
       if (this.newServiceItem.trim()) {
         this.updatedServicesOffered.push(this.newServiceItem.trim());
-        this.newServiceItem = ""; // Clear input after adding
+        this.newServiceItem = ""; 
       }
     },
-    // Method to delete a service by index
+
     deleteServiceItem(index) {
       this.updatedServicesOffered.splice(index, 1);
     },
     openEditProfileModal() {
-      // Populate temporary fields with existing data
+
       const names = this.userName.split(/\s+/).filter(Boolean);
       this.updateFirstName =
         names.length > 1 ? names.slice(0, -1).join(" ") : names[0];
       this.updateLastName = names.length > 1 ? names[names.length - 1] : "";
       this.updatedCompanyName = this.companyName;
-      this.updatedServicesOffered = [...this.servicesOffered]; // Copy the original arrays here
+      this.updatedServicesOffered = [...this.servicesOffered];
       this.updatedCertificatesAndAwards = [...this.certificatesAndAwards];
       this.updatedAddress = this.address || "";
       this.updatedPostalCode = this.postalCode || "";
@@ -78,7 +78,7 @@ export default {
       this.showEditProfileModal = true;
     },
     saveProfile: async function () {
-      // Assign updated values to main state fields
+
       this.userName = `${this.updateFirstName} ${this.updateLastName}`;
       this.companyName = this.updatedCompanyName;
       this.servicesOffered = [...this.updatedServicesOffered];
@@ -94,22 +94,22 @@ export default {
         const contractorDocRef = doc(db, "contractors", user.uid);
 
         try {
-          // Update user information
-          await updateDoc(userDocRef, {
+
+          await updateDoc(userDocRef, { 
             firstName: this.updateFirstName,
             lastName: this.updateLastName,
-            email: this.userEmail, // Keep the existing email
+            email: this.userEmail, 
           });
 
-          // Update contractor information
+
           await updateDoc(contractorDocRef, {
             firstName: this.updateFirstName,
             lastName: this.updateLastName,
             companyName: this.updatedCompanyName,
             phoneNumber: this.updatedPhone,
             postalCode: this.updatedPostalCode,
-            services: this.servicesOffered, // Save the final array directly
-            certsAndAwards: this.certificatesAndAwards, // Save the final array directly
+            services: this.servicesOffered, 
+            certsAndAwards: this.certificatesAndAwards, 
             storeAddress: this.updatedAddress,
           });
 
@@ -137,7 +137,6 @@ export default {
         return;
       }
 
-      // Reauthenticate before updating password
       try {
         const user = auth.currentUser;
         if (!user) {
@@ -145,14 +144,14 @@ export default {
           return;
         }
 
-        // Assuming user’s current email and password are available
+
         const credential = EmailAuthProvider.credential(
           user.email,
-          this.currentPassword // Add a field for the current password if needed
+          this.currentPassword 
         );
         await reauthenticateWithCredential(user, credential);
 
-        // Update password
+
         await updatePassword(user, this.newPassword);
 
         alert("Password updated successfully.");
@@ -173,36 +172,36 @@ export default {
     },
     closeEditImageModal() {
       this.showEditImageModal = false;
-      this.imageUrl = null; // Reset image URL
+      this.imageUrl = null; 
       if (this.cropper) {
-        this.cropper.destroy(); // Clean up Cropper instance
+        this.cropper.destroy(); 
         this.cropper = null;
       }
     },
     handleImageUpload(event) {
       const file = event.target.files[0];
-      console.log("Selected file:", file); // Log the selected file
+      console.log("Selected file:", file); 
       if (file) {
         const reader = new FileReader();
 
         reader.onload = (e) => {
-          this.imageUrl = e.target.result; // Set the data URL
-          console.log("Image URL:", this.imageUrl); // Log the data URL
+          this.imageUrl = e.target.result; 
+          console.log("Image URL:", this.imageUrl); 
           this.$nextTick(() => {
-            this.initializeCropper(); // Ensure DOM is updated before initializing
+            this.initializeCropper(); 
           });
         };
 
-        reader.readAsDataURL(file); // Read the file as a data URL
+        reader.readAsDataURL(file); 
       }
     },
     initializeCropper() {
-      // Initialize Cropper after the image has fully loaded
+ 
       if (this.$refs.imageToCrop) {
         this.cropper = new Cropper(this.$refs.imageToCrop, {
-          aspectRatio: 1, // Adjust aspect ratio as needed (1 for square)
+          aspectRatio: 1, 
           viewMode: 1,
-          autoCropArea: 1, // Ensures the entire image area is selectable
+          autoCropArea: 1, 
         });
       }
     },
@@ -210,28 +209,25 @@ export default {
       if (this.cropper) {
         this.cropper.getCroppedCanvas().toBlob(async (blob) => {
           if (blob) {
-            // Create a blob URL for the cropped image (optional)
+   
             const croppedImageURL = URL.createObjectURL(blob);
             this.imageUrl = croppedImageURL;
 
-            // Upload the image to Firebase Storage
+   
             const storage = getStorage();
-            const storageRef = ref(storage, `images/${Date.now()}.png`); // Use a unique filename
+            const storageRef = ref(storage, `images/${Date.now()}.png`); 
 
             try {
-              // Upload the blob to Firebase Storage
+
               const uploadTask = await uploadBytes(storageRef, blob);
               const downloadURL = await getDownloadURL(uploadTask.ref);
               console.log("File available at", downloadURL);
-
-              // Save the download URL to Firestore in the existing user document
+  
               await this.saveImageUrlToFirestore(downloadURL);
 
-              // Close the modal after saving
               this.closeEditImageModal();
 
-              // Free the blob URL
-              URL.revokeObjectURL(croppedImageURL); // Revoke the blob URL
+              URL.revokeObjectURL(croppedImageURL); 
             } catch (error) {
               console.error("Error uploading image:", error);
             }
@@ -242,15 +238,14 @@ export default {
       }
     },
     async saveImageUrlToFirestore(downloadURL) {
-      const userId = auth.currentUser.uid; // Get the current user ID
-      const userDocRef = doc(db, "users", userId); // Reference to the user's document in Firestore
+      const userId = auth.currentUser.uid; 
+      const userDocRef = doc(db, "users", userId); 
 
       try {
-        // Use setDoc with merge: true to add the imageUrl field without overwriting other fields
         await setDoc(userDocRef, { imageUrl: downloadURL }, { merge: true });
         alert("Image successfully updated");
         console.log("Image URL successfully saved to Firestore.");
-        window.location.reload(); // This will reload the current page
+        window.location.reload(); 
       } catch (error) {
         console.error("Error saving image URL to Firestore:", error);
       }
@@ -268,7 +263,7 @@ export default {
           this.userEmail = userData.email;
           this.profilePictureUrl = userData.imageUrl || defaultProfileIcon;
 
-          // Check if the user is a contractor
+
           if (userData.role === "contractor") {
             const contractorDoc = doc(db, "contractors", user.uid);
             const contractorSnap = await getDoc(contractorDoc);
@@ -289,7 +284,7 @@ export default {
               console.error("No contractor document for user ID:", user.uid);
             }
           } else {
-            // Redirect to customer profile if the role is not contractor
+
             this.$router.push("/customerProfile");
           }
           this.loading = false;
@@ -363,9 +358,9 @@ export default {
                 <!-- About Section Title -->
 
                 <h6 class="">Company Name:</h6>
-                <!-- Company Name -->
+   
                 <p class="text-muted">{{ companyName }}</p>
-                <!-- Placeholder for company name -->
+          
 
                 <h6>Services Offered:</h6>
                 <!-- Services Offered Section -->
@@ -445,10 +440,10 @@ export default {
                       class="rounded-circle me-2"
                       style="width: 50px; height: 50px"
                     />
-                    <!-- Increased image size -->
+
                     <div class="flex-grow-1">
                       <h6 class="mb-0 text-muted">John Doe</h6>
-                      <!-- Changed to h6 for smaller text -->
+           
                       <div class="rating">
                         <span class="text-warning">&#9733;</span>
                         <span class="text-warning">&#9733;</span>
@@ -459,7 +454,7 @@ export default {
                     </div>
                   </div>
                   <p class="mt-2 small text-muted">
-                    <!-- Added margin start (ms) for indentation -->
+            
                     Great experience! The service was fantastic and I would
                     highly recommend it to others.
                   </p>
@@ -514,7 +509,7 @@ export default {
           <hr />
           <h6>Services</h6>
           <div id="itemList">
-            <!-- Display each service with an "X" to delete -->
+ 
             <div
               class="item"
               v-for="(service, index) in updatedServicesOffered"
@@ -525,7 +520,6 @@ export default {
             </div>
           </div>
 
-          <!-- Input field and button to add new services -->
           <div class="input-group">
             <input
               type="text"
@@ -545,7 +539,7 @@ export default {
           <hr />
           <h6>Certificates & Awards</h6>
           <div id="itemList">
-            <!-- Display each certificate/award with an "X" to delete -->
+
             <div
               class="item"
               v-for="(award, index) in updatedCertificatesAndAwards"
@@ -556,7 +550,6 @@ export default {
             </div>
           </div>
 
-          <!-- Input field and button to add new certificates/awards -->
           <div class="input-group">
             <input
               type="text"
@@ -623,7 +616,7 @@ export default {
         <div class="modal-content">
           <h5>Upload and Crop Image</h5>
 
-          <!-- File Upload Input -->
+    
           <input
             type="file"
             ref="fileInput"
@@ -631,7 +624,7 @@ export default {
             class="form-control mb-2"
             accept=".jpg,.jpeg,.png"
           />
-          <!-- Image Preview for Cropping -->
+
           <div v-if="imageUrl" class="image-crop-container">
             <img
               ref="imageToCrop"
@@ -641,7 +634,7 @@ export default {
             />
           </div>
 
-          <!-- Save and Cancel Buttons -->
+  
           <button class="btn btn-primary" @click="saveCroppedImage">
             Save
           </button>
@@ -652,7 +645,6 @@ export default {
       </div>
     </div>
   </LogedInLayout>
-  <!-- <div v-else class="loading-spinner">Please Login to account...</div> -->
 </template>
 
 <style scoped>
@@ -789,6 +781,6 @@ h6 {
 }
 
 .selected-image-preview {
-  width: 100%; /* Adjust this as necessary */
+  width: 100%;
 }
 </style>
