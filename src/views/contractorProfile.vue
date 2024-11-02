@@ -24,6 +24,7 @@ export default {
       newCertItem: "",
       showEditProfileModal: false,
       showUpdatePasswordModal: false,
+      cancelPasswordModal: false,
       updateFirstName: "",
       updateLastName: "",
       updatedEmail: "",
@@ -163,6 +164,9 @@ export default {
         console.error("Error updating password:", error);
         this.passwordError = error.message;
       }
+    },
+    handleCancel() {
+      this.showUpdatePasswordModal = false;
     },
     openEditImageModal() {
       this.showEditImageModal = true;
