@@ -250,6 +250,82 @@ export default {
         console.error("Error saving image URL to Firestore:", error);
       }
     },
+   loadGoogleMapsScript() {
+        return new Promise((resolve, reject) => {
+            if (typeof google !== "undefined") {
+                resolve();
+                return;
+            }
+            const script = document.createElement("script");
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLEMAPS_API_KEY}`;
+            script.async = true;
+            script.defer = true;
+            script.onload = resolve;
+            script.onerror = reject;
+            document.head.appendChild(script);
+        });
+    },
+
+async loadMap(postalCode) {
+    try {
+        // Load Google Maps Script
+        await this.loadGoogleMapsScript();
+        
+        // Now that Google Maps is loaded, create the map
+        const geocoder = new google.maps.Geocoder();
+        geocoder.geocode({ address: postalCode }, (results, status) => {
+            if (status === "OK" && results[0]) {
+                const mapOptions = {
+                    center: results[0].geometry.location,
+                    zoom: 15,
+                };
+                const map = new google.maps.Map(document.getElementById("map"), mapOptions);
+
+                // Create the marker
+                const marker = new google.maps.Marker({
+                    position: results[0].geometry.location,
+                    map: map,
+                });
+
+                // Define custom HTML for the InfoWindow with a card design
+                const infoWindowContent = `
+                    <div style="
+                        background: #fff;
+                        padding: 2px;
+                        border-radius: 8px;
+                        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+                        font-size: 14px;
+                        font-weight: bold;
+                        color: #333;
+                    ">
+                        ${this.companyName}
+                    </div>
+                `;
+
+                // Create and open the InfoWindow with the styled content
+                const infoWindow = new google.maps.InfoWindow({
+                    content: infoWindowContent,
+                });
+                infoWindow.open(map, marker);
+
+                // Optional: Keep the InfoWindow open when clicking on the marker
+                marker.addListener("click", () => {
+                    infoWindow.open(map, marker);
+                });
+            } else {
+                console.error("Geocode was not successful: " + status);
+            }
+        });
+    } catch (error) {
+        console.error("Failed to load Google Maps script:", error);
+    }
+},
+
+  },
+    computed: {
+    storeLocation(){
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(this.postalCode)}`
+    }
   },
   mounted() {
     onAuthStateChanged(auth, async (user) => {
@@ -280,6 +356,7 @@ export default {
               this.certificatesAndAwards = contractorData.certsAndAwards?.length
                 ? contractorData.certsAndAwards
                 : ["None"];
+                 await this.loadMap(this.postalCode);
             } else {
               console.error("No contractor document for user ID:", user.uid);
             }
@@ -325,6 +402,7 @@ export default {
                   <span class="edit-icon">
                     <i class="fas fa-edit"></i>
                   </span>
+                   <span class="hover-text">Edit Profile</span> 
                 </div>
                 <h5 class="card-title">
                   <i class="fas fa-user-circle"></i> {{ userName }}
@@ -378,13 +456,13 @@ export default {
                 <!-- Store Location Section -->
                 <p class="text-muted">{{ address }}, S{{ postalCode }}</p>
                 <a
-                  href="https://www.google.com/maps/search/?api=1&query={{ storeLocation }}"
+                  :href="storeLocation"
                   target="_blank"
                   class="text-primary hover-text-decoration-underline"
                 >
                   <i class="fas fa-map-marker-alt"></i> View on Google Maps
                 </a>
-
+                <div id="map" style="height: 400px; width: 100%;"></div>
                 <hr />
 
                 <h5 class="mt-4">
@@ -758,9 +836,33 @@ h6 {
 }
 
 .profile-image-container {
-  position: relative;
-  display: inline-block;
-  cursor: pointer;
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.profile-image {
+    border-radius: 50%;
+    transition: filter 0.3s ease; /* Smooth transition for darkening */
+}
+
+.profile-image-container:hover .profile-image {
+    filter: brightness(0.7); /* Darkens the image on hover */
+}
+
+.hover-text {
+    position: absolute;
+    top: 50%; /* Center vertically */
+    left: 50%; /* Center horizontally */
+    transform: translate(-50%, -50%); /* Offset to truly center */
+    color: white; /* Text color */
+    font-size: 16px; /* Adjust as needed */
+    opacity: 0; /* Initially hidden */
+    transition: opacity 0.3s ease; /* Smooth transition for text appearance */
+}
+
+.profile-image-container:hover .hover-text {
+    opacity: 1; /* Show text on hover */
 }
 
 .edit-icon {
@@ -782,5 +884,15 @@ h6 {
 
 .selected-image-preview {
   width: 100%;
+}
+
+.marker-label {
+    background-color: rgba(255, 255, 255, 0.8); /* Background for readability */
+    padding: 4px 8px;
+    border-radius: 4px; /* Rounded corners */
+    box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.3); /* Soft shadow */
+    text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6); /* Light text shadow */
+    font-family: "Arial", sans-serif; /* Custom font */
+    font-size: 14px;
 }
 </style>
