@@ -275,6 +275,7 @@ export default {
                   <span class="edit-icon">
                     <i class="fas fa-edit"></i>
                   </span>
+                  <span class="hover-text">Edit Profile</span>
                 </div>
                 <h5 class="card-title">
                   <i class="fas fa-user-circle"></i> {{ userName }}
@@ -535,9 +536,33 @@ h6 {
 }
 
 .profile-image-container {
-  position: relative;
-  display: inline-block;
-  cursor: pointer;
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.profile-image {
+    border-radius: 50%;
+    transition: filter 0.3s ease; /* Smooth transition for darkening */
+}
+
+.profile-image-container:hover .profile-image {
+    filter: brightness(0.7); /* Darkens the image on hover */
+}
+
+.hover-text {
+    position: absolute;
+    top: 50%; /* Center vertically */
+    left: 50%; /* Center horizontally */
+    transform: translate(-50%, -50%); /* Offset to truly center */
+    color: white; /* Text color */
+    font-size: 16px; /* Adjust as needed */
+    opacity: 0; /* Initially hidden */
+    transition: opacity 0.3s ease; /* Smooth transition for text appearance */
+}
+
+.profile-image-container:hover .hover-text {
+    opacity: 1; /* Show text on hover */
 }
 
 .edit-icon {

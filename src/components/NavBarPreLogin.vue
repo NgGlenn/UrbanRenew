@@ -1,6 +1,6 @@
 
 <template>
-  <!-- Start Header/Navigation -->
+
   <nav
     class="custom-navbar navbar navbar-expand-md navbar-light bg-light fixed-top"
     aria-label="Furni navigation bar"
@@ -74,7 +74,7 @@
       </div>
     </div>
   </nav>
-  <!-- End Header/Navigation -->
+
 </template>
 
 <script>

@@ -15,7 +15,7 @@ export default {
         email: "",
         password: "",
         confirmPassword: "",
-        bio:""
+        bio: "",
       },
       contractor: {
         firstName: "",
@@ -24,6 +24,8 @@ export default {
         companyEmail: "",
         password: "",
         confirmPassword: "",
+        storeAddress: "",
+        postalCode: "",
       },
       errors: {},
       passwordVisible: false,
@@ -80,9 +82,7 @@ export default {
           : "";
     },
     registerUser() {
-      // Reset errors
       this.errors = {};
-      // Basic validation
       if (!this.customer.firstName)
         this.errors.firstName = "First name is required";
       if (!this.customer.lastName)
@@ -98,41 +98,38 @@ export default {
         this.errors.email = "Invalid email format";
       }
 
-if (Object.keys(this.errors).length === 0) {
-    // Register user with Firebase Auth
-    createUserWithEmailAndPassword(auth, this.customer.email, this.customer.password)
-      .then(async (credential) => {
-        const user = credential.user;
-        console.log("User registered:", user);
-
-        // Prepare data to store in Firestore
-        const userData = {
-          firstName: this.customer.firstName,
-          lastName: this.customer.lastName,
-          email: this.customer.email,
-          role: "customer",
-          createdAt: serverTimestamp(),
-          lastLogin: serverTimestamp(),
-          bio: "No bio available yet. Please edit your profile to update bio...",
-        };
-
-        // Add the user data to Firestore
-        await setDoc(doc(db, "users", user.uid), userData);
-        console.log("User data saved to Firestore:");
-        alert("You have successfully created an account! Please login.");
-        await signOut(auth);
-        this.resetCustomerForm();
-        this.$router.push("/login"); 
-      })
-      .catch((error) => {
-        console.log("Error creating user:", error.message);
-      });
-  }
+      if (Object.keys(this.errors).length === 0) {
+        createUserWithEmailAndPassword(
+          auth,
+          this.customer.email,
+          this.customer.password
+        )
+          .then(async (credential) => {
+            const user = credential.user;
+            console.log("User registered:", user);
+            const userData = {
+              firstName: this.customer.firstName,
+              lastName: this.customer.lastName,
+              email: this.customer.email,
+              role: "customer",
+              createdAt: serverTimestamp(),
+              lastLogin: serverTimestamp(),
+              bio: "No bio available yet. Please edit your profile to update bio...",
+            };
+            await setDoc(doc(db, "users", user.uid), userData);
+            console.log("User data saved to Firestore:");
+            alert("You have successfully created an account! Please login.");
+            await signOut(auth);
+            this.resetCustomerForm();
+            this.$router.push("/login");
+          })
+          .catch((error) => {
+            console.log("Error creating user:", error.message);
+          });
+      }
     },
     registerUserC() {
-      // Reset errors
       this.errors = {};
-      // Basic validation
       if (!this.contractor.firstName)
         this.errors.firstNameC = "First name is required";
       if (!this.contractor.lastName)
@@ -141,12 +138,14 @@ if (Object.keys(this.errors).length === 0) {
         this.errors.companyName = "Company name is required";
       if (!this.contractor.companyEmail)
         this.errors.companyEmail = "Company email is required";
+      if (!this.contractor.storeAddress)
+        this.errors.storeAddress = "Company address is required";
+      if (!this.contractor.postalCode)
+        this.errors.postalCode = "Company postal code is required";
       if (!this.contractor.password)
         this.errors.passwordC = "Password is required";
       if (this.contractor.password !== this.contractor.confirmPassword)
         this.errors.confirmPasswordC = "Passwords do not match";
-
-      // Validate email format
       const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (
         this.contractor.companyEmail &&
@@ -155,66 +154,66 @@ if (Object.keys(this.errors).length === 0) {
         this.errors.companyEmail = "Invalid email format";
       }
 
-  if (Object.keys(this.errors).length === 0) {
-    // Register contractor with Firebase Auth
-    createUserWithEmailAndPassword(auth, this.contractor.companyEmail, this.contractor.password)
-      .then(async (credential) => {
-        const user = credential.user;
-        console.log("Contractor registered:", user);
+      if (Object.keys(this.errors).length === 0) {
+        // Register contractor with Firebase Auth
+        createUserWithEmailAndPassword(
+          auth,
+          this.contractor.companyEmail,
+          this.contractor.password
+        )
+          .then(async (credential) => {
+            const user = credential.user;
+            console.log("Contractor registered:", user);
 
-        // Prepare data to store in Firestore
-        const contractorData = {
-          firstName: this.contractor.firstName,
-          lastName: this.contractor.lastName,
-          companyName: this.contractor.companyName,
-          businessEmail: this.contractor.companyEmail, // Assuming companyEmail is the business email
-          phoneNumber: this.contractor.phoneNumber || '', // Default to empty string if not provided
-          certsAndAwards: this.contractor.certsAndAwards || [], // Default to empty array if not provided
-          portfolioImages: [], // Initialize as empty array for now
-          rating: 0, // Default rating if not provided
-          reviewCount: 0, // Default review count if not provided
-          searchComposite: `${this.contractor.companyName.toLowerCase().replace(/ /g, "_")}_0_singapore`, // Create a composite search string
-          services: this.contractor.services || [], // Default to empty array if not provided
-          storeAddress: this.contractor.storeAddress || '', // Default to empty string if not provided
-          postalCode: this.contractor.postalCode || '',
-          createdAt: serverTimestamp(),
-          lastLogin: serverTimestamp(),
-        };
+            // Prepare data to store in Firestore
+            const contractorData = {
+              firstName: this.contractor.firstName,
+              lastName: this.contractor.lastName,
+              companyName: this.contractor.companyName,
+              businessEmail: this.contractor.companyEmail, // companyEmail is the business email
+              phoneNumber: this.contractor.phoneNumber || "", // Default to empty string if not provided
+              certsAndAwards: this.contractor.certsAndAwards || [],
+              portfolioImages: [],
+              rating: 0,
+              reviewCount: 0,
+              searchComposite: `${this.contractor.companyName
+                .toLowerCase()
+                .replace(/ /g, "_")}_0_singapore`,
+              services: this.contractor.services || [],
+              storeAddress: this.contractor.storeAddress || "",
+              postalCode: this.contractor.postalCode || "",
+              createdAt: serverTimestamp(),
+              lastLogin: serverTimestamp(),
+            };
 
-        // Add the contractor data to Firestore
-        await setDoc(doc(db, "contractors", user.uid), contractorData);
-        console.log("Contractor data saved to Firestore:", contractorData);
+            // Add the contractor data to Firestore
+            await setDoc(doc(db, "contractors", user.uid), contractorData);
+            console.log("Contractor data saved to Firestore:", contractorData);
 
-        // Add user data to the 'users' collection as well
-        const userData = {
-          firstName: this.contractor.firstName,
-          lastName: this.contractor.lastName,
-          email: this.contractor.companyEmail,
-          role: "contractor",
-          createdAt: serverTimestamp(),
-          lastLogin: serverTimestamp(),
-        };
+            const userData = {
+              firstName: this.contractor.firstName,
+              lastName: this.contractor.lastName,
+              email: this.contractor.companyEmail,
+              role: "contractor",
+              createdAt: serverTimestamp(),
+              lastLogin: serverTimestamp(),
+            };
 
-        // Add the user data to Firestore
-        await setDoc(doc(db, "users", user.uid), userData);
-        console.log("User data saved to Firestore:", userData);
+            await setDoc(doc(db, "users", user.uid), userData);
+            console.log("User data saved to Firestore:", userData);
 
-        // Show success message
-        alert("You have successfully created a contractor account!");
+            alert("You have successfully created a contractor account!");
 
-        // Logout the user
-        await signOut(auth);
+            await signOut(auth);
 
-        // Reset form
-        this.resetContractorForm();
+            this.resetContractorForm();
 
-        // Redirect to login page
-        this.$router.push("/login");
-      })
-      .catch((error) => {
-        console.log("Error creating contractor:", error.message);
-      });
-  }
+            this.$router.push("/login");
+          })
+          .catch((error) => {
+            console.log("Error creating contractor:", error.message);
+          });
+      }
     },
     resetCustomerForm() {
       this.customer = {
@@ -232,6 +231,7 @@ if (Object.keys(this.errors).length === 0) {
         lastName: "",
         companyName: "",
         companyEmail: "",
+
         password: "",
         confirmPassword: "",
       };
@@ -240,301 +240,346 @@ if (Object.keys(this.errors).length === 0) {
   },
   components: {
     NavBarPreLogin,
-    FooterPreLogin, // Register the NavBar component
+    FooterPreLogin,
   },
   mounted() {
-    this.toggleFields(); // Initialize fields based on default account type
+    this.toggleFields();
   },
 };
 </script>
 
 <template>
   <NavBarPreLogin></NavBarPreLogin>
+  <div class="page-wrapper">
   <div class="container-fluid p-0">
     <div class="row g-0 vh-100">
       <div class="col-lg-6 col-12 form-container">
+        <div class="scrollable-container">
         <div class="registration-form">
           <h2 class="mb-4 text-center">Create an Account</h2>
-          <form @submit.prevent="accountType === 'customer' ? registerUser() : registerUserC()">
-          <div class="mb-3">
-            <label for="accountType" class="form-label">Account Type</label>
-            <select
-              class="form-select"
-              id="accountType"
-              v-model="accountType"
-              @change="toggleFields"
-            >
-              <option value="customer" selected>Customer</option>
-              <option value="contractor">Contractor</option>
-            </select>
-            <div class="error" v-if="errors.accountType">
-              {{ errors.accountType }}
-            </div>
-          </div>
-
-          <div v-if="accountType === 'customer'" id="customerFields">
+          <form
+            @submit.prevent="
+              accountType === 'customer' ? registerUser() : registerUserC()
+            "
+          >
             <div class="mb-3">
-              <label for="firstName" class="form-label">First Name</label>
-              <input
-                type="text"
-                class="form-control"
-                v-model="customer.firstName"
-                placeholder="Enter your first name"
-                required
-              />
-              <div class="error" v-if="errors.firstName">
-                {{ errors.firstName }}
-              </div>
-            </div>
-
-            <div class="mb-3">
-              <label for="lastName" class="form-label">Last Name</label>
-              <input
-                type="text"
-                class="form-control"
-                v-model="customer.lastName"
-                placeholder="Enter your last name"
-                required
-              />
-              <div class="error" v-if="errors.lastName">
-                {{ errors.lastName }}
-              </div>
-            </div>
-
-            <div class="mb-3">
-              <label for="email" class="form-label">Email</label>
-              <input
-                type="email"
-                class="form-control"
-                v-model="customer.email"
-                placeholder="Enter your email"
-                required
-              />
-              <div class="error" v-if="errors.email">{{ errors.email }}</div>
-            </div>
-
-            <div class="mb-3">
-              <label for="password" class="form-label">Password</label>
-              <div class="input-group">
-                <input
-                  :type="passwordVisible ? 'text' : 'password'"
-                  class="form-control"
-                  v-model="customer.password"
-                  placeholder="Enter your password"
-                  required
-                  @input="updateStrengthIndicator()"
-                  ref="passwordField"
-                />
-                <span
-                  class="input-group-text show-password"
-                  @click="togglePasswordVisibility('password')"
-                >
-                  <i
-                    :class="
-                      passwordVisible
-                        ? 'fa-solid fa-eye-slash'
-                        : 'fa-solid fa-eye'
-                    "
-                    id="eye-icon-password"
-                  ></i>
-                </span>
-              </div>
-              <div class="strength-indicator" v-if="passwordStrength">
-                {{ passwordStrength }}
-              </div>
-              <div class="error" v-if="errors.password">
-                {{ errors.password }}
-              </div>
-            </div>
-
-            <div class="mb-3">
-              <label for="confirmPassword" class="form-label"
-                >Confirm Password</label
+              <label for="accountType" class="form-label">Account Type</label>
+              <select
+                class="form-select"
+                id="accountType"
+                v-model="accountType"
+                @change="toggleFields"
               >
-              <div class="input-group">
+                <option value="customer" selected>Customer</option>
+                <option value="contractor">Contractor</option>
+              </select>
+              <div class="error" v-if="errors.accountType">
+                {{ errors.accountType }}
+              </div>
+            </div>
+
+            <div v-if="accountType === 'customer'" id="customerFields">
+              <div class="mb-3 row">
+                <div class="col-md-6">
+                  <label for="firstName" class="form-label">First Name</label>
+                  <input
+                    type="text"
+                    class="form-control mb-3 mb-md-0"
+                    v-model="customer.firstName"
+                    placeholder="Enter your first name"
+                    required
+                  />
+                  <div class="error" v-if="errors.firstName">
+                    {{ errors.firstName }}
+                  </div>
+                </div>
+
+                <div class="col-md-6">
+                  <label for="lastName" class="form-label">Last Name</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    v-model="customer.lastName"
+                    placeholder="Enter your last name"
+                    required
+                  />
+                  <div class="error" v-if="errors.lastName">
+                    {{ errors.lastName }}
+                  </div>
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="email" class="form-label">Email</label>
                 <input
-                  :type="confirmPasswordVisible ? 'text' : 'password'"
+                  type="email"
                   class="form-control"
-                  v-model="customer.confirmPassword"
-                  placeholder="Confirm your password"
+                  v-model="customer.email"
+                  placeholder="Enter your email"
                   required
-                  @input="checkPasswordMatch()"
-                  ref="confirmPasswordField"
                 />
-                <span
-                  class="input-group-text show-password"
-                  @click="togglePasswordVisibility('confirmPassword')"
+                <div class="error" v-if="errors.email">{{ errors.email }}</div>
+              </div>
+
+              <div class="mb-3">
+                <label for="password" class="form-label">Password</label>
+                <div class="input-group">
+                  <input
+                    :type="passwordVisible ? 'text' : 'password'"
+                    class="form-control"
+                    v-model="customer.password"
+                    placeholder="Enter your password"
+                    required
+                    @input="updateStrengthIndicator()"
+                    ref="passwordField"
+                  />
+                  <span
+                    class="input-group-text show-password"
+                    @click="togglePasswordVisibility('password')"
+                  >
+                    <i
+                      :class="
+                        passwordVisible
+                          ? 'fa-solid fa-eye-slash'
+                          : 'fa-solid fa-eye'
+                      "
+                      id="eye-icon-password"
+                    ></i>
+                  </span>
+                </div>
+                <div class="strength-indicator" v-if="passwordStrength">
+                  {{ passwordStrength }}
+                </div>
+                <div class="error" v-if="errors.password">
+                  {{ errors.password }}
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="confirmPassword" class="form-label"
+                  >Confirm Password</label
                 >
-                  <i
-                    :class="
-                      confirmPasswordVisible
-                        ? 'fa-solid fa-eye-slash'
-                        : 'fa-solid fa-eye'
-                    "
-                    id="eye-icon-confirmPassword"
-                  ></i>
-                </span>
+                <div class="input-group">
+                  <input
+                    :type="confirmPasswordVisible ? 'text' : 'password'"
+                    class="form-control"
+                    v-model="customer.confirmPassword"
+                    placeholder="Confirm your password"
+                    required
+                    @input="checkPasswordMatch()"
+                    ref="confirmPasswordField"
+                  />
+                  <span
+                    class="input-group-text show-password"
+                    @click="togglePasswordVisibility('confirmPassword')"
+                  >
+                    <i
+                      :class="
+                        confirmPasswordVisible
+                          ? 'fa-solid fa-eye-slash'
+                          : 'fa-solid fa-eye'
+                      "
+                      id="eye-icon-confirmPassword"
+                    ></i>
+                  </span>
+                </div>
+                <div class="error" v-if="errors.confirmPassword">
+                  {{ errors.confirmPassword }}
+                </div>
               </div>
-              <div class="error" v-if="errors.confirmPassword">
-                {{ errors.confirmPassword }}
+
+              <div class="d-grid mb-3">
+                <button
+                  class="btn register-btn"
+                  type="button"
+                  @click="registerUser"
+                >
+                  Create Account
+                </button>
               </div>
-            </div>
 
-            <div class="d-grid mb-3">
-              <button
-                class="btn register-btn"
-                type="button"
-                @click="registerUser"
-              >
-                Create Account
-              </button>
+              <!-- 
+    <div class="d-grid mb-3">
+        <button class="btn google-login" type="button">
+            <i class="fa-brands fa-google"></i>&nbsp;Continue with Google
+        </button>
+    </div> -->
             </div>
+            <div v-if="accountType === 'contractor'" id="contractorFields">
+              <div class="mb-3 row">
+                <div class="col-md-6">
+                  <label for="firstNameC" class="form-label">First Name</label>
+                  <input
+                    type="text"
+                    class="form-control mb-3 mb-md-0"
+                    v-model="contractor.firstName"
+                    placeholder="Enter your first name"
+                    required
+                  />
+                  <div class="error" v-if="errors.firstNameC">
+                    {{ errors.firstNameC }}
+                  </div>
+                </div>
 
-            <div class="d-grid mb-3">
-              <button class="btn google-login" type="button">
-                <i class="fa-brands fa-google"></i>&nbsp;Continue with Google
-              </button>
-            </div>
-          </div>
-          <div v-if="accountType === 'contractor'" id="contractorFields">
-            <div class="mb-3">
-              <label for="firstNameC" class="form-label">First Name</label>
-              <input
-                type="text"
-                class="form-control"
-                v-model="contractor.firstName"
-                placeholder="Enter your first name"
-                required
-              />
-              <div class="error" v-if="errors.firstNameC">
-                {{ errors.firstNameC }}
+                <div class="col-md-6">
+                  <label for="lastNameC" class="form-label">Last Name</label>
+                  <input
+                    type="text"
+                    class="form-control"
+                    v-model="contractor.lastName"
+                    placeholder="Enter your last name"
+                    required
+                  />
+                  <div class="error" v-if="errors.lastNameC">
+                    {{ errors.lastNameC }}
+                  </div>
+                </div>
               </div>
-            </div>
 
-            <div class="mb-3">
-              <label for="lastNameC" class="form-label">Last Name</label>
-              <input
-                type="text"
-                class="form-control"
-                v-model="contractor.lastName"
-                placeholder="Enter your last name"
-                required
-              />
-              <div class="error" v-if="errors.lastNameC">
-                {{ errors.lastNameC }}
-              </div>
-            </div>
-
-            <div class="mb-3">
-              <label for="companyName" class="form-label">Company Name</label>
-              <input
-                type="text"
-                class="form-control"
-                v-model="contractor.companyName"
-                placeholder="Enter your company name"
-                required
-              />
-              <div class="error" v-if="errors.companyName">
-                {{ errors.companyName }}
-              </div>
-            </div>
-
-            <div class="mb-3">
-              <label for="companyEmail" class="form-label">Company Email</label>
-              <input
-                type="email"
-                class="form-control"
-                v-model="contractor.companyEmail"
-                placeholder="Enter your company email"
-                required
-              />
-              <div class="error" v-if="errors.companyEmail">
-                {{ errors.companyEmail }}
-              </div>
-            </div>
-
-            <div class="mb-3">
-              <label for="passwordC" class="form-label">Password</label>
-              <div class="input-group">
+              <div class="mb-3">
+                <label for="companyName" class="form-label">Company Name</label>
                 <input
-                  :type="passwordCVisible ? 'text' : 'password'"
+                  type="text"
                   class="form-control"
-                  v-model="contractor.password"
-                  placeholder="Enter your password"
+                  v-model="contractor.companyName"
+                  placeholder="Enter your company name"
                   required
-                  @input="updateStrengthIndicatorC()"
-                  ref="passwordCField"
                 />
-                <span
-                  class="input-group-text show-password"
-                  @click="togglePasswordVisibility('passwordC')"
-                >
-                  <i
-                    :class="
-                      passwordCVisible
-                        ? 'fa-solid fa-eye-slash'
-                        : 'fa-solid fa-eye'
-                    "
-                    id="eye-icon-passwordC"
-                  ></i>
-                </span>
+                <div class="error" v-if="errors.companyName">
+                  {{ errors.companyName }}
+                </div>
               </div>
-              <div class="strength-indicator" v-if="passwordCStrength">
-                {{ passwordCStrength }}
-              </div>
-              <div class="error" v-if="errors.passwordC">
-                {{ errors.passwordC }}
-              </div>
-            </div>
 
-            <div class="mb-3">
-              <label for="confirmPasswordC" class="form-label"
-                >Confirm Password</label
-              >
-              <div class="input-group">
+              <div class="mb-3">
+                <label for="companyAddress" class="form-label"
+                  >Company Address</label
+                >
                 <input
-                  :type="confirmPasswordCVisible ? 'text' : 'password'"
+                  type="text"
                   class="form-control"
-                  v-model="contractor.confirmPassword"
-                  placeholder="Confirm your password"
+                  v-model="contractor.storeAddress"
+                  placeholder="Enter your company address"
                   required
-                  @input="checkPasswordMatchC()"
-                  ref="confirmPasswordCField"
                 />
-                <span
-                  class="input-group-text show-password"
-                  @click="togglePasswordVisibility('confirmPasswordC')"
-                >
-                  <i
-                    :class="
-                      confirmPasswordCVisible
-                        ? 'fa-solid fa-eye-slash'
-                        : 'fa-solid fa-eye'
-                    "
-                    id="eye-icon-confirmPasswordC"
-                  ></i>
-                </span>
+                <div class="error" v-if="errors.storeAddress">
+                  {{ errors.storeAddress }}
+                </div>
               </div>
-              <div class="error" v-if="errors.confirmPasswordC">
-                {{ errors.confirmPasswordC }}
-              </div>
-            </div>
 
-            <div class="d-grid mb-3">
-              <button
-                class="btn register-btn"
-                type="button"
-                @click="registerUserC"
-              >
-                Create Account
-              </button>
+              <div class="mb-3">
+                <label for="postalCode" class="form-label">Postal Code</label>
+                <input
+                  type="text"
+                  class="form-control"
+                  v-model="contractor.postalCode"
+                  placeholder="Enter your company postal code"
+                  required
+                />
+                <div class="error" v-if="errors.postalCode">
+                  {{ errors.postalCode }}
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="companyEmail" class="form-label"
+                  >Company Email</label
+                >
+                <input
+                  type="email"
+                  class="form-control"
+                  v-model="contractor.companyEmail"
+                  placeholder="Enter your company email"
+                  required
+                />
+                <div class="error" v-if="errors.companyEmail">
+                  {{ errors.companyEmail }}
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="passwordC" class="form-label">Password</label>
+                <div class="input-group">
+                  <input
+                    :type="passwordCVisible ? 'text' : 'password'"
+                    class="form-control"
+                    v-model="contractor.password"
+                    placeholder="Enter your password"
+                    required
+                    @input="updateStrengthIndicatorC()"
+                    ref="passwordCField"
+                  />
+                  <span
+                    class="input-group-text show-password"
+                    @click="togglePasswordVisibility('passwordC')"
+                  >
+                    <i
+                      :class="
+                        passwordCVisible
+                          ? 'fa-solid fa-eye-slash'
+                          : 'fa-solid fa-eye'
+                      "
+                      id="eye-icon-passwordC"
+                    ></i>
+                  </span>
+                </div>
+                <div class="strength-indicator" v-if="passwordCStrength">
+                  {{ passwordCStrength }}
+                </div>
+                <div class="error" v-if="errors.passwordC">
+                  {{ errors.passwordC }}
+                </div>
+              </div>
+
+              <div class="mb-3">
+                <label for="confirmPasswordC" class="form-label"
+                  >Confirm Password</label
+                >
+                <div class="input-group">
+                  <input
+                    :type="confirmPasswordCVisible ? 'text' : 'password'"
+                    class="form-control"
+                    v-model="contractor.confirmPassword"
+                    placeholder="Confirm your password"
+                    required
+                    @input="checkPasswordMatchC()"
+                    ref="confirmPasswordCField"
+                  />
+                  <span
+                    class="input-group-text show-password"
+                    @click="togglePasswordVisibility('confirmPasswordC')"
+                  >
+                    <i
+                      :class="
+                        confirmPasswordCVisible
+                          ? 'fa-solid fa-eye-slash'
+                          : 'fa-solid fa-eye'
+                      "
+                      id="eye-icon-confirmPasswordC"
+                    ></i>
+                  </span>
+                </div>
+                <div class="error" v-if="errors.confirmPasswordC">
+                  {{ errors.confirmPasswordC }}
+                </div>
+              </div>
+
+              <div class="d-grid mb-3">
+                <button
+                  class="btn register-btn"
+                  type="button"
+                  @click="registerUserC"
+                >
+                  Create Account
+                </button>
+              </div>
             </div>
-          </div>
           </form>
+        </div>
         </div>
       </div>
 
       <!-- Carousel Section -->
+      
       <div
         id="carouselExample"
         class="carousel slide col-lg-6 col-12 carousel-container vh-100"
@@ -573,23 +618,43 @@ if (Object.keys(this.errors).length === 0) {
       </div>
     </div>
   </div>
+  </div>
   <FooterPreLogin></FooterPreLogin>
 </template>
 
 <style scoped>
-.registration-form {
-  margin-top: 100px;
+.page-wrapper {
+  padding-top: 130px; /* Navbar height */
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
+
 .container-fluid {
-  margin-top: 130px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
 }
-.registration-container {
+
+.full-height-row {
+  flex: 1;
+  min-height: calc(100vh - 80px); /* Subtract navbar height */
+}
+
+.form-container {
   display: flex;
   align-items: center;
   justify-content: center;
-  height: 100vh;
   position: relative;
-  z-index: 1000;
+}
+
+.scrollable-container {
+  max-height: calc(100vh - 0px); /* Adjust based on your needs */
+  overflow-y: auto;
+  padding: 2rem 1rem;
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 .registration-form {
@@ -599,8 +664,26 @@ if (Object.keys(this.errors).length === 0) {
   box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.1);
   width: 100%;
   max-width: 500px;
+  margin: auto;
 }
 
+.carousel-container {
+  height: calc(100vh - 80px); /* Subtract navbar height */
+}
+
+.carousel,
+.carousel-inner,
+.carousel-item {
+  height: 100%;
+}
+
+.carousel-item img {
+  height: 100%;
+  width: 100%;
+  object-fit: cover;
+}
+
+/* Keep all your existing styles */
 .form-label {
   font-weight: bold;
 }
@@ -620,26 +703,6 @@ if (Object.keys(this.errors).length === 0) {
 .register-btn:hover {
   background-color: #0056b3;
   color: #fff;
-}
-
-.google-login {
-  background-color: #ffffff;
-  color: #4285f4;
-  border: 2px solid #4285f4;
-  border-radius: 5px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.google-login:hover {
-  background-color: #f1f3f4;
-  color: #4285f4;
-}
-
-.google-login img {
-  height: 20px;
-  margin-right: 8px;
 }
 
 .error {
@@ -672,22 +735,9 @@ if (Object.keys(this.errors).length === 0) {
   cursor: pointer;
 }
 
-.carousel-item img {
-  height: 100%;
-  width: 100%;
-  object-fit: cover;
-}
-
-.carousel-container {
-  padding: 0;
-  height: 100vh;
-  position: relative;
-}
-
 .carousel-caption {
   position: absolute;
   bottom: 60px;
-  /* Adjust lower the text */
   left: 50%;
   transform: translateX(-50%);
   text-align: center;
@@ -715,55 +765,46 @@ if (Object.keys(this.errors).length === 0) {
   text-decoration: underline;
 }
 
-@media (max-width: 768px) {
-  .carousel-control-prev,
-  .carousel-control-next {
-    display: none;
-  }
-}
-
-@media (min-width: 769px) {
-  .carousel-caption {
-    bottom: 50px;
-  }
-}
-
 @media (max-width: 991px) {
   .carousel-container {
     display: none;
   }
-}
+  
+  .form-container {
+    width: 100%;
+  }
 
-.form-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100vh;
-  position: relative;
-  z-index: 1000; /* Login form stays above the carousel */
+  .scrollable-container {
+    padding: 1rem;
+  }
 }
 
 @media (max-width: 768px) {
-  .form-container {
-    margin-top: 130px;
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 1000;
+  .page-wrapper {
+    padding-top: 130px;
+  }
+
+  .full-height-row {
+    min-height: calc(100vh - 0px);
+  }
+
+  .carousel-control-prev,
+  .carousel-control-next {
+    display: none;
+  }
+  
+  .registration-form {
     padding: 20px;
   }
-}
-.footer-section {
-  margin-top: 0px;
+
+  .scrollable-container {
+    max-height: calc(100vh - 0px);
+  }
 }
 
 @media (max-width: 375px) {
-  .form-container {
-    margin-top: 230px;
-  }
-  .footer-section {
-    margin-top: 300px;
+  .registration-form {
+    padding: 15px;
   }
 }
 </style>

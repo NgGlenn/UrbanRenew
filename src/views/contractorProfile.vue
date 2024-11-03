@@ -2,10 +2,24 @@
 import LogedInLayout from "@/components/LogedInLayout.vue";
 import { db, auth } from "@/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc, updateDoc, setDoc } from "firebase/firestore";
+import {
+  doc,
+  getDoc,
+  updateDoc,
+  setDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+  orderBy,
+} from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import defaultProfileIcon from "@/assets/defaultProfileIcon.jpg"; //to display default picture if no profile picture set
-import { updatePassword, EmailAuthProvider, reauthenticateWithCredential} from "firebase/auth";
+import {
+  updatePassword,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+} from "firebase/auth";
 import Cropper from "cropperjs";
 import "cropperjs/dist/cropper.css";
 export default {
@@ -20,24 +34,31 @@ export default {
       address: "",
       postalCode: "",
       phone: "",
-      certificatesAndAwards: [], // Store awards as an array
+      certificatesAndAwards: [],
       newCertItem: "",
       showEditProfileModal: false,
       showUpdatePasswordModal: false,
+      cancelPasswordModal: false,
       updateFirstName: "",
       updateLastName: "",
       updatedEmail: "",
       tempEmail: "",
       newPassword: "",
       confirmPassword: "",
-      updatedServicesOffered: [], // Store updated services as an array
-      updatedCertificatesAndAwards: [], // Store updated awards as an array
+      updatedServicesOffered: [],
+      updatedCertificatesAndAwards: [],
       showEditImageModal: false,
       selectedImage: null,
       imageUrl: "",
       cropper: null,
       profilePictureUrl: "",
-      loading: true, // Set loading to true initially
+      loading: true,
+      reviews: [],
+      averageRating: 0,
+      userId: "", // user ID of the logged-in user
+      defaultProfileIcon: "../assets/default_profile.png",
+      currentPage: 1,
+      perPage: 1,
     };
   },
 
@@ -45,31 +66,30 @@ export default {
     addCertItem() {
       if (this.newCertItem.trim()) {
         this.updatedCertificatesAndAwards.push(this.newCertItem.trim());
-        this.newCertItem = ""; // Clear input after adding
+        this.newCertItem = "";
       }
     },
-    // Method to delete a certificate/award by index
+
     deleteCertItem(index) {
       this.updatedCertificatesAndAwards.splice(index, 1);
     },
     addServiceItem() {
       if (this.newServiceItem.trim()) {
         this.updatedServicesOffered.push(this.newServiceItem.trim());
-        this.newServiceItem = ""; // Clear input after adding
+        this.newServiceItem = "";
       }
     },
-    // Method to delete a service by index
+
     deleteServiceItem(index) {
       this.updatedServicesOffered.splice(index, 1);
     },
     openEditProfileModal() {
-      // Populate temporary fields with existing data
       const names = this.userName.split(/\s+/).filter(Boolean);
       this.updateFirstName =
         names.length > 1 ? names.slice(0, -1).join(" ") : names[0];
       this.updateLastName = names.length > 1 ? names[names.length - 1] : "";
       this.updatedCompanyName = this.companyName;
-      this.updatedServicesOffered = [...this.servicesOffered]; // Copy the original arrays here
+      this.updatedServicesOffered = [...this.servicesOffered];
       this.updatedCertificatesAndAwards = [...this.certificatesAndAwards];
       this.updatedAddress = this.address || "";
       this.updatedPostalCode = this.postalCode || "";
@@ -77,7 +97,6 @@ export default {
       this.showEditProfileModal = true;
     },
     saveProfile: async function () {
-      // Assign updated values to main state fields
       this.userName = `${this.updateFirstName} ${this.updateLastName}`;
       this.companyName = this.updatedCompanyName;
       this.servicesOffered = [...this.updatedServicesOffered];
@@ -93,22 +112,20 @@ export default {
         const contractorDocRef = doc(db, "contractors", user.uid);
 
         try {
-          // Update user information
           await updateDoc(userDocRef, {
             firstName: this.updateFirstName,
             lastName: this.updateLastName,
-            email: this.userEmail, // Keep the existing email
+            email: this.userEmail,
           });
 
-          // Update contractor information
           await updateDoc(contractorDocRef, {
             firstName: this.updateFirstName,
             lastName: this.updateLastName,
             companyName: this.updatedCompanyName,
             phoneNumber: this.updatedPhone,
             postalCode: this.updatedPostalCode,
-            services: this.servicesOffered, // Save the final array directly
-            certsAndAwards: this.certificatesAndAwards, // Save the final array directly
+            services: this.servicesOffered,
+            certsAndAwards: this.certificatesAndAwards,
             storeAddress: this.updatedAddress,
           });
 
@@ -136,7 +153,6 @@ export default {
         return;
       }
 
-      // Reauthenticate before updating password
       try {
         const user = auth.currentUser;
         if (!user) {
@@ -144,14 +160,12 @@ export default {
           return;
         }
 
-        // Assuming user’s current email and password are available
         const credential = EmailAuthProvider.credential(
           user.email,
-          this.currentPassword // Add a field for the current password if needed
+          this.currentPassword
         );
         await reauthenticateWithCredential(user, credential);
 
-        // Update password
         await updatePassword(user, this.newPassword);
 
         alert("Password updated successfully.");
@@ -164,41 +178,43 @@ export default {
         this.passwordError = error.message;
       }
     },
+    handleCancel() {
+      this.showUpdatePasswordModal = false;
+    },
     openEditImageModal() {
       this.showEditImageModal = true;
     },
     closeEditImageModal() {
       this.showEditImageModal = false;
-      this.imageUrl = null; // Reset image URL
+      this.imageUrl = null;
       if (this.cropper) {
-        this.cropper.destroy(); // Clean up Cropper instance
+        this.cropper.destroy();
         this.cropper = null;
       }
     },
     handleImageUpload(event) {
       const file = event.target.files[0];
-      console.log("Selected file:", file); // Log the selected file
+      console.log("Selected file:", file);
       if (file) {
         const reader = new FileReader();
 
         reader.onload = (e) => {
-          this.imageUrl = e.target.result; // Set the data URL
-          console.log("Image URL:", this.imageUrl); // Log the data URL
+          this.imageUrl = e.target.result;
+          console.log("Image URL:", this.imageUrl);
           this.$nextTick(() => {
-            this.initializeCropper(); // Ensure DOM is updated before initializing
+            this.initializeCropper();
           });
         };
 
-        reader.readAsDataURL(file); // Read the file as a data URL
+        reader.readAsDataURL(file);
       }
     },
     initializeCropper() {
-      // Initialize Cropper after the image has fully loaded
       if (this.$refs.imageToCrop) {
         this.cropper = new Cropper(this.$refs.imageToCrop, {
-          aspectRatio: 1, // Adjust aspect ratio as needed (1 for square)
+          aspectRatio: 1,
           viewMode: 1,
-          autoCropArea: 1, // Ensures the entire image area is selectable
+          autoCropArea: 1,
         });
       }
     },
@@ -206,28 +222,22 @@ export default {
       if (this.cropper) {
         this.cropper.getCroppedCanvas().toBlob(async (blob) => {
           if (blob) {
-            // Create a blob URL for the cropped image (optional)
             const croppedImageURL = URL.createObjectURL(blob);
             this.imageUrl = croppedImageURL;
 
-            // Upload the image to Firebase Storage
             const storage = getStorage();
-            const storageRef = ref(storage, `images/${Date.now()}.png`); // Use a unique filename
+            const storageRef = ref(storage, `images/${Date.now()}.png`);
 
             try {
-              // Upload the blob to Firebase Storage
               const uploadTask = await uploadBytes(storageRef, blob);
               const downloadURL = await getDownloadURL(uploadTask.ref);
               console.log("File available at", downloadURL);
 
-              // Save the download URL to Firestore in the existing user document
               await this.saveImageUrlToFirestore(downloadURL);
 
-              // Close the modal after saving
               this.closeEditImageModal();
 
-              // Free the blob URL
-              URL.revokeObjectURL(croppedImageURL); // Revoke the blob URL
+              URL.revokeObjectURL(croppedImageURL);
             } catch (error) {
               console.error("Error uploading image:", error);
             }
@@ -238,25 +248,263 @@ export default {
       }
     },
     async saveImageUrlToFirestore(downloadURL) {
-      const userId = auth.currentUser.uid; // Get the current user ID
-      const userDocRef = doc(db, "users", userId); // Reference to the user's document in Firestore
+      const userId = auth.currentUser.uid;
+      const userDocRef = doc(db, "users", userId);
 
       try {
-        // Use setDoc with merge: true to add the imageUrl field without overwriting other fields
         await setDoc(userDocRef, { imageUrl: downloadURL }, { merge: true });
         alert("Image successfully updated");
         console.log("Image URL successfully saved to Firestore.");
-        window.location.reload(); // This will reload the current page
+        window.location.reload();
       } catch (error) {
         console.error("Error saving image URL to Firestore:", error);
       }
     },
+    loadGoogleMapsScript() {
+      return new Promise((resolve, reject) => {
+        if (typeof google !== "undefined") {
+          resolve();
+          return;
+        }
+        const script = document.createElement("script");
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${
+          import.meta.env.VITE_GOOGLEMAPS_API_KEY
+        }`;
+        script.async = true;
+        script.defer = true;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+    },
+
+    async loadMap(postalCode) {
+      try {
+        // Load Google Maps Script
+        await this.loadGoogleMapsScript();
+
+        // Now that Google Maps is loaded, create the map
+        const geocoder = new google.maps.Geocoder();
+        geocoder.geocode({ address: postalCode }, (results, status) => {
+          if (status === "OK" && results[0]) {
+            const mapOptions = {
+              center: results[0].geometry.location,
+              zoom: 15,
+            };
+            const map = new google.maps.Map(
+              document.getElementById("map"),
+              mapOptions
+            );
+
+            // Create the marker
+            const marker = new google.maps.Marker({
+              position: results[0].geometry.location,
+              map: map,
+            });
+
+            // Define custom HTML for the InfoWindow with a card design
+            const infoWindowContent = `
+                    <div style="
+                        background: #fff;
+                        padding: 2px;
+                        border-radius: 8px;
+                        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+                        font-size: 14px;
+                        font-weight: bold;
+                        color: #333;
+                    ">
+                        ${this.companyName}
+                    </div>
+                `;
+
+            // Create and open the InfoWindow with the styled content
+            const infoWindow = new google.maps.InfoWindow({
+              content: infoWindowContent,
+            });
+            infoWindow.open(map, marker);
+
+            // Optional: Keep the InfoWindow open when clicking on the marker
+            marker.addListener("click", () => {
+              infoWindow.open(map, marker);
+            });
+          } else {
+            console.error("Geocode was not successful: " + status);
+          }
+        });
+      } catch (error) {
+        console.error("Failed to load Google Maps script:", error);
+      }
+    },
+    async loadReviewsWithIndex() {
+      try {
+        this.isLoadingReviews = true;
+        const reviewsCollection = collection(db, "reviews");
+        const q = query(
+          reviewsCollection,
+          where("contractorID", "==", this.userId),
+          orderBy("createdAt", "desc")
+        );
+
+        const querySnapshot = await getDocs(q);
+        this.reviews = [];
+
+        const customerPromises = querySnapshot.docs.map(async (docSnapshot) => {
+          const reviewData = docSnapshot.data();
+          const customerDocRef = doc(db, "users", reviewData.customerID);
+
+          try {
+            const customerDoc = await getDoc(customerDocRef);
+
+            if (customerDoc.exists()) {
+              const customerData = customerDoc.data();
+              return {
+                id: docSnapshot.id,
+                contractorID: reviewData.contractorID,
+                customerName: `${customerData.firstName} ${customerData.lastName}`,
+                customerImage: customerData.imageUrl || this.defaultProfileIcon,
+                createdAt: reviewData.createdAt.toDate().toLocaleString(),
+                averageRating: parseFloat(reviewData.averageRating),
+                qualityOfWork: reviewData.qualityOfWork,
+                timeliness: reviewData.timeliness,
+                budgetAdherence: reviewData.budgetAdherence,
+                communication: reviewData.communication,
+                comment: reviewData.comment || "No comment provided.",
+              };
+            }
+          } catch (error) {
+            console.error("Error fetching customer data:", error);
+            return null;
+          }
+        });
+
+        const results = await Promise.all(customerPromises);
+        this.reviews = results.filter((review) => review !== null);
+      } catch (error) {
+        if (error.code === "failed-precondition") {
+          // If index doesn't exist, fall back to alternative method
+          console.log("Index not found, falling back to alternative method");
+          await this.loadReviewsWithoutIndex();
+        } else {
+          console.error("Error loading reviews:", error);
+        }
+      } finally {
+        this.isLoadingReviews = false;
+      }
+    },
+
+    // Option 2: Alternative method without requiring index
+    async loadReviewsWithoutIndex() {
+      try {
+        this.isLoadingReviews = true;
+        const reviewsCollection = collection(db, "reviews");
+        const q = query(
+          reviewsCollection,
+          where("contractorID", "==", this.userId)
+        );
+
+        const querySnapshot = await getDocs(q);
+        this.reviews = [];
+
+        const customerPromises = querySnapshot.docs.map(async (docSnapshot) => {
+          const reviewData = docSnapshot.data();
+          const customerDocRef = doc(db, "users", reviewData.customerID);
+
+          try {
+            const customerDoc = await getDoc(customerDocRef);
+
+            if (customerDoc.exists()) {
+              const customerData = customerDoc.data();
+              return {
+                id: docSnapshot.id,
+                contractorID: reviewData.contractorID,
+                customerName: `${customerData.firstName} ${customerData.lastName}`,
+                customerImage: customerData.imageUrl || this.defaultProfileIcon,
+                createdAt: reviewData.createdAt.toDate().toLocaleString(),
+                averageRating: parseFloat(reviewData.averageRating),
+                qualityOfWork: reviewData.qualityOfWork,
+                timeliness: reviewData.timeliness,
+                budgetAdherence: reviewData.budgetAdherence,
+                communication: reviewData.communication,
+                problemResolution: reviewData.problemResolution,
+                comment: reviewData.comment || "No comment provided.",
+              };
+            }
+          } catch (error) {
+            console.error("Error fetching customer data:", error);
+            return null;
+          }
+        });
+
+        const results = await Promise.all(customerPromises);
+        this.reviews = results
+          .filter((review) => review !== null)
+          // Sort in memory instead of in query
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+      } catch (error) {
+        console.error("Error loading reviews:", error);
+      } finally {
+        this.isLoadingReviews = false;
+      }
+    },
+
+    // Use this method to load reviews
+    async loadReviews() {
+      try {
+        await this.loadReviewsWithIndex();
+      } catch (error) {
+        console.error("Error in loadReviews:", error);
+      }
+    },
+    changePage(page) {
+    if (page > 0 && page <= this.totalPages) {
+      this.currentPage = page;
+    }
+  },
+  },
+  computed: {
+    storeLocation() {
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+        this.postalCode
+      )}`;
+    },
+ totalPages() {
+      return Math.ceil(this.reviews.length / this.perPage);
+    },
+    
+    paginatedReviews() {
+      const start = (this.currentPage - 1) * this.perPage;
+      const end = start + this.perPage;
+      return this.reviews.slice(start, end);
+    },
+    
+    // Add this computed property to handle which page numbers to display
+    displayedPages() {
+      const total = this.totalPages;
+      const current = this.currentPage;
+      const displayed = this.displayedPagesCount;
+      
+      let start = Math.max(1, current - Math.floor(displayed / 2));
+      let end = Math.min(total, start + displayed - 1);
+      
+      // Adjust start if we're near the end
+      if (end === total) {
+        start = Math.max(1, end - displayed + 1);
+      }
+      
+      // Generate array of page numbers
+      return Array.from(
+        { length: end - start + 1 },
+        (_, i) => start + i
+      );
+    }
   },
   mounted() {
     onAuthStateChanged(auth, async (user) => {
       if (user) {
         const userDoc = doc(db, "users", user.uid);
         const docSnap = await getDoc(userDoc);
+        this.userId = user.uid; // Store logged-in user ID
+        await this.loadReviews();
 
         if (docSnap.exists()) {
           const userData = docSnap.data();
@@ -264,7 +512,6 @@ export default {
           this.userEmail = userData.email;
           this.profilePictureUrl = userData.imageUrl || defaultProfileIcon;
 
-          // Check if the user is a contractor
           if (userData.role === "contractor") {
             const contractorDoc = doc(db, "contractors", user.uid);
             const contractorSnap = await getDoc(contractorDoc);
@@ -281,11 +528,11 @@ export default {
               this.certificatesAndAwards = contractorData.certsAndAwards?.length
                 ? contractorData.certsAndAwards
                 : ["None"];
+              await this.loadMap(this.postalCode);
             } else {
               console.error("No contractor document for user ID:", user.uid);
             }
           } else {
-            // Redirect to customer profile if the role is not contractor
             this.$router.push("/customerProfile");
           }
           this.loading = false;
@@ -326,6 +573,7 @@ export default {
                   <span class="edit-icon">
                     <i class="fas fa-edit"></i>
                   </span>
+                  <span class="hover-text">Edit Profile</span>
                 </div>
                 <h5 class="card-title">
                   <i class="fas fa-user-circle"></i> {{ userName }}
@@ -359,9 +607,8 @@ export default {
                 <!-- About Section Title -->
 
                 <h6 class="">Company Name:</h6>
-                <!-- Company Name -->
+
                 <p class="text-muted">{{ companyName }}</p>
-                <!-- Placeholder for company name -->
 
                 <h6>Services Offered:</h6>
                 <!-- Services Offered Section -->
@@ -379,13 +626,13 @@ export default {
                 <!-- Store Location Section -->
                 <p class="text-muted">{{ address }}, S{{ postalCode }}</p>
                 <a
-                  href="https://www.google.com/maps/search/?api=1&query={{ storeLocation }}"
+                  :href="storeLocation"
                   target="_blank"
                   class="text-primary hover-text-decoration-underline"
                 >
                   <i class="fas fa-map-marker-alt"></i> View on Google Maps
                 </a>
-
+                <div id="map" style="height: 400px; width: 100%"></div>
                 <hr />
 
                 <h5 class="mt-4">
@@ -433,32 +680,177 @@ export default {
             <div class="card mb-4 review-card">
               <div class="card-header">Reviews</div>
               <div class="card-body">
-                <div class="review-item mb-4 border-bottom pb-3">
-                  <div class="d-flex align-items-center">
-                    <img
-                      src="../assets/home_testi3.jpg"
-                      alt="John Doe"
-                      class="rounded-circle me-2"
-                      style="width: 50px; height: 50px"
-                    />
-                    <!-- Increased image size -->
-                    <div class="flex-grow-1">
-                      <h6 class="mb-0 text-muted">John Doe</h6>
-                      <!-- Changed to h6 for smaller text -->
-                      <div class="rating">
-                        <span class="text-warning">&#9733;</span>
-                        <span class="text-warning">&#9733;</span>
-                        <span class="text-warning">&#9733;</span>
-                        <span class="text-warning">&#9733;</span>
-                        <span class="text-muted">&#9733;</span>
+                <!-- Loading State -->
+     
+
+                <!-- No Reviews State -->
+                <div v-if="reviews.length === 0" class="no-reviews">
+                  No reviews yet.
+                </div>
+
+                <!-- Reviews List -->
+                <div v-else>
+                  <div
+                    v-for="review in paginatedReviews"
+                    :key="review.id"
+                    class="review-item"
+                  >
+                    <div class="profile-section">
+                      <img
+                        :src="review.customerImage || defaultProfileIcon"
+                        alt="Profile Picture"
+                        class="profile-image-review"
+                      />
+                      <div class="profile-info">
+                        <h6 class="customer-name">{{ review.customerName }}</h6>
+                        <span class="metric-number">Overall Rating</span><br />
+                        <div class="metric-stars">
+                          <span
+                            v-for="star in 5"
+                            :key="star"
+                            class="star"
+                            :class="{ filled: star <= review.averageRating }"
+                            >★</span
+                          >
+                        </div>
+                        <span class="metric-number"
+                          >{{ review.averageRating }}/5</span
+                        >
+                        <div class="review-date">{{ review.createdAt }}</div>
                       </div>
                     </div>
+
+                    <div class="metrics-container">
+                      <div class="metric-item">
+                        <span class="metric-label">Quality of Work</span>
+                        <div class="metric-value">
+                          <div class="metric-stars">
+                            <span
+                              v-for="star in 5"
+                              :key="star"
+                              class="star"
+                              :class="{ filled: star <= review.qualityOfWork }"
+                              >★</span
+                            >
+                          </div>
+                          <span class="metric-number"
+                            >{{ review.qualityOfWork }}/5</span
+                          >
+                        </div>
+                      </div>
+
+                      <div class="metric-item">
+                        <span class="metric-label">Timeliness</span>
+                        <div class="metric-value">
+                          <div class="metric-stars">
+                            <span
+                              v-for="star in 5"
+                              :key="star"
+                              class="star"
+                              :class="{ filled: star <= review.timeliness }"
+                              >★</span
+                            >
+                          </div>
+                          <span class="metric-number"
+                            >{{ review.timeliness }}/5</span
+                          >
+                        </div>
+                      </div>
+
+                      <div class="metric-item">
+                        <span class="metric-label">Budget Adherence</span>
+                        <div class="metric-value">
+                          <div class="metric-stars">
+                            <span
+                              v-for="star in 5"
+                              :key="star"
+                              class="star"
+                              :class="{
+                                filled: star <= review.budgetAdherence,
+                              }"
+                              >★</span
+                            >
+                          </div>
+                          <span class="metric-number"
+                            >{{ review.budgetAdherence }}/5</span
+                          >
+                        </div>
+                      </div>
+
+                      <div class="metric-item">
+                        <span class="metric-label">Problem Resolution</span>
+                        <div class="metric-value">
+                          <div class="metric-stars">
+                            <span
+                              v-for="star in 5"
+                              :key="star"
+                              class="star"
+                              :class="{
+                                filled: star <= review.problemResolution,
+                              }"
+                              >★</span
+                            >
+                          </div>
+                          <span class="metric-number"
+                            >{{ review.problemResolution }}/5</span
+                          >
+                        </div>
+                      </div>
+
+                      <div class="metric-item">
+                        <span class="metric-label">Communication</span>
+                        <div class="metric-value">
+                          <div class="metric-stars">
+                            <span
+                              v-for="star in 5"
+                              :key="star"
+                              class="star"
+                              :class="{ filled: star <= review.communication }"
+                              >★</span
+                            >
+                          </div>
+                          <span class="metric-number"
+                            >{{ review.communication }}/5</span
+                          >
+                        </div>
+                      </div>
+                    </div>
+
+                    <p class="review-comment">{{ review.comment }}</p>
                   </div>
-                  <p class="mt-2 small text-muted">
-                    <!-- Added margin start (ms) for indentation -->
-                    Great experience! The service was fantastic and I would
-                    highly recommend it to others.
-                  </p>
+
+                  <!-- Pagination -->
+                  <div class="pagination-container" v-if="totalPages > 1">
+                    <button
+                      class="pagination-button"
+                      @click="changePage(currentPage - 1)"
+                      :disabled="currentPage === 1"
+                    >
+                      Previous
+                    </button>&nbsp;
+
+                    <button
+                      v-for="page in displayedPages"
+                      :key="page"
+                      class="pagination-button"
+                      :class="{ active: page === currentPage }"
+                      @click="changePage(page)"
+                    >
+                      {{ page }}
+                    </button>
+
+                    <button
+                      class="pagination-button"
+                      @click="changePage(currentPage + 1)"
+                      :disabled="currentPage === totalPages"
+                    >
+                      Next
+                    </button>
+                    <br><br>
+                    <span class="pagination-info">
+                      Page {{ currentPage }} of {{ totalPages }}
+                    </span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -510,7 +902,6 @@ export default {
           <hr />
           <h6>Services</h6>
           <div id="itemList">
-            <!-- Display each service with an "X" to delete -->
             <div
               class="item"
               v-for="(service, index) in updatedServicesOffered"
@@ -521,7 +912,6 @@ export default {
             </div>
           </div>
 
-          <!-- Input field and button to add new services -->
           <div class="input-group">
             <input
               type="text"
@@ -541,7 +931,6 @@ export default {
           <hr />
           <h6>Certificates & Awards</h6>
           <div id="itemList">
-            <!-- Display each certificate/award with an "X" to delete -->
             <div
               class="item"
               v-for="(award, index) in updatedCertificatesAndAwards"
@@ -552,7 +941,6 @@ export default {
             </div>
           </div>
 
-          <!-- Input field and button to add new certificates/awards -->
           <div class="input-group">
             <input
               type="text"
@@ -619,7 +1007,6 @@ export default {
         <div class="modal-content">
           <h5>Upload and Crop Image</h5>
 
-          <!-- File Upload Input -->
           <input
             type="file"
             ref="fileInput"
@@ -627,7 +1014,7 @@ export default {
             class="form-control mb-2"
             accept=".jpg,.jpeg,.png"
           />
-          <!-- Image Preview for Cropping -->
+
           <div v-if="imageUrl" class="image-crop-container">
             <img
               ref="imageToCrop"
@@ -637,7 +1024,6 @@ export default {
             />
           </div>
 
-          <!-- Save and Cancel Buttons -->
           <button class="btn btn-primary" @click="saveCroppedImage">
             Save
           </button>
@@ -648,7 +1034,6 @@ export default {
       </div>
     </div>
   </LogedInLayout>
-  <!-- <div v-else class="loading-spinner">Please Login to account...</div> -->
 </template>
 
 <style scoped>
@@ -767,6 +1152,30 @@ h6 {
   cursor: pointer;
 }
 
+.profile-image {
+  border-radius: 50%;
+  transition: filter 0.3s ease; /* Smooth transition for darkening */
+}
+
+.profile-image-container:hover .profile-image {
+  filter: brightness(0.7); /* Darkens the image on hover */
+}
+
+.hover-text {
+  position: absolute;
+  top: 50%; /* Center vertically */
+  left: 50%; /* Center horizontally */
+  transform: translate(-50%, -50%); /* Offset to truly center */
+  color: white; /* Text color */
+  font-size: 16px; /* Adjust as needed */
+  opacity: 0; /* Initially hidden */
+  transition: opacity 0.3s ease; /* Smooth transition for text appearance */
+}
+
+.profile-image-container:hover .hover-text {
+  opacity: 1; /* Show text on hover */
+}
+
 .edit-icon {
   position: absolute;
   bottom: 10px;
@@ -785,6 +1194,132 @@ h6 {
 }
 
 .selected-image-preview {
-  width: 100%; /* Adjust this as necessary */
+  width: 100%;
 }
+
+.marker-label {
+  background-color: rgba(255, 255, 255, 0.8); /* Background for readability */
+  padding: 4px 8px;
+  border-radius: 4px; /* Rounded corners */
+  box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.3); /* Soft shadow */
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6); /* Light text shadow */
+  font-family: "Arial", sans-serif; /* Custom font */
+  font-size: 14px;
+}
+
+.review-card .card-body {
+  padding: 1.5rem;
+}
+
+.review-item {
+  background: white;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.review-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.profile-section {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.profile-image-review {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #f8f9fa;
+}
+
+.profile-info {
+  flex-grow: 1;
+}
+
+.customer-name {
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.rating {
+  margin-top: 0.25rem;
+}
+
+.star {
+  color: #cbd5e0;
+  font-size: 1.1rem;
+}
+
+.star.filled {
+  color: #fbbf24;
+}
+
+.review-date {
+  color: #64748b;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.metrics-container {
+  background: #f8f9fa;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+.metric-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.metric-item:last-child {
+  border-bottom: none;
+}
+
+.metric-label {
+  color: #4b5563;
+  font-size: 0.875rem;
+}
+
+.metric-value {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.metric-stars {
+  display: inline-flex;
+  gap: 0.25rem;
+}
+
+.metric-number {
+  font-weight: 500;
+  color: #2d3748;
+}
+
+.review-comment {
+  color: #1a202c;
+  line-height: 1.6;
+  margin-top: 1rem;
+}
+
+.no-reviews {
+  text-align: center;
+  color: #64748b;
+  padding: 2rem;
+  font-style: italic;
+}
+
 </style>
