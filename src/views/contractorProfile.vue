@@ -1,5 +1,5 @@
 <script>
-import LogedInLayout from "@/components/LogedInLayout.vue";
+import LogedInLayout from "@/components/logedInLayout.vue";
 import { db, auth } from "@/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import {

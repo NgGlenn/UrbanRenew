@@ -18,7 +18,7 @@ const props = defineProps ({
     }
 });
 const { tasks } = toRefs(props);
-console.log(tasks)
+// console.log(tasks)
 const ganttContainer = ref(null);
 const db = inject('db');
 const projectStore = useProjectStore();

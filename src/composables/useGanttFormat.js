@@ -4,7 +4,7 @@ export function useGanttFormat(jobs, tasks, contractorCompany, contractorStaff) 
     // console.log(typeof(jobs))
     // console.log(jobs)
     // console.log(typeof(tasks))
-    console.log(contractorStaff)
+    // console.log(contractorStaff)
     
     //function to calculate duration in days
     const calculateDuration = (startDate, endDate) => {
@@ -78,7 +78,7 @@ export function useGanttFormat(jobs, tasks, contractorCompany, contractorStaff) 
             //link array to connect task
             const taskLinks = [];
             let linkId = 1;
-            console.log(data)
+            // console.log(data)
             for (let index = 0; index < data.length; index++) {
                 if (index < data.length - 1) {
                     taskLinks.push({
@@ -112,7 +112,7 @@ export function useGanttFormat(jobs, tasks, contractorCompany, contractorStaff) 
     })
 
 
-    console.log(ganttData)
+    // console.log(ganttData)
     return {ganttData};
 
 }

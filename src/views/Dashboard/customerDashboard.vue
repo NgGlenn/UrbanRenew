@@ -12,7 +12,7 @@
     const userStore = useUserStore();
     const { userRole } = storeToRefs(userStore);
     const isContractor = computed(() => userRole?.value === 'contractor' )
-    console.log(isContractor)
+    // console.log(isContractor)
 
     const projectData = computed(() => ({
         jobs,
