@@ -124,11 +124,11 @@ export default {
               <button class="btn login-btn" type="button" @click="login">Login</button>
             </div>
 
-            <div class="d-grid mb-3">
+            <!-- <div class="d-grid mb-3">
               <button class="btn google-login" type="button">
                 <i class="fa-brands fa-google"></i>&nbsp;Sign in with Google
               </button>
-            </div>
+            </div> -->
 
             <a href="#" class="reset-link">Forgot your password?</a>
 
