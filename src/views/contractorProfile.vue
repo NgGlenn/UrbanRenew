@@ -59,6 +59,8 @@ export default {
       defaultProfileIcon: "../assets/default_profile.png",
       currentPage: 1,
       perPage: 1,
+      transactions: [],
+      isLoading: true,
     };
   },
 
@@ -458,6 +460,53 @@ export default {
         this.currentPage = page;
       }
     },
+  async loadTransactionHistory() {
+  try {
+    const paymentsCollection = collection(db, "payments");
+    const q = query(
+      paymentsCollection,
+      where("contractorID", "==", this.userId),
+      where("projstatus", "==", "paid")
+    );
+
+    const querySnapshot = await getDocs(q);
+    this.transactions = await Promise.all(
+      querySnapshot.docs.map(async (docSnapshot) => {
+        const data = docSnapshot.data();
+        let customerName = "Unknown";
+
+        if (data.customerID) {
+          // Fetch customer document
+          const customerRef = doc(db, "users", data.customerID);
+          const customerDoc = await getDoc(customerRef);
+
+          if (customerDoc.exists()) {
+            const customerData = customerDoc.data();
+            customerName = `${customerData.firstName || ""} ${customerData.lastName || ""}`.trim();
+          } else {
+            console.warn(`No user found for customerID: ${data.customerID}`);
+          }
+        } else {
+          console.warn(`Missing customerID in payment document: ${docSnapshot.id}`);
+        }
+
+        return {
+          id: docSnapshot.id,
+          projectname: data.projectname,
+          customername: customerName,
+          amount: data.amount,
+          paymentMethod: data.paymentMethod,
+          paidOn: data.paidOn.toDate().toLocaleString(),
+        };
+      })
+    );
+  } catch (error) {
+    console.error("Error loading transaction history:", error);
+    this.transactions = [];
+  } finally {
+    this.isLoading = false;
+  }
+},
   },
   computed: {
     storeLocation() {
@@ -500,7 +549,7 @@ export default {
         const docSnap = await getDoc(userDoc);
         this.userId = user.uid; // Store logged-in user ID
         await this.loadReviews();
-
+        await this.loadTransactionHistory();
         if (docSnap.exists()) {
           const userData = docSnap.data();
           this.userName = `${userData.firstName} ${userData.lastName}`;
@@ -665,12 +714,41 @@ export default {
           <!-- Right Column -->
           <div class="col-md-6">
             <div class="card mb-4">
-              <div class="card-header">Past Renovation Projects</div>
-              <div class="card-body">
-                <div class="transaction-item">
-                  <p class="bio-placeholder">No past projects available.</p>
-                </div>
-              </div>
+              <div class="card-header">Renovation Project Payments</div>
+   <div class="card-body">
+    <div v-if="isLoading" class="loading-state">
+      <p>Loading transactions...</p>
+    </div>
+    <div v-else>
+      <div v-if="transactions.length === 0" class="empty-state">
+        <p>No transactions available.</p>
+      </div>
+      <div v-else>
+        <div v-for="transaction in transactions" :key="transaction.id" class="transaction-item">
+          <div>
+            <strong>Project</strong>
+            <span class="project-name">{{ transaction.projectname }}</span>
+          </div>
+          <div>
+            <strong>Customer</strong>
+            <span class="contractor-name">{{ transaction.customername }}</span>
+          </div>
+          <div>
+            <strong>Amount</strong>
+            <span class="amount">${{ transaction.amount.toFixed(2) }}</span>
+          </div>
+          <!-- <div>
+            <strong>Payment Method</strong>
+            <span class="payment-method">{{ transaction.paymentMethod }}</span>
+          </div> -->
+          <div>
+            <strong>Date Paid</strong>
+            <span class="date">{{ transaction.paidOn }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
             </div>
             <div class="card mb-4 review-card">
               <div class="card-header">Reviews</div>
@@ -1315,4 +1393,125 @@ h6 {
   padding: 2rem;
   font-style: italic;
 }
+
+.transactions-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 24px;
+
+      background: #f8fafc;
+      min-height: 100vh;
+    }
+
+   
+
+    .transaction-item {
+      background: white;
+      border-radius: 16px;
+      padding: 1rem;
+      margin-bottom: 1.25rem;
+
+      transition: all 0.3s ease;
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .transaction-item::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 4px;
+      background: #789ccc;
+      border-radius: 4px 0 0 4px;
+    }
+
+ 
+
+    .transaction-item div {
+      margin-bottom: 0.40rem;
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      align-items: center;
+    }
+
+    .transaction-item div:last-child {
+      margin-bottom: 0;
+    }
+
+    .transaction-item strong {
+      color: #1e293b;
+      font-weight: 500;
+      font-size: 1rem;
+     
+     
+    }
+
+    .amount {
+      color: #059669;
+      font-weight: 600;
+      font-size: 1rem;
+      background: #ecfdf5;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      display: inline-block;
+    }
+
+    .payment-method {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.35rem 0.85rem;
+      background: #f1f5f9;
+      border-radius: 999px;
+      font-size: 0.875rem;
+      color: #475569;
+      font-weight: 500;
+    }
+
+    .payment-method::before {
+      content: '💳';
+      margin-right: 0.5rem;
+    }
+
+    .date {
+      color: #64748b;
+      font-size: 0.875rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .date::before {
+      content: '📅';
+    }
+
+    .project-name {
+      font-weight: 600;
+      color: #334155;
+      font-size: 1.05rem;
+    }
+
+    .contractor-name {
+      color: #475569;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .contractor-name::before {
+      content: '👤';
+    }
+
+    @media (max-width: 640px) {
+      .transaction-item div {
+        grid-template-columns: 1fr;
+        gap: 0.25rem;
+      }
+      
+      .transaction-item {
+        padding: 1.25rem;
+      }
+    }
 </style>
