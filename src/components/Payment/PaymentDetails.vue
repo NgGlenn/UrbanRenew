@@ -35,10 +35,6 @@
                         project.price).toLocaleString() }}</strong></span>
                 </div>
             </div>
-            <!--                 
-                <h2>Project: {{ project.projectName }}</h2>
-                <p><strong>Contractor:</strong> {{ project.contractorName }}</p>
-                <p><strong>Price:</strong> ${{ formattedPrice }}</p> -->
         </div>
 
 

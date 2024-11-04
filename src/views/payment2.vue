@@ -3,11 +3,8 @@
         <NavBar />
         <div class="container payment-container">
             <div class="row g-4 justify-content-center">
-                <div class="col-12 col-md-6 payment-form-container mb-4">
+                <div class="payment-form-container mb-4">
                     <PaymentForm :project="project" />
-                </div>
-                <div class="col-12 col-md-6 payment-details-container mb-4">
-                    <PaymentDetails :project="project" />
                 </div>
             </div>
         </div>

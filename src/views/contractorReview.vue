@@ -213,7 +213,8 @@ export default {
           createdAt: new Date(),
           contractorID: this.$route.query.contractorID,
           averageRating: averageRating,
-          customerID: this.userID // Use this.userID instead of userID
+          CustomerID: this.userID, // Use this.userID instead of userID
+          comment: this.reviewText,
         };
 
         await addDoc(collection(db, 'reviews'), reviewData);
