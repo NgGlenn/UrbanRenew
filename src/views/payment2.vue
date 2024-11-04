@@ -94,7 +94,7 @@ export default {
                     id: doc.id, // Document ID
                     ...doc.data() // Document data
                 }));
-                //console.log("success");
+                console.log(this.renoPaymentItems);
             } catch (e) {
                 console.error("error fetching payments",e);
             }
