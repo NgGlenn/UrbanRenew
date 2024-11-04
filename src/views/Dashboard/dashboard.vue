@@ -14,8 +14,8 @@
     const { userRole } = storeToRefs(userStore);
 
     const isContractor = computed(() => userRole.value === 'contractor');
-    console.log(userStore)
-    console.log(isContractor)
+    // console.log(userStore)
+    // console.log(isContractor)
 
     // Check if customer has any projects
     const hasProjects = computed(() => projects.value?.length > 0);

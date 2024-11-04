@@ -9,7 +9,7 @@
         
         <form @submit.prevent="submitReview">
           <h1>Review Contractor</h1>
-            <label class="metric-label">Contractor's Name:</label>
+            <label class="metric-label">Contractor's Name:</label>         
             <input type="text" :value="contractorName" disabled>
             <!-- <input type="text" class="form-control" id="amount" :value="formattedPrice" disabled /> -->
             <!-- Star Rating for Quality of Work -->
@@ -98,33 +98,35 @@
 
 </template>
   
-  <script>
-  import Navbar from '@/components/NavBar.vue';
-  import { db } from '../firebase';  // Ensure your firebase.js is correctly configured
-  import { collection, addDoc, getDoc, query, where, doc } from 'firebase/firestore';
+<script>
+import Navbar from '@/components/NavBar.vue';
+import { db, auth } from '../firebase'; // Ensure your firebase.js is correctly configured
+import { collection, addDoc, getDoc, query, where, doc } from 'firebase/firestore';
+import { onAuthStateChanged } from "firebase/auth";
 
-  export default {
-    components: {
-      Navbar,
-    },
-    data() {
-      return {
-        contractorName: '',
-        qualityOfWork: 0,
-        timeliness: 0,
-        communication: 0,
-        problemResolution: 0,
-        budgetAdherence: 0,
-        hoverQualityOfWork: 0,
-        hoverTimeliness: 0,
-        hoverCommunication: 0,
-        hoverProblemResolution: 0,
-        hoverBudgetAdherence: 0,
-        reviewText: '',
-        submitted: false,
-      };
-    },
-    async created() {
+export default {
+  components: {
+    Navbar,
+  },
+  data() {
+    return {
+      contractorName: '',
+      qualityOfWork: 0,
+      timeliness: 0,
+      communication: 0,
+      problemResolution: 0,
+      budgetAdherence: 0,
+      hoverQualityOfWork: 0,
+      hoverTimeliness: 0,
+      hoverCommunication: 0,
+      hoverProblemResolution: 0,
+      hoverBudgetAdherence: 0,
+      reviewText: '',
+      submitted: false,
+      userID: '',
+    };
+  },
+  async created() {
     // Retrieve contractorID from the query parameters
     const contractorID = this.$route.query.contractorID;
     console.log('Contractor ID from URL:', contractorID);
@@ -151,77 +153,89 @@
     } else {
       console.warn('No contractorID provided in the query parameters.');
     }
-  },
-    methods: {
-      setRating(metric, value) {
-        this[metric] = value; // Set the rating on click
-      },
-      hoverRating(hoverMetric, value) {
-        this[hoverMetric] = value; // Temporarily highlight stars during hover
-      },
-      leaveRating(hoverMetric) {
-        this[hoverMetric] = 0; // Reset hover state
-      },
-      getRatingDescription(rating) {
-        switch (rating) {
-          case 5:
-            return 'Excellent';
-          case 4:
-            return 'Very Good';
-          case 3:
-            return 'Good';
-          case 2:
-            return 'Fair';
-          case 1:
-            return 'Poor';
-          default:
-            return '';
-        }
-      },
-      computeAverageRating() {
-    // Calculate the average rating based on the 5 rating components
-    const ratings = [
-      this.qualityOfWork,
-      this.timeliness,
-      this.communication,
-      this.problemResolution,
-      this.budgetAdherence
-    ];
-    const totalRating = ratings.reduce((sum, rating) => sum + rating, 0);
-    return (totalRating / ratings.length).toFixed(1); // Calculate and round to one decimal place
-  },
-      async submitReview() {
-        try {
-          const averageRating = this.computeAverageRating();
-            // Save the review data to Firestore
-            const reviewData = {
-              contractorName: this.contractorName,
-              qualityOfWork: this.qualityOfWork,
-              timeliness: this.timeliness,
-              communication: this.communication,
-              problemResolution: this.problemResolution,
-              budgetAdherence: this.budgetAdherence,
-              createdAt: new Date(),
-              contractorID: this.$route.query.contractorID,
-              averageRating: averageRating,
-            };
-            this.$router.push({
-            name: 'ReviewView',
-            query: { averageRating: averageRating },
-            });
-            await addDoc(collection(db, 'reviews'), reviewData);
-            this.submitted = true;
-            // Redirect to Review.vue and pass the review data
 
-          } catch (e) {
-            console.error("Error adding document: ", e);
-            alert('Error submitting review. Please try again.');
-      
-          }
-      },
+    // Set up auth state listener
+    onAuthStateChanged(auth, (user) => {
+      if (user) {
+        this.userID = user.uid; // Store logged-in user ID
+      }
+    });
+  },
+  methods: {
+    setRating(metric, value) {
+      this[metric] = value; // Set the rating on click
     },
-  };
-  </script>
+    hoverRating(hoverMetric, value) {
+      this[hoverMetric] = value; // Temporarily highlight stars during hover
+    },
+    leaveRating(hoverMetric) {
+      this[hoverMetric] = 0; // Reset hover state
+    },
+    getRatingDescription(rating) {
+      switch (rating) {
+        case 5:
+          return 'Excellent';
+        case 4:
+          return 'Very Good';
+        case 3:
+          return 'Good';
+        case 2:
+          return 'Fair';
+        case 1:
+          return 'Poor';
+        default:
+          return '';
+      }
+    },
+    computeAverageRating() {
+      // Calculate the average rating based on the 5 rating components
+      const ratings = [
+        this.qualityOfWork,
+        this.timeliness,
+        this.communication,
+        this.problemResolution,
+        this.budgetAdherence
+      ];
+      const totalRating = ratings.reduce((sum, rating) => sum + rating, 0);
+      return (totalRating / ratings.length).toFixed(1); // Calculate and round to one decimal place
+    },
+    async submitReview() {
+      try {
+        const averageRating = this.computeAverageRating();
+        // Save the review data to Firestore
+        const reviewData = {
+          contractorName: this.contractorName,
+          qualityOfWork: this.qualityOfWork,
+          timeliness: this.timeliness,
+          communication: this.communication,
+          problemResolution: this.problemResolution,
+          budgetAdherence: this.budgetAdherence,
+          createdAt: new Date(),
+          contractorID: this.$route.query.contractorID,
+          averageRating: averageRating,
+          CustomerID: this.userID, // Use this.userID instead of userID
+          comment: this.reviewText,
+        };
+
+        await addDoc(collection(db, 'reviews'), reviewData);
+
+        this.submitted = true;
+        
+        // Redirect to Review.vue and pass the review data
+        this.$router.push({
+          name: 'ReviewView',
+          query: { averageRating: averageRating },
+        });
+
+      } catch (e) {
+        console.error("Error adding document: ", e);
+        alert('Error submitting review. Please try again.');
+      }
+    },
+  },
+};
+</script>
+
   
   <style scoped>
   

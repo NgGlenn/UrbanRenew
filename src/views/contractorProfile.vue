@@ -360,8 +360,8 @@ export default {
               return {
                 id: docSnapshot.id,
                 contractorID: reviewData.contractorID,
-                customerName: `${customerData.firstName} ${customerData.lastName}`,
-                customerImage: customerData.imageUrl || this.defaultProfileIcon,
+                HRP31L6VPAOwdmYpzvTKmxV7jbD3: `${customerData.firstName} ${customerData.lastName}`,
+                customerImage: customerData.imageUrl || defaultProfileIcon,
                 createdAt: reviewData.createdAt.toDate().toLocaleString(),
                 averageRating: parseFloat(reviewData.averageRating),
                 qualityOfWork: reviewData.qualityOfWork,
@@ -392,7 +392,6 @@ export default {
       }
     },
 
-    // Option 2: Alternative method without requiring index
     async loadReviewsWithoutIndex() {
       try {
         this.isLoadingReviews = true;
@@ -418,7 +417,7 @@ export default {
                 id: docSnapshot.id,
                 contractorID: reviewData.contractorID,
                 customerName: `${customerData.firstName} ${customerData.lastName}`,
-                customerImage: customerData.imageUrl || this.defaultProfileIcon,
+                customerImage: customerData.imageUrl || defaultProfileIcon,
                 createdAt: reviewData.createdAt.toDate().toLocaleString(),
                 averageRating: parseFloat(reviewData.averageRating),
                 qualityOfWork: reviewData.qualityOfWork,
@@ -438,7 +437,6 @@ export default {
         const results = await Promise.all(customerPromises);
         this.reviews = results
           .filter((review) => review !== null)
-          // Sort in memory instead of in query
           .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       } catch (error) {
         console.error("Error loading reviews:", error);
@@ -456,10 +454,10 @@ export default {
       }
     },
     changePage(page) {
-    if (page > 0 && page <= this.totalPages) {
-      this.currentPage = page;
-    }
-  },
+      if (page > 0 && page <= this.totalPages) {
+        this.currentPage = page;
+      }
+    },
   },
   computed: {
     storeLocation() {
@@ -467,36 +465,33 @@ export default {
         this.postalCode
       )}`;
     },
- totalPages() {
+    totalPages() {
       return Math.ceil(this.reviews.length / this.perPage);
     },
-    
+
     paginatedReviews() {
       const start = (this.currentPage - 1) * this.perPage;
       const end = start + this.perPage;
       return this.reviews.slice(start, end);
     },
-    
+
     // Add this computed property to handle which page numbers to display
     displayedPages() {
       const total = this.totalPages;
       const current = this.currentPage;
       const displayed = this.displayedPagesCount;
-      
+
       let start = Math.max(1, current - Math.floor(displayed / 2));
       let end = Math.min(total, start + displayed - 1);
-      
+
       // Adjust start if we're near the end
       if (end === total) {
         start = Math.max(1, end - displayed + 1);
       }
-      
+
       // Generate array of page numbers
-      return Array.from(
-        { length: end - start + 1 },
-        (_, i) => start + i
-      );
-    }
+      return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+    },
   },
   mounted() {
     onAuthStateChanged(auth, async (user) => {
@@ -681,7 +676,6 @@ export default {
               <div class="card-header">Reviews</div>
               <div class="card-body">
                 <!-- Loading State -->
-     
 
                 <!-- No Reviews State -->
                 <div v-if="reviews.length === 0" class="no-reviews">
@@ -819,15 +813,15 @@ export default {
                     <p class="review-comment">{{ review.comment }}</p>
                   </div>
 
-                  <!-- Pagination -->
+                
                   <div class="pagination-container" v-if="totalPages > 1">
                     <button
                       class="pagination-button"
                       @click="changePage(currentPage - 1)"
                       :disabled="currentPage === 1"
                     >
-                      Previous
-                    </button>&nbsp;
+                      Previous</button
+                    >&nbsp;
 
                     <button
                       v-for="page in displayedPages"
@@ -846,7 +840,7 @@ export default {
                     >
                       Next
                     </button>
-                    <br><br>
+                    <br /><br />
                     <span class="pagination-info">
                       Page {{ currentPage }} of {{ totalPages }}
                     </span>
@@ -1321,5 +1315,4 @@ h6 {
   padding: 2rem;
   font-style: italic;
 }
-
 </style>

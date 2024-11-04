@@ -2,7 +2,7 @@
 import LogedInLayout from "@/components/LogedInLayout.vue";
 import { db, auth } from "@/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc, updateDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, updateDoc, setDoc, collection, query, where, getDocs,orderBy, } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import defaultProfileIcon from "@/assets/defaultProfileIcon.jpg"; //to display default picture if no profile picture set
 import { updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
@@ -31,6 +31,12 @@ export default {
       cropper: null,
       profilePictureUrl: "",
       loading: true, // Set loading to true initially
+       reviews: [],
+      averageRating: 0,
+      userId: "", // user ID of the logged-in user
+      defaultProfileIcon: "../assets/default_profile.png",
+      currentPage: 1,
+      perPage: 1,
     };
   },
 
@@ -216,6 +222,165 @@ export default {
         console.error("Error saving image URL to Firestore:", error);
       }
     },
+    async loadReviewsWithIndex() {
+
+  try {
+    this.isLoadingReviews = true;
+    const reviewsCollection = collection(db, "reviews");
+    // Query reviews where customerID matches the current userId
+    const q = query(
+      reviewsCollection,
+      where("customerID", "==", this.userId),
+      orderBy("createdAt", "desc")
+    );
+
+    const querySnapshot = await getDocs(q);
+    this.reviews = [];
+
+    const reviewPromises = querySnapshot.docs.map(async (docSnapshot) => {
+      const reviewData = docSnapshot.data();
+      const contractorDocRef = doc(db, "users", reviewData.contractorID);
+
+      try {
+        const contractorDoc = await getDoc(contractorDocRef);
+
+        if (contractorDoc.exists()) {
+          const contractorData = contractorDoc.data();
+          return {
+            id: docSnapshot.id,
+            customerID: reviewData.customerID,
+            contractorName: `${contractorData.firstName} ${contractorData.lastName}`,
+            contractorImage: contractorData.imageUrl || defaultProfileIcon,
+            createdAt: reviewData.createdAt.toDate().toLocaleString(),
+            averageRating: parseFloat(reviewData.averageRating),
+            qualityOfWork: reviewData.qualityOfWork,
+            timeliness: reviewData.timeliness,
+            budgetAdherence: reviewData.budgetAdherence,
+            communication: reviewData.communication,
+            comment: reviewData.comment || "No comment provided.",
+          };
+        }
+      } catch (error) {
+        console.error("Error fetching contractor data:", error);
+        return null;
+      }
+    });
+
+    const results = await Promise.all(reviewPromises);
+    this.reviews = results.filter((review) => review !== null);
+   
+  } catch (error) {
+    if (error.code === "failed-precondition") {
+      console.log("Index not found, falling back to alternative method");
+      await this.loadReviewsWithoutIndex();
+    } else {
+      console.error("Error loading reviews:", error);
+    }
+  } finally {
+    this.isLoadingReviews = false;
+  }
+},
+
+async loadReviewsWithoutIndex() {
+  try {
+    this.isLoadingReviews = true;
+    const reviewsCollection = collection(db, "reviews");
+    // Query reviews where customerID matches the current userId
+    const q = query(
+      reviewsCollection,
+      where("customerID", "==", this.userId)
+    );
+
+    const querySnapshot = await getDocs(q);
+    this.reviews = [];
+
+    const reviewPromises = querySnapshot.docs.map(async (docSnapshot) => {
+      const reviewData = docSnapshot.data();
+      const contractorDocRef = doc(db, "users", reviewData.contractorID);
+
+      try {
+        const contractorDoc = await getDoc(contractorDocRef);
+
+        if (contractorDoc.exists()) {
+          const contractorData = contractorDoc.data();
+          return {
+            id: docSnapshot.id,
+            customerID: reviewData.customerID,
+            contractorName: `${contractorData.firstName} ${contractorData.lastName}`,
+            contractorImage: contractorData.imageUrl || defaultProfileIcon,
+            createdAt: reviewData.createdAt.toDate().toLocaleString(),
+            averageRating: parseFloat(reviewData.averageRating),
+            qualityOfWork: reviewData.qualityOfWork,
+            timeliness: reviewData.timeliness,
+            budgetAdherence: reviewData.budgetAdherence,
+            communication: reviewData.communication,
+            problemResolution: reviewData.problemResolution,
+            comment: reviewData.comment || "No comment provided.",
+          };
+        }
+      } catch (error) {
+        console.error("Error fetching contractor data:", error);
+        return null;
+      }
+    });
+
+    const results = await Promise.all(reviewPromises);
+    this.reviews = results
+      .filter((review) => review !== null)
+      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+  } catch (error) {
+    console.error("Error loading reviews:", error);
+  } finally {
+    this.isLoadingReviews = false;
+  }
+},
+
+async loadReviews() {
+  console.log("Current reviews:", this.reviews);
+  try {
+    await this.loadReviewsWithIndex();
+  } catch (error) {
+    console.error("Error in loadReviews:", error);
+  }
+},
+
+changePage(page) {
+  if (page > 0 && page <= this.totalPages) {
+    this.currentPage = page;
+  }
+}
+
+      
+  },
+  computed: {
+    totalPages() {
+      return Math.ceil(this.reviews.length / this.perPage);
+    },
+
+    paginatedReviews() {
+      const start = (this.currentPage - 1) * this.perPage;
+      const end = start + this.perPage;
+      return this.reviews.slice(start, end);
+    },
+
+    // Add this computed property to handle which page numbers to display
+    displayedPages() {
+      const total = this.totalPages;
+      const current = this.currentPage;
+      const displayed = this.displayedPagesCount;
+
+      let start = Math.max(1, current - Math.floor(displayed / 2));
+      let end = Math.min(total, start + displayed - 1);
+
+      // Adjust start if we're near the end
+      if (end === total) {
+        start = Math.max(1, end - displayed + 1);
+      }
+
+      // Generate array of page numbers
+      return Array.from({ length: end - start + 1 }, (_, i) => start + i);
+    },
   },
   mounted() {
     onAuthStateChanged(auth, async (user) => {
@@ -223,7 +388,10 @@ export default {
         // Fetch user data based on the userID
         const userDoc = doc(db, "users", user.uid);
         const docSnap = await getDoc(userDoc);
+        this.userId = user.uid; // Store logged-in user ID
+        await this.loadReviews();
         console.log("Document data:", docSnap.data());
+        
 
         if (docSnap.exists()) {
           const userData = docSnap.data();
@@ -317,21 +485,180 @@ export default {
                 </div>
               </div>
             </div>
-            <div class="card mb-4 preferences-card">
-              <div class="card-header">Design Preferences</div>
+            <div class="card mb-4 review-card">
+              <div class="card-header">Review History</div>
               <div class="card-body">
-                <h6>Style <i class="fas fa-paint-brush icon"></i></h6>
-                <select class="form-select mb-3">
-                  <option value="minimalistic">Minimalistic</option>
-                  <option value="modern">Modern</option>
-                  <option value="traditional">Traditional</option>
-                </select>
-                <h6>Budget Type <i class="fas fa-money-bill-wave icon"></i></h6>
-                <select class="form-select mb-3">
-                  <option value="premium">Premium</option>
-                  <option value="economy">Economy</option>
-                </select>
-                <button class="btn btn-primary">Update Preferences</button>
+                <!-- Loading State -->
+
+                <!-- No Reviews State -->
+                <div v-if="reviews.length === 0" class="no-reviews">
+                  You have submited no reviews yet.
+                </div>
+
+                <!-- Reviews List -->
+                <div v-else>
+                  <div
+                    v-for="review in paginatedReviews"
+                    :key="review.id"
+                    class="review-item"
+                  >
+                    <div class="profile-section">
+                      <img
+                        :src="review.contractorImage || defaultProfileIcon"
+                        alt="Profile Picture"
+                        class="profile-image-review"
+                      />
+                      <div class="profile-info">
+                        <h6 class="customer-name">{{ review.contractorName }}</h6>
+                        <span class="metric-number">Overall Rating</span><br />
+                        <div class="metric-stars">
+                          <span
+                            v-for="star in 5"
+                            :key="star"
+                            class="star"
+                            :class="{ filled: star <= review.averageRating }"
+                            >★</span
+                          >
+                        </div>
+                        <span class="metric-number"
+                          >{{ review.averageRating }}/5</span
+                        >
+                        <div class="review-date">{{ review.createdAt }}</div>
+                      </div>
+                    </div>
+
+                    <div class="metrics-container">
+                      <div class="metric-item">
+                        <span class="metric-label">Quality of Work</span>
+                        <div class="metric-value">
+                          <div class="metric-stars">
+                            <span
+                              v-for="star in 5"
+                              :key="star"
+                              class="star"
+                              :class="{ filled: star <= review.qualityOfWork }"
+                              >★</span
+                            >
+                          </div>
+                          <span class="metric-number"
+                            >{{ review.qualityOfWork }}/5</span
+                          >
+                        </div>
+                      </div>
+
+                      <div class="metric-item">
+                        <span class="metric-label">Timeliness</span>
+                        <div class="metric-value">
+                          <div class="metric-stars">
+                            <span
+                              v-for="star in 5"
+                              :key="star"
+                              class="star"
+                              :class="{ filled: star <= review.timeliness }"
+                              >★</span
+                            >
+                          </div>
+                          <span class="metric-number"
+                            >{{ review.timeliness }}/5</span
+                          >
+                        </div>
+                      </div>
+
+                      <div class="metric-item">
+                        <span class="metric-label">Budget Adherence</span>
+                        <div class="metric-value">
+                          <div class="metric-stars">
+                            <span
+                              v-for="star in 5"
+                              :key="star"
+                              class="star"
+                              :class="{
+                                filled: star <= review.budgetAdherence,
+                              }"
+                              >★</span
+                            >
+                          </div>
+                          <span class="metric-number"
+                            >{{ review.budgetAdherence }}/5</span
+                          >
+                        </div>
+                      </div>
+
+                      <div class="metric-item">
+                        <span class="metric-label">Problem Resolution</span>
+                        <div class="metric-value">
+                          <div class="metric-stars">
+                            <span
+                              v-for="star in 5"
+                              :key="star"
+                              class="star"
+                              :class="{
+                                filled: star <= review.problemResolution,
+                              }"
+                              >★</span
+                            >
+                          </div>
+                          <span class="metric-number"
+                            >{{ review.problemResolution }}/5</span
+                          >
+                        </div>
+                      </div>
+
+                      <div class="metric-item">
+                        <span class="metric-label">Communication</span>
+                        <div class="metric-value">
+                          <div class="metric-stars">
+                            <span
+                              v-for="star in 5"
+                              :key="star"
+                              class="star"
+                              :class="{ filled: star <= review.communication }"
+                              >★</span
+                            >
+                          </div>
+                          <span class="metric-number"
+                            >{{ review.communication }}/5</span
+                          >
+                        </div>
+                      </div>
+                    </div>
+
+                    <p class="review-comment">{{ review.comment }}</p>
+                  </div>
+
+                
+                  <div class="pagination-container" v-if="totalPages > 1">
+                    <button
+                      class="pagination-button"
+                      @click="changePage(currentPage - 1)"
+                      :disabled="currentPage === 1"
+                    >
+                      Previous</button
+                    >&nbsp;
+
+                    <button
+                      v-for="page in displayedPages"
+                      :key="page"
+                      class="pagination-button"
+                      :class="{ active: page === currentPage }"
+                      @click="changePage(page)"
+                    >
+                      {{ page }}
+                    </button>
+
+                    <button
+                      class="pagination-button"
+                      @click="changePage(currentPage + 1)"
+                      :disabled="currentPage === totalPages"
+                    >
+                      Next
+                    </button>
+                    <br /><br />
+                    <span class="pagination-info">
+                      Page {{ currentPage }} of {{ totalPages }}
+                    </span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -584,5 +911,131 @@ h6 {
 
 .selected-image-preview {
   width: 100%; /* Adjust this as necessary */
+}
+
+
+.marker-label {
+  background-color: rgba(255, 255, 255, 0.8); /* Background for readability */
+  padding: 4px 8px;
+  border-radius: 4px; /* Rounded corners */
+  box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.3); /* Soft shadow */
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6); /* Light text shadow */
+  font-family: "Arial", sans-serif; /* Custom font */
+  font-size: 14px;
+}
+
+.review-card .card-body {
+  padding: 1.5rem;
+}
+
+.review-item {
+  background: white;
+  border-radius: 0.5rem;
+  padding: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.review-item:last-child {
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
+}
+
+.profile-section {
+  display: flex;
+  align-items: flex-start;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.profile-image-review {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #f8f9fa;
+}
+
+.profile-info {
+  flex-grow: 1;
+}
+
+.customer-name {
+  font-weight: 600;
+  color: #2d3748;
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.rating {
+  margin-top: 0.25rem;
+}
+
+.star {
+  color: #cbd5e0;
+  font-size: 1.1rem;
+}
+
+.star.filled {
+  color: #fbbf24;
+}
+
+.review-date {
+  color: #64748b;
+  font-size: 0.875rem;
+  margin-top: 0.25rem;
+}
+
+.metrics-container {
+  background: #f8f9fa;
+  border-radius: 0.5rem;
+  padding: 1rem;
+  margin: 1rem 0;
+}
+
+.metric-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid #e9ecef;
+}
+
+.metric-item:last-child {
+  border-bottom: none;
+}
+
+.metric-label {
+  color: #4b5563;
+  font-size: 0.875rem;
+}
+
+.metric-value {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.metric-stars {
+  display: inline-flex;
+  gap: 0.25rem;
+}
+
+.metric-number {
+  font-weight: 500;
+  color: #2d3748;
+}
+
+.review-comment {
+  color: #1a202c;
+  line-height: 1.6;
+  margin-top: 1rem;
+}
+
+.no-reviews {
+  text-align: center;
+  color: #64748b;
+  padding: 2rem;
+  font-style: italic;
 }
 </style>

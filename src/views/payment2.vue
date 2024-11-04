@@ -3,11 +3,8 @@
         <NavBar />
         <div class="container payment-container">
             <div class="row g-4 justify-content-center">
-                <div class="col-12 col-md-6 payment-form-container mb-4">
+                <div class="payment-form-container mb-4">
                     <PaymentForm :project="project" />
-                </div>
-                <div class="col-12 col-md-6 payment-details-container mb-4">
-                    <PaymentDetails :project="project" />
                 </div>
             </div>
         </div>
@@ -74,7 +71,7 @@ export default {
     async created() {
         await this.fetchJobs();
         const jobID = this.$route.query.jobID;
-        console.log(jobID)
+        //console.log(jobID)
         // const jobId = this.$route.query.jobId || this.$route.query.projectID;
         
         // if (jobId) {
@@ -94,7 +91,7 @@ export default {
                     id: doc.id, // Document ID
                     ...doc.data() // Document data
                 }));
-                //console.log("success");
+                console.log(this.renoPaymentItems);
             } catch (e) {
                 console.error("error fetching payments",e);
             }

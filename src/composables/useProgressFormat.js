@@ -19,7 +19,7 @@ export function useProgressFormat(jobs, tasks){
         //Calculate current step based on task progression
         const overallProgress = calculateOverallProgress(tasks.value);
         const currentStep = determineProjectStep(overallProgress);
-        console.log(currentStep)
+        // console.log(currentStep)
 
         return {
             currentStep,

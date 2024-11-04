@@ -16,11 +16,12 @@
         },
         async created() {
         this.jobRequests = await this.getJobRequests();
+        console.log(this.jobRequests);
         },
         computed: {
-        filteredJobRequests() {
+        async filteredJobRequests() {
             return this.jobRequests.filter(
-                request => request.quote-received === this.targetContractor
+                request => request.quoteReceived === this.targetContractor
             );
         }
         },

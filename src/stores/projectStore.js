@@ -76,7 +76,7 @@ export const useProjectStore = defineStore('projects', () => {
         );
     });
     const { data: contractorJobs } = useCollection(contractorJobsQuery);
-    console.log(contractorJobs)
+    // console.log(contractorJobs)
    
 
     watch(currentJobId, (newId) => {
@@ -96,7 +96,7 @@ export const useProjectStore = defineStore('projects', () => {
         return doc(db, 'jobs', currentJobId.value);
     });
     const { data: currentJob } = useDocument(currentJobQuery);
-    console.log(currentJob)
+    // console.log(currentJob)
 
     const currentTaskQuery = computed(() => {
         // if (!currentJobId.value || !currentJob.value) return null;
@@ -124,7 +124,7 @@ export const useProjectStore = defineStore('projects', () => {
         return taskQuery;
     });
     const { data: currentTask } = useCollection(currentTaskQuery);
-    console.log(currentTask)
+    // console.log(currentTask)
 
     // Add logging for main query
     watch(currentTask, (tasks) => {
