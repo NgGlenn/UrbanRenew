@@ -370,7 +370,7 @@ export default {
         const q = query(
           paymentsCollection,
           where("customerID", "==", this.userId),
-          where("projstatus", "==", "paid"),
+          where("projstatus", "in", ["paid", "completed"]),
         );
 
         const querySnapshot = await getDocs(q);
