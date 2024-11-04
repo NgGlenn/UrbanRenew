@@ -74,7 +74,7 @@ export default {
     async created() {
         await this.fetchJobs();
         const jobID = this.$route.query.jobID;
-        console.log(jobID)
+        //console.log(jobID)
         // const jobId = this.$route.query.jobId || this.$route.query.projectID;
         
         // if (jobId) {

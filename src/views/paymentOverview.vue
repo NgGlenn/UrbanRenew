@@ -9,6 +9,10 @@
                     @click="selectButton('pending')">
                     Pending
                 </button>
+                <button type="button" class="btn btn-link" :class="{ selected: selectedButton === 'partiallypaid' }"
+                    @click="selectButton('partiallypaid')">
+                    Partially Paid
+                </button>
                 <button type="button" class="btn btn-link" :class="{ selected: selectedButton === 'held' }"
                     @click="selectButton('held')">
                     Held

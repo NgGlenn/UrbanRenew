@@ -14,8 +14,8 @@
                     </div>
                 </div>
             </div>
-            <label class="form-label">Payment Percentage</label>
-                <div class="form-check">
+            <label v-if="project.paidstatus=== 'pending'" class="form-label">Payment Percentage</label>
+                <div v-if="project.paidstatus=== 'pending'" class="form-check">
                     <input
                         type="radio"
                         id="payment25"
@@ -25,7 +25,7 @@
                     />
                     <label for="payment25" class="form-check-label">25% ({{ (project.price * 0.25).toLocaleString() }})</label>
                 </div>
-                <div class="form-check">
+                <div v-if="project.paidstatus=== 'pending'" class="form-check">
                     <input
                         type="radio"
                         id="payment50"
@@ -35,7 +35,7 @@
                     />
                     <label for="payment50" class="form-check-label">50% ({{ (project.price * 0.50).toLocaleString() }})</label>
                 </div>
-                <div class="form-check">
+                <div v-if="project.paidstatus=== 'pending'" class="form-check">
                     <input
                         type="radio"
                         id="payment100"
@@ -109,7 +109,7 @@
 
 <script>
 import { db } from '../../firebase';  // Ensure your firebase.js is correctly configured
-import { collection, addDoc, doc, updateDoc } from 'firebase/firestore';
+import { collection, addDoc, doc, updateDoc, getDoc } from 'firebase/firestore';
 
 export default {
     props: {
@@ -124,52 +124,71 @@ export default {
             selectedPercentage: '100', // Default to full payment (100%)
         };
     },
+    computed: {
+        calculatedAmount() {
+        // Check if project and project.price are defined before calculating
+        if (!this.project || this.project.price == null) {
+            return 0; // Return a default value if price is not available yet
+        }
+        const percentage = parseFloat(this.selectedPercentage) / 100;
+        return this.project.price * percentage;
+    },
+        formattedPartialPrice() {
+            return this.calculatedAmount.toLocaleString();
+        },
+    },
     methods: {
         async handleSubmit() {
             const amountToPay = this.calculatedAmount;
 
+            // Add payment record to 'payments' collection
             await addDoc(collection(db, 'payments'), {
                 projectname: this.project.Jobname,
                 contractorname: this.project.contractorName,
                 projectID: this.project.jobID,
                 amount: amountToPay,
                 paymentMethod: this.paymentMethod,
-                projstatus: 'paid',
+                projstatus: this.selectedPercentage === '100' ? 'paid' : 'pending',
                 paidOn: new Date(),
-                user:user.uid,
             });
 
-            // Step 2: Update the 'paidstatus' field in the 'jobs' collection for the specific job
+            // Update job's paid status and remaining amount in the 'jobs' collection
             const jobRef = doc(db, 'jobs', this.project.id);
-            const queryParams = new URLSearchParams({
-                contractorID: this.project.contractorId,
-            }).toString();
             try {
-                await updateDoc(jobRef, { paidstatus: 'paid' });
-                console.log("Job's paidstatus updated successfully");
+                // Fetch the current job details
+                const jobSnapshot = await getDoc(jobRef);
+                if (jobSnapshot.exists()) {
+                const jobData = jobSnapshot.data();
+                const remainingBalance = jobData.price - amountToPay;
 
-                if (this.paymentMethod === 'paynow') {
-                    alert('Proceeding with PayNow for amount: $' + this.formattedPartialPrice);
-                    this.$router.push(`/contractorReview?${queryParams}`);
-                } else if (this.paymentMethod === 'creditcard') {
-                    alert('Proceeding with Credit Card payment for amount: $' + this.formattedPartialPrice);
-                    this.$router.push(`/contractorReview?${queryParams}`);
+                if (this.selectedPercentage === '100') {
+                // Full payment
+                await updateDoc(jobRef, {
+                    paidstatus: 'paid',
+                    price: 0, // Assuming the job is fully paid, set the remaining price to 0
+                });
                 } else {
-                    alert('Please select a payment method.');
-                }
+                // Partial payment
+                await updateDoc(jobRef, {
+                    paidstatus: 'partiallypaid',
+                    price: remainingBalance, // Update remaining balance after partial payment
+                });
+            }
+        }
+
+                console.log("Job's status and balance updated successfully");
+
+                // Redirect with appropriate messages
+                const queryParams = new URLSearchParams({ contractorID: this.project.contractorId }).toString();
+                const message = this.paymentMethod === 'paynow' 
+                    ? `Proceeding with PayNow for amount: $${this.formattedPartialPrice}`
+                    : `Proceeding with Credit Card payment for amount: $${this.formattedPartialPrice}`;
+                alert(message);
+                this.$router.push(`/contractorReview?${queryParams}`);
             } catch (error) {
-                console.error('Error updating job status:', error);
+                console.error('Error updating job status or remaining balance:', error);
                 alert('Failed to update the job status. Please try again.');
             }
-        },
-    },
-    computed: {
-        calculatedAmount() {
-            const percentage = parseFloat(this.selectedPercentage) / 100;
-            return this.project.price * percentage;
-        },
-        formattedPartialPrice() {
-            return this.calculatedAmount.toLocaleString();
         },
     },
 };

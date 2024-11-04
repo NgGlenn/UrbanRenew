@@ -9,7 +9,7 @@
             <p class="mb-1"><strong>Price:</strong> ${{ project.price}}</p>
         </div>
         <div class="col-sm-4 text-md-end">
-            <button v-if="project.paidstatus === 'pending'" type="button" class="btn btn-primary" @click="goToPaymentPage">
+            <button v-if="project.paidstatus === 'pending'||project.paidstatus === 'partiallypaid' " type="button" class="btn btn-primary" @click="goToPaymentPage">
                 Make Payment
             </button>
         </div>
