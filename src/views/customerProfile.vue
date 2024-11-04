@@ -2,24 +2,10 @@
 import LogedInLayout from "@/components/LogedInLayout.vue";
 import { db, auth } from "@/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import {
-  doc,
-  getDoc,
-  updateDoc,
-  setDoc,
-  collection,
-  query,
-  where,
-  getDocs,
-  orderBy,
-} from "firebase/firestore";
+import { doc, getDoc, updateDoc, setDoc, collection, query, where, getDocs, orderBy } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import defaultProfileIcon from "@/assets/defaultProfileIcon.jpg"; //to display default picture if no profile picture set
-import {
-  updatePassword,
-  EmailAuthProvider,
-  reauthenticateWithCredential,
-} from "firebase/auth";
+import { updatePassword, EmailAuthProvider, reauthenticateWithCredential} from "firebase/auth";
 import Cropper from "cropperjs";
 import "cropperjs/dist/cropper.css";
 export default {

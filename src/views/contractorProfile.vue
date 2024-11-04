@@ -2,24 +2,10 @@
 import LogedInLayout from "@/components/LogedInLayout.vue";
 import { db, auth } from "@/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import {
-  doc,
-  getDoc,
-  updateDoc,
-  setDoc,
-  collection,
-  query,
-  where,
-  getDocs,
-  orderBy,
-} from "firebase/firestore";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { doc, getDoc, updateDoc, setDoc, collection, query, where, getDocs, orderBy} from "firebase/firestore";
+import { getStorage, ref, uploadBytes,getDownloadURL,deleteObject, getMetadata} from "firebase/storage";
 import defaultProfileIcon from "@/assets/defaultProfileIcon.jpg"; //to display default picture if no profile picture set
-import {
-  updatePassword,
-  EmailAuthProvider,
-  reauthenticateWithCredential,
-} from "firebase/auth";
+import { updatePassword, EmailAuthProvider, reauthenticateWithCredential} from "firebase/auth";
 import Cropper from "cropperjs";
 import "cropperjs/dist/cropper.css";
 export default {
@@ -61,6 +47,9 @@ export default {
       perPage: 1,
       transactions: [],
       isLoading: true,
+      portfolioImages: [], // Store the portfolio images
+      newPortfolioImage: null, // Store the new image to be uploaded
+      showPortfolioImageModal: false, // Control the portfolio image modal
     };
   },
 
@@ -460,53 +449,121 @@ export default {
         this.currentPage = page;
       }
     },
-  async loadTransactionHistory() {
-  try {
-    const paymentsCollection = collection(db, "payments");
-    const q = query(
-      paymentsCollection,
-      where("contractorID", "==", this.userId),
-      where("projstatus", "in", ["paid", "completed"])
-    );
+    async loadTransactionHistory() {
+      try {
+        const paymentsCollection = collection(db, "payments");
+        const q = query(
+          paymentsCollection,
+          where("contractorID", "==", this.userId),
+          where("projstatus", "in", ["paid", "completed"])
+        );
 
-    const querySnapshot = await getDocs(q);
-    this.transactions = await Promise.all(
-      querySnapshot.docs.map(async (docSnapshot) => {
-        const data = docSnapshot.data();
-        let customerName = "Unknown";
+        const querySnapshot = await getDocs(q);
+        this.transactions = await Promise.all(
+          querySnapshot.docs.map(async (docSnapshot) => {
+            const data = docSnapshot.data();
+            let customerName = "Unknown";
 
-        if (data.customerID) {
-          // Fetch customer document
-          const customerRef = doc(db, "users", data.customerID);
-          const customerDoc = await getDoc(customerRef);
+            if (data.customerID) {
+              // Fetch customer document
+              const customerRef = doc(db, "users", data.customerID);
+              const customerDoc = await getDoc(customerRef);
 
-          if (customerDoc.exists()) {
-            const customerData = customerDoc.data();
-            customerName = `${customerData.firstName || ""} ${customerData.lastName || ""}`.trim();
-          } else {
-            console.warn(`No user found for customerID: ${data.customerID}`);
-          }
-        } else {
-          console.warn(`Missing customerID in payment document: ${docSnapshot.id}`);
+              if (customerDoc.exists()) {
+                const customerData = customerDoc.data();
+                customerName = `${customerData.firstName || ""} ${
+                  customerData.lastName || ""
+                }`.trim();
+              } else {
+                console.warn(
+                  `No user found for customerID: ${data.customerID}`
+                );
+              }
+            } else {
+              console.warn(
+                `Missing customerID in payment document: ${docSnapshot.id}`
+              );
+            }
+
+            return {
+              id: docSnapshot.id,
+              projectname: data.projectname,
+              customername: customerName,
+              amount: data.amount,
+              paymentMethod: data.paymentMethod,
+              paidOn: data.paidOn.toDate().toLocaleString(),
+            };
+          })
+        );
+      } catch (error) {
+        console.error("Error loading transaction history:", error);
+        this.transactions = [];
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+    async uploadPortfolioImage() {
+      if (this.newPortfolioImage) {
+        try {
+          const storage = getStorage();
+          const storageRef = ref(storage, `portfolio-images/${Date.now()}.png`);
+
+          // Upload the image to Firebase Storage
+          await uploadBytes(storageRef, this.newPortfolioImage);
+
+          // Get the download URL of the uploaded image
+          const downloadURL = await getDownloadURL(storageRef);
+
+          // Update the contractor's portfolio images in Firestore
+          const contractorDocRef = doc(db, "contractors", this.userId);
+          await updateDoc(contractorDocRef, {
+            portfolioImages: [...this.portfolioImages, downloadURL],
+          });
+
+          // Update the local state
+          this.portfolioImages.push(downloadURL);
+          this.newPortfolioImage = null;
+          this.showPortfolioImageModal = false;
+
+          alert("Portfolio image uploaded successfully.");
+        } catch (error) {
+          console.error("Error uploading portfolio image:", error);
+          alert("Failed to upload portfolio image. Please try again.");
         }
+      } else {
+        alert("Please select an image to upload.");
+      }
+    },
+    async deletePortfolioImage(index) {
+      try {
+        // Get the contractor document reference
+        const contractorDocRef = doc(db, "contractors", this.userId);
 
-        return {
-          id: docSnapshot.id,
-          projectname: data.projectname,
-          customername: customerName,
-          amount: data.amount,
-          paymentMethod: data.paymentMethod,
-          paidOn: data.paidOn.toDate().toLocaleString(),
-        };
-      })
-    );
-  } catch (error) {
-    console.error("Error loading transaction history:", error);
-    this.transactions = [];
-  } finally {
-    this.isLoading = false;
-  }
-},
+        // Update the contractor's portfolio images in Firestore
+        await updateDoc(contractorDocRef, {
+          portfolioImages: this.portfolioImages.filter((_, i) => i !== index),
+        });
+
+        // Update the local state
+        this.portfolioImages.splice(index, 1);
+
+        alert("Portfolio image deleted successfully.");
+      } catch (error) {
+        console.error("Error deleting portfolio image:", error);
+        alert("Failed to delete portfolio image. Please try again.");
+      }
+    },
+    openPortfolioImageModal() {
+      this.showPortfolioImageModal = true;
+    },
+    closePortfolioImageModal() {
+      this.showPortfolioImageModal = false;
+      this.newPortfolioImage = null;
+    },
+    handlePortfolioImageUpload(event) {
+      this.newPortfolioImage = event.target.files[0];
+    },
   },
   computed: {
     storeLocation() {
@@ -572,6 +629,7 @@ export default {
               this.certificatesAndAwards = contractorData.certsAndAwards?.length
                 ? contractorData.certsAndAwards
                 : ["None"];
+              this.portfolioImages = contractorData.portfolioImages || [];
               await this.loadMap(this.postalCode);
             } else {
               console.error("No contractor document for user ID:", user.uid);
@@ -715,40 +773,50 @@ export default {
           <div class="col-md-6">
             <div class="card mb-4">
               <div class="card-header">Renovation Project Payments</div>
-   <div class="card-body">
-    <div v-if="isLoading" class="loading-state">
-      <p>Loading transactions...</p>
-    </div>
-    <div v-else>
-      <div v-if="transactions.length === 0" class="empty-state">
-        <p>No transactions available.</p>
-      </div>
-      <div v-else>
-        <div v-for="transaction in transactions" :key="transaction.id" class="transaction-item">
-          <div>
-            <strong>Project</strong>
-            <span class="project-name">{{ transaction.projectname }}</span>
-          </div>
-          <div>
-            <strong>Customer</strong>
-            <span class="contractor-name">{{ transaction.customername }}</span>
-          </div>
-          <div>
-            <strong>Amount</strong>
-            <span class="amount">${{ transaction.amount.toFixed(2) }}</span>
-          </div>
-          <!-- <div>
+              <div class="card-body">
+                <div v-if="isLoading" class="loading-state">
+                  <p>Loading transactions...</p>
+                </div>
+                <div v-else>
+                  <div v-if="transactions.length === 0" class="empty-state">
+                    <p>No transactions available.</p>
+                  </div>
+                  <div v-else>
+                    <div
+                      v-for="transaction in transactions"
+                      :key="transaction.id"
+                      class="transaction-item"
+                    >
+                      <div>
+                        <strong>Project</strong>
+                        <span class="project-name">{{
+                          transaction.projectname
+                        }}</span>
+                      </div>
+                      <div>
+                        <strong>Customer</strong>
+                        <span class="contractor-name">{{
+                          transaction.customername
+                        }}</span>
+                      </div>
+                      <div>
+                        <strong>Amount</strong>
+                        <span class="amount"
+                          >${{ transaction.amount.toFixed(2) }}</span
+                        >
+                      </div>
+                      <!-- <div>
             <strong>Payment Method</strong>
             <span class="payment-method">{{ transaction.paymentMethod }}</span>
           </div> -->
-          <div>
-            <strong>Date Paid</strong>
-            <span class="date">{{ transaction.paidOn }}</span>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
+                      <div>
+                        <strong>Date Paid</strong>
+                        <span class="date">{{ transaction.paidOn }}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
             <div class="card mb-4 review-card">
               <div class="card-header">Reviews</div>
@@ -891,7 +959,6 @@ export default {
                     <p class="review-comment">{{ review.comment }}</p>
                   </div>
 
-                
                   <div class="pagination-container" v-if="totalPages > 1">
                     <button
                       class="pagination-button"
@@ -926,10 +993,59 @@ export default {
                 </div>
               </div>
             </div>
+
+            <div class="card mb-4">
+              <div class="card-header">Portfolio Images</div>
+              <div class="card-body">
+                <div class="portfolio-images-container">
+                  <div
+                    v-for="(imageUrl, index) in portfolioImages"
+                    :key="index"
+                    class="portfolio-image-card"
+                  >
+                    <img
+                      :src="imageUrl"
+                      alt="Portfolio Image"
+                      class="portfolio-image"
+                    />
+                    <button
+                      class="delete-button"
+                      @click="deletePortfolioImage(index)"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                  <div class="portfolio-image-card add-image-card">
+                    <button
+                      class="add-image-button"
+                      @click="openPortfolioImageModal"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-
+      <div v-if="showPortfolioImageModal" class="modal-overlay">
+        <div class="modal-content">
+          <h5>Upload Portfolio Image</h5>
+          <input
+            type="file"
+            @change="handlePortfolioImageUpload"
+            class="form-control mb-2"
+            accept=".jpg,.jpeg,.png"
+          />
+          <button class="btn btn-primary" @click="uploadPortfolioImage">
+            Upload
+          </button>
+          <button class="btn btn-secondary" @click="closePortfolioImageModal">
+            Cancel
+          </button>
+        </div>
+      </div>
       <!-- Edit Profile Modal -->
       <div v-if="showEditProfileModal" class="modal-overlay">
         <div class="modal-content">
@@ -1395,123 +1511,175 @@ h6 {
 }
 
 .transactions-container {
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 24px;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px;
 
-      background: #f8fafc;
-      min-height: 100vh;
-    }
+  background: #f8fafc;
+  min-height: 100vh;
+}
 
-   
+.transaction-item {
+  background: white;
+  border-radius: 16px;
+  padding: 1rem;
+  margin-bottom: 1.25rem;
 
-    .transaction-item {
-      background: white;
-      border-radius: 16px;
-      padding: 1rem;
-      margin-bottom: 1.25rem;
+  transition: all 0.3s ease;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  position: relative;
+  overflow: hidden;
+}
 
-      transition: all 0.3s ease;
-      border: 1px solid rgba(226, 232, 240, 0.8);
-      position: relative;
-      overflow: hidden;
-    }
+.transaction-item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 4px;
+  background: #789ccc;
+  border-radius: 4px 0 0 4px;
+}
 
-    .transaction-item::before {
-      content: '';
-      position: absolute;
-      left: 0;
-      top: 0;
-      height: 100%;
-      width: 4px;
-      background: #789ccc;
-      border-radius: 4px 0 0 4px;
-    }
+.transaction-item div {
+  margin-bottom: 0.4rem;
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  align-items: center;
+}
 
- 
+.transaction-item div:last-child {
+  margin-bottom: 0;
+}
 
-    .transaction-item div {
-      margin-bottom: 0.40rem;
-      display: grid;
-      grid-template-columns: 140px 1fr;
-      align-items: center;
-    }
+.transaction-item strong {
+  color: #1e293b;
+  font-weight: 500;
+  font-size: 1rem;
+}
 
-    .transaction-item div:last-child {
-      margin-bottom: 0;
-    }
+.amount {
+  color: #059669;
+  font-weight: 600;
+  font-size: 1rem;
+  background: #ecfdf5;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  display: inline-block;
+}
 
-    .transaction-item strong {
-      color: #1e293b;
-      font-weight: 500;
-      font-size: 1rem;
-     
-     
-    }
+.payment-method {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.85rem;
+  background: #f1f5f9;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  color: #475569;
+  font-weight: 500;
+}
 
-    .amount {
-      color: #059669;
-      font-weight: 600;
-      font-size: 1rem;
-      background: #ecfdf5;
-      padding: 0.25rem 0.75rem;
-      border-radius: 999px;
-      display: inline-block;
-    }
+.payment-method::before {
+  content: "💳";
+  margin-right: 0.5rem;
+}
 
-    .payment-method {
-      display: inline-flex;
-      align-items: center;
-      padding: 0.35rem 0.85rem;
-      background: #f1f5f9;
-      border-radius: 999px;
-      font-size: 0.875rem;
-      color: #475569;
-      font-weight: 500;
-    }
+.date {
+  color: #64748b;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
 
-    .payment-method::before {
-      content: '💳';
-      margin-right: 0.5rem;
-    }
+.date::before {
+  content: "📅";
+}
 
-    .date {
-      color: #64748b;
-      font-size: 0.875rem;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
+.project-name {
+  font-weight: 600;
+  color: #334155;
+  font-size: 1.05rem;
+}
 
-    .date::before {
-      content: '📅';
-    }
+.contractor-name {
+  color: #475569;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
 
-    .project-name {
-      font-weight: 600;
-      color: #334155;
-      font-size: 1.05rem;
-    }
+.contractor-name::before {
+  content: "👤";
+}
 
-    .contractor-name {
-      color: #475569;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-    }
+@media (max-width: 640px) {
+  .transaction-item div {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
 
-    .contractor-name::before {
-      content: '👤';
-    }
+  .transaction-item {
+    padding: 1.25rem;
+  }
+}
 
-    @media (max-width: 640px) {
-      .transaction-item div {
-        grid-template-columns: 1fr;
-        gap: 0.25rem;
-      }
-      
-      .transaction-item {
-        padding: 1.25rem;
-      }
-    }
+.portfolio-images-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-gap: 1rem;
+}
+
+.portfolio-image-card {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.portfolio-image {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+}
+
+.delete-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 16px;
+  cursor: pointer;
+  color: #dc3545;
+}
+
+.add-image-card {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.add-image-button {
+  background-color: #769fcd;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  margin: 10px;
+  font-size: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
 </style>
