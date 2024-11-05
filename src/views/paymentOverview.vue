@@ -58,43 +58,8 @@ export default {
         return {
             selectedButton: 'pending',
             renoPaymentItems:[],
-            // renoPaymentItems: [
-            //     {
-            //         projectID: 1234,
-            //         projectName: 'Hacking of Wall',
-            //         contractorName: 'Adrian Tok & Co.',
-            //         price: 100000,
-            //         status: 'pending',
-            //     },
-            //     {
-            //         projectID: 1299,
-            //         projectName: 'Kitchen Reno',
-            //         contractorName: 'Shaunbrina Carpentry',
-            //         price: 167880,
-            //         status: 'held',
-            //     },
-            //     {
-            //         projectID: 4569,
-            //         projectName: 'Toilet Plumbing',
-            //         contractorName: "Joel's Toilets",
-            //         price: 25000,
-            //         status: 'pending',
-            //     },
-            //     {
-            //         projectID: 8970,
-            //         projectName: 'Cabinet in Master Bedroom',
-            //         contractorName: 'Moses & Bed',
-            //         price: 1000,
-            //         status: 'released',
-            //     },
-            //     {
-            //         projectID: 8930,
-            //         projectName: 'Windows for Bedroom',
-            //         contractorName: "Glenn's Windows and Doors",
-            //         price: 156700,
-            //         status: 'held',
-            //     },
-            // ],
+            currentDate: new Date(),
+            jobCompletionDate: null,
         };
     },
     async created() {
@@ -102,10 +67,23 @@ export default {
     },
     computed: {
         filteredProjects() {
-            return this.renoPaymentItems.filter(
-                (project) => project.paidstatus === this.selectedButton
-            );
-        },
+        return this.renoPaymentItems.filter((project) => {
+            // Parse endDate from project data (assuming endDate is in seconds, adjust if in milliseconds)
+            const endDate = new Date(project.endDate.seconds * 1000); // Adjust this if endDate is stored differently
+            //console.log("End Date:", endDate);
+            // Calculate the time difference in days
+            const daysDifference = (this.currentDate - endDate) / (1000 * 60 * 60 * 24);
+            //console.log("Days difference:", daysDifference);
+            // Filter projects based on selected button and date conditions
+            if (this.selectedButton === 'held') {
+                return project.paidstatus === 'paid' && daysDifference <= 7 && daysDifference >= 0;
+            } else if (this.selectedButton === 'released') {
+                return project.paidstatus === 'paid' && daysDifference > 7;
+            } else {
+                return project.paidstatus === this.selectedButton;
+            }
+        });
+    },
     },
     methods: {
         async fetchJobs() {
@@ -115,6 +93,7 @@ export default {
                     id: doc.id, // Document ID
                     ...doc.data() // Document data
                 }));
+                console.log("Payment items:", this.renoPaymentItems);
             } catch (e) {
                 console.error("error fetching payments",e);
             }
