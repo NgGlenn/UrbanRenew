@@ -50,6 +50,7 @@ export default {
       portfolioImages: [], // Store the portfolio images
       newPortfolioImage: null, // Store the new image to be uploaded
       showPortfolioImageModal: false, // Control the portfolio image modal
+      imagePortfolioUrl: "",
     };
   },
 
@@ -503,66 +504,98 @@ export default {
       }
     },
 
-    async uploadPortfolioImage() {
-      if (this.newPortfolioImage) {
+   openPortfolioImageModal() {
+  this.showPortfolioImageModal = true;
+},
+
+closePortfolioImageModal() {
+  this.showPortfolioImageModal = false;
+  this.imagePortfolioUrl = null;
+  if (this.cropperPortfolio) {
+    this.cropperPortfolio.destroy();
+    this.cropperPortfolio = null;
+  }
+},
+
+handlePortfolioImageUpload(event) {
+  const file = event.target.files[0];
+  console.log("Selected portfolio file:", file);
+  if (file) {
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      this.imagePortfolioUrl = e.target.result;
+      console.log("Portfolio Image URL:", this.imagePortfolioUrl);
+      this.$nextTick(() => {
+        this.initializePortfolioCropper();
+      });
+    };
+
+    reader.readAsDataURL(file);
+  }
+},
+
+initializePortfolioCropper() {
+  if (this.$refs.portfolioImageToCrop) {
+    this.cropperPortfolio = new Cropper(this.$refs.portfolioImageToCrop, {
+      aspectRatio: 16 / 9, // Changed to landscape for portfolio images
+      viewMode: 1,
+      autoCropArea: 1,
+    });
+  }
+},
+
+async uploadPortfolioImage() {
+  if (this.cropperPortfolio) {
+    this.cropperPortfolio.getCroppedCanvas().toBlob(async (blob) => {
+      if (blob) {
         try {
           const storage = getStorage();
           const storageRef = ref(storage, `portfolio-images/${Date.now()}.png`);
 
-          // Upload the image to Firebase Storage
-          await uploadBytes(storageRef, this.newPortfolioImage);
+          // Upload the cropped image blob
+          const uploadTask = await uploadBytes(storageRef, blob);
+          const downloadURL = await getDownloadURL(uploadTask.ref);
 
-          // Get the download URL of the uploaded image
-          const downloadURL = await getDownloadURL(storageRef);
-
-          // Update the contractor's portfolio images in Firestore
+          // Update Firestore
           const contractorDocRef = doc(db, "contractors", this.userId);
           await updateDoc(contractorDocRef, {
             portfolioImages: [...this.portfolioImages, downloadURL],
           });
 
-          // Update the local state
+          // Update local state
           this.portfolioImages.push(downloadURL);
-          this.newPortfolioImage = null;
-          this.showPortfolioImageModal = false;
-
+          
+          // Clean up
+          this.closePortfolioImageModal();
           alert("Portfolio image uploaded successfully.");
         } catch (error) {
           console.error("Error uploading portfolio image:", error);
           alert("Failed to upload portfolio image. Please try again.");
         }
       } else {
-        alert("Please select an image to upload.");
+        console.error("Blob is null or undefined.");
       }
-    },
+    });
+  } else {
+    alert("Please select and crop an image first.");
+  }
+},
+
     async deletePortfolioImage(index) {
       try {
-        // Get the contractor document reference
         const contractorDocRef = doc(db, "contractors", this.userId);
 
-        // Update the contractor's portfolio images in Firestore
         await updateDoc(contractorDocRef, {
           portfolioImages: this.portfolioImages.filter((_, i) => i !== index),
         });
 
-        // Update the local state
         this.portfolioImages.splice(index, 1);
-
         alert("Portfolio image deleted successfully.");
       } catch (error) {
         console.error("Error deleting portfolio image:", error);
         alert("Failed to delete portfolio image. Please try again.");
       }
-    },
-    openPortfolioImageModal() {
-      this.showPortfolioImageModal = true;
-    },
-    closePortfolioImageModal() {
-      this.showPortfolioImageModal = false;
-      this.newPortfolioImage = null;
-    },
-    handlePortfolioImageUpload(event) {
-      this.newPortfolioImage = event.target.files[0];
     },
   },
   computed: {
@@ -1038,6 +1071,14 @@ export default {
             class="form-control mb-2"
             accept=".jpg,.jpeg,.png"
           />
+           <div v-if="imagePortfolioUrl" class="image-crop-container mb-3">
+        <img
+          ref="portfolioImageToCrop"
+          :src="imagePortfolioUrl"
+          alt="Image to crop"
+          class="selected-image-preview"
+        />
+      </div>
           <button class="btn btn-primary" @click="uploadPortfolioImage">
             Upload
           </button>
