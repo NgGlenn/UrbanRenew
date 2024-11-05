@@ -51,6 +51,7 @@ export default {
       newPortfolioImage: null, // Store the new image to be uploaded
       showPortfolioImageModal: false, // Control the portfolio image modal
       imagePortfolioUrl: "",
+      previewImage: null
     };
   },
 
@@ -437,7 +438,6 @@ export default {
       }
     },
 
-    // Use this method to load reviews
     async loadReviews() {
       try {
         await this.loadReviewsWithIndex();
@@ -553,20 +553,15 @@ async uploadPortfolioImage() {
           const storage = getStorage();
           const storageRef = ref(storage, `portfolio-images/${Date.now()}.png`);
 
-          // Upload the cropped image blob
           const uploadTask = await uploadBytes(storageRef, blob);
           const downloadURL = await getDownloadURL(uploadTask.ref);
-
-          // Update Firestore
           const contractorDocRef = doc(db, "contractors", this.userId);
           await updateDoc(contractorDocRef, {
             portfolioImages: [...this.portfolioImages, downloadURL],
           });
 
-          // Update local state
           this.portfolioImages.push(downloadURL);
           
-          // Clean up
           this.closePortfolioImageModal();
           alert("Portfolio image uploaded successfully.");
         } catch (error) {
@@ -597,6 +592,14 @@ async uploadPortfolioImage() {
         alert("Failed to delete portfolio image. Please try again.");
       }
     },
+
+         openPreviewModal(imageUrl) {
+    this.previewImage = imageUrl;
+  },
+  closePreviewModal() {
+    this.previewImage = null;
+    },
+  
   },
   computed: {
     storeLocation() {
@@ -614,7 +617,6 @@ async uploadPortfolioImage() {
       return this.reviews.slice(start, end);
     },
 
-    // Add this computed property to handle which page numbers to display
     displayedPages() {
       const total = this.totalPages;
       const current = this.currentPage;
@@ -623,14 +625,13 @@ async uploadPortfolioImage() {
       let start = Math.max(1, current - Math.floor(displayed / 2));
       let end = Math.min(total, start + displayed - 1);
 
-      // Adjust start if we're near the end
       if (end === total) {
         start = Math.max(1, end - displayed + 1);
       }
 
-      // Generate array of page numbers
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     },
+
   },
   mounted() {
     onAuthStateChanged(auth, async (user) => {
@@ -1040,6 +1041,7 @@ async uploadPortfolioImage() {
                       :src="imageUrl"
                       alt="Portfolio Image"
                       class="portfolio-image"
+                      @click="openPreviewModal(imageUrl)"
                     />
                     <button
                       class="delete-button"
@@ -1062,6 +1064,13 @@ async uploadPortfolioImage() {
           </div>
         </div>
       </div>
+
+      <div class="portfolio-preview-modal" v-if="previewImage" @click="closePreviewModal">
+  <div class="portfolio-preview-modal-content">
+    <button class="portfolio-preview-close" @click="closePreviewModal">&times;</button>
+    <img :src="previewImage" alt="Preview" class="portfolio-preview-image">
+  </div>
+</div>
       <div v-if="showPortfolioImageModal" class="modal-overlay">
         <div class="modal-content">
           <h5>Upload Portfolio Image</h5>
@@ -1683,6 +1692,8 @@ h6 {
   width: 100%;
   height: 150px;
   object-fit: cover;
+  cursor: pointer;
+  transition: transform 0.3s ease, filter 0.3s ease;
 }
 
 .delete-button {
@@ -1723,4 +1734,67 @@ h6 {
   align-items: center;
   cursor: pointer;
 }
+
+/* Modal Styles */
+.portfolio-preview-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.portfolio-preview-modal-content {
+  position: relative;
+  width: 800px;  /* Fixed width */
+  height: 600px; /* Fixed height */
+  background: white; /* Added background to see the container */
+}
+
+.portfolio-preview-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* This will maintain aspect ratio */
+  background: black; /* Optional: adds background for images that don't fill the space */
+}
+
+.portfolio-preview-close {
+  position: absolute;
+  top: 0px;
+  right: 10px;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 5px;
+  z-index: 1001;
+}
+
+/* For mobile responsiveness (optional) */
+@media (max-width: 850px) {
+  .portfolio-preview-modal-content {
+    width: 90%;
+    height: 70vh;
+  }
+}
+.portfolio-image:hover {
+  transform: scale(1.05);
+  filter: brightness(1.1);
+}
+
+/* Optional: Add a subtle shadow on hover for more depth */
+.portfolio-image-card {
+  transition: box-shadow 0.3s ease;
+}
+
+.portfolio-image-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
 </style>
