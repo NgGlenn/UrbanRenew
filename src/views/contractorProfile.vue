@@ -2,24 +2,10 @@
 import LogedInLayout from "@/components/logedInLayout.vue";
 import { db, auth } from "@/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import {
-  doc,
-  getDoc,
-  updateDoc,
-  setDoc,
-  collection,
-  query,
-  where,
-  getDocs,
-  orderBy,
-} from "firebase/firestore";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { doc, getDoc, updateDoc, setDoc, collection, query, where, getDocs, orderBy} from "firebase/firestore";
+import { getStorage, ref, uploadBytes,getDownloadURL,deleteObject, getMetadata} from "firebase/storage";
 import defaultProfileIcon from "@/assets/defaultProfileIcon.jpg"; //to display default picture if no profile picture set
-import {
-  updatePassword,
-  EmailAuthProvider,
-  reauthenticateWithCredential,
-} from "firebase/auth";
+import { updatePassword, EmailAuthProvider, reauthenticateWithCredential} from "firebase/auth";
 import Cropper from "cropperjs";
 import "cropperjs/dist/cropper.css";
 export default {
@@ -59,6 +45,13 @@ export default {
       defaultProfileIcon: "../assets/default_profile.png",
       currentPage: 1,
       perPage: 1,
+      transactions: [],
+      isLoading: true,
+      portfolioImages: [], // Store the portfolio images
+      newPortfolioImage: null, // Store the new image to be uploaded
+      showPortfolioImageModal: false, // Control the portfolio image modal
+      imagePortfolioUrl: "",
+      previewImage: null
     };
   },
 
@@ -445,7 +438,6 @@ export default {
       }
     },
 
-    // Use this method to load reviews
     async loadReviews() {
       try {
         await this.loadReviewsWithIndex();
@@ -458,6 +450,156 @@ export default {
         this.currentPage = page;
       }
     },
+    async loadTransactionHistory() {
+      try {
+        const paymentsCollection = collection(db, "payments");
+        const q = query(
+          paymentsCollection,
+          where("contractorID", "==", this.userId),
+          where("projstatus", "in", ["paid", "completed"])
+        );
+
+        const querySnapshot = await getDocs(q);
+        this.transactions = await Promise.all(
+          querySnapshot.docs.map(async (docSnapshot) => {
+            const data = docSnapshot.data();
+            let customerName = "Unknown";
+
+            if (data.customerID) {
+              // Fetch customer document
+              const customerRef = doc(db, "users", data.customerID);
+              const customerDoc = await getDoc(customerRef);
+
+              if (customerDoc.exists()) {
+                const customerData = customerDoc.data();
+                customerName = `${customerData.firstName || ""} ${
+                  customerData.lastName || ""
+                }`.trim();
+              } else {
+                console.warn(
+                  `No user found for customerID: ${data.customerID}`
+                );
+              }
+            } else {
+              console.warn(
+                `Missing customerID in payment document: ${docSnapshot.id}`
+              );
+            }
+
+            return {
+              id: docSnapshot.id,
+              projectname: data.projectname,
+              customername: customerName,
+              amount: data.amount,
+              paymentMethod: data.paymentMethod,
+              paidOn: data.paidOn.toDate().toLocaleString(),
+            };
+          })
+        );
+      } catch (error) {
+        console.error("Error loading transaction history:", error);
+        this.transactions = [];
+      } finally {
+        this.isLoading = false;
+      }
+    },
+
+   openPortfolioImageModal() {
+  this.showPortfolioImageModal = true;
+},
+
+closePortfolioImageModal() {
+  this.showPortfolioImageModal = false;
+  this.imagePortfolioUrl = null;
+  if (this.cropperPortfolio) {
+    this.cropperPortfolio.destroy();
+    this.cropperPortfolio = null;
+  }
+},
+
+handlePortfolioImageUpload(event) {
+  const file = event.target.files[0];
+  console.log("Selected portfolio file:", file);
+  if (file) {
+    const reader = new FileReader();
+
+    reader.onload = (e) => {
+      this.imagePortfolioUrl = e.target.result;
+      console.log("Portfolio Image URL:", this.imagePortfolioUrl);
+      this.$nextTick(() => {
+        this.initializePortfolioCropper();
+      });
+    };
+
+    reader.readAsDataURL(file);
+  }
+},
+
+initializePortfolioCropper() {
+  if (this.$refs.portfolioImageToCrop) {
+    this.cropperPortfolio = new Cropper(this.$refs.portfolioImageToCrop, {
+      aspectRatio: 16 / 9, // Changed to landscape for portfolio images
+      viewMode: 1,
+      autoCropArea: 1,
+    });
+  }
+},
+
+async uploadPortfolioImage() {
+  if (this.cropperPortfolio) {
+    this.cropperPortfolio.getCroppedCanvas().toBlob(async (blob) => {
+      if (blob) {
+        try {
+          const storage = getStorage();
+          const storageRef = ref(storage, `portfolio-images/${Date.now()}.png`);
+
+          const uploadTask = await uploadBytes(storageRef, blob);
+          const downloadURL = await getDownloadURL(uploadTask.ref);
+          const contractorDocRef = doc(db, "contractors", this.userId);
+          await updateDoc(contractorDocRef, {
+            portfolioImages: [...this.portfolioImages, downloadURL],
+          });
+
+          this.portfolioImages.push(downloadURL);
+          
+          this.closePortfolioImageModal();
+          alert("Portfolio image uploaded successfully.");
+        } catch (error) {
+          console.error("Error uploading portfolio image:", error);
+          alert("Failed to upload portfolio image. Please try again.");
+        }
+      } else {
+        console.error("Blob is null or undefined.");
+      }
+    });
+  } else {
+    alert("Please select and crop an image first.");
+  }
+},
+
+    async deletePortfolioImage(index) {
+      try {
+        const contractorDocRef = doc(db, "contractors", this.userId);
+
+        await updateDoc(contractorDocRef, {
+          portfolioImages: this.portfolioImages.filter((_, i) => i !== index),
+        });
+
+        this.portfolioImages.splice(index, 1);
+        alert("Portfolio image deleted successfully.");
+      } catch (error) {
+        console.error("Error deleting portfolio image:", error);
+        alert("Failed to delete portfolio image. Please try again.");
+      }
+    },
+
+         openPreviewModal(imageUrl) {
+    this.previewImage = imageUrl;
+  },
+  closePreviewModal() {
+    this.previewImage = null;
+    },
+  
   },
   computed: {
     storeLocation() {
@@ -475,7 +617,6 @@ export default {
       return this.reviews.slice(start, end);
     },
 
-    // Add this computed property to handle which page numbers to display
     displayedPages() {
       const total = this.totalPages;
       const current = this.currentPage;
@@ -484,14 +625,13 @@ export default {
       let start = Math.max(1, current - Math.floor(displayed / 2));
       let end = Math.min(total, start + displayed - 1);
 
-      // Adjust start if we're near the end
       if (end === total) {
         start = Math.max(1, end - displayed + 1);
       }
 
-      // Generate array of page numbers
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     },
+
   },
   mounted() {
     onAuthStateChanged(auth, async (user) => {
@@ -500,7 +640,7 @@ export default {
         const docSnap = await getDoc(userDoc);
         this.userId = user.uid; // Store logged-in user ID
         await this.loadReviews();
-
+        await this.loadTransactionHistory();
         if (docSnap.exists()) {
           const userData = docSnap.data();
           this.userName = `${userData.firstName} ${userData.lastName}`;
@@ -523,6 +663,7 @@ export default {
               this.certificatesAndAwards = contractorData.certsAndAwards?.length
                 ? contractorData.certsAndAwards
                 : ["None"];
+              this.portfolioImages = contractorData.portfolioImages || [];
               await this.loadMap(this.postalCode);
             } else {
               console.error("No contractor document for user ID:", user.uid);
@@ -665,10 +806,49 @@ export default {
           <!-- Right Column -->
           <div class="col-md-6">
             <div class="card mb-4">
-              <div class="card-header">Past Renovation Projects</div>
+              <div class="card-header">Renovation Project Payments</div>
               <div class="card-body">
-                <div class="transaction-item">
-                  <p class="bio-placeholder">No past projects available.</p>
+                <div v-if="isLoading" class="loading-state">
+                  <p>Loading transactions...</p>
+                </div>
+                <div v-else>
+                  <div v-if="transactions.length === 0" class="empty-state">
+                    <p>No transactions available.</p>
+                  </div>
+                  <div v-else>
+                    <div
+                      v-for="transaction in transactions"
+                      :key="transaction.id"
+                      class="transaction-item"
+                    >
+                      <div>
+                        <strong>Project</strong>
+                        <span class="project-name">{{
+                          transaction.projectname
+                        }}</span>
+                      </div>
+                      <div>
+                        <strong>Customer</strong>
+                        <span class="contractor-name">{{
+                          transaction.customername
+                        }}</span>
+                      </div>
+                      <div>
+                        <strong>Amount</strong>
+                        <span class="amount"
+                          >${{ transaction.amount.toFixed(2) }}</span
+                        >
+                      </div>
+                      <!-- <div>
+            <strong>Payment Method</strong>
+            <span class="payment-method">{{ transaction.paymentMethod }}</span>
+          </div> -->
+                      <div>
+                        <strong>Date Paid</strong>
+                        <span class="date">{{ transaction.paidOn }}</span>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -813,7 +993,6 @@ export default {
                     <p class="review-comment">{{ review.comment }}</p>
                   </div>
 
-                
                   <div class="pagination-container" v-if="totalPages > 1">
                     <button
                       class="pagination-button"
@@ -848,10 +1027,75 @@ export default {
                 </div>
               </div>
             </div>
+
+            <div class="card mb-4">
+              <div class="card-header">Portfolio Images</div>
+              <div class="card-body">
+                <div class="portfolio-images-container">
+                  <div
+                    v-for="(imageUrl, index) in portfolioImages"
+                    :key="index"
+                    class="portfolio-image-card"
+                  >
+                    <img
+                      :src="imageUrl"
+                      alt="Portfolio Image"
+                      class="portfolio-image"
+                      @click="openPreviewModal(imageUrl)"
+                    />
+                    <button
+                      class="delete-button"
+                      @click="deletePortfolioImage(index)"
+                    >
+                      &times;
+                    </button>
+                  </div>
+                  <div class="portfolio-image-card add-image-card">
+                    <button
+                      class="add-image-button"
+                      @click="openPortfolioImageModal"
+                    >
+                      +
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
 
+      <div class="portfolio-preview-modal" v-if="previewImage" @click="closePreviewModal">
+  <div class="portfolio-preview-modal-content">
+    <button class="portfolio-preview-close" @click="closePreviewModal">&times;</button>
+    <img :src="previewImage" alt="Preview" class="portfolio-preview-image">
+  </div>
+</div>
+      <div v-if="showPortfolioImageModal" class="modal-overlay">
+        <div class="modal-content">
+          <h5>Upload Portfolio Image</h5>
+          <input
+            type="file"
+            @change="handlePortfolioImageUpload"
+            class="form-control mb-2"
+            accept=".jpg,.jpeg,.png"
+          />
+           <div v-if="imagePortfolioUrl" class="image-crop-container mb-3">
+        <img
+          ref="portfolioImageToCrop"
+          :src="imagePortfolioUrl"
+          alt="Image to crop"
+          class="selected-image-preview"
+        />
+      </div>
+          <button class="btn btn-primary" @click="uploadPortfolioImage">
+            Upload
+          </button>
+          <button class="btn btn-secondary" @click="closePortfolioImageModal">
+            Cancel
+          </button>
+        </div>
+      </div>
       <!-- Edit Profile Modal -->
       <div v-if="showEditProfileModal" class="modal-overlay">
         <div class="modal-content">
@@ -1315,4 +1559,242 @@ h6 {
   padding: 2rem;
   font-style: italic;
 }
+
+.transactions-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 24px;
+
+  background: #f8fafc;
+  min-height: 100vh;
+}
+
+.transaction-item {
+  background: white;
+  border-radius: 16px;
+  padding: 1rem;
+  margin-bottom: 1.25rem;
+
+  transition: all 0.3s ease;
+  border: 1px solid rgba(226, 232, 240, 0.8);
+  position: relative;
+  overflow: hidden;
+}
+
+.transaction-item::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  height: 100%;
+  width: 4px;
+  background: #789ccc;
+  border-radius: 4px 0 0 4px;
+}
+
+.transaction-item div {
+  margin-bottom: 0.4rem;
+  display: grid;
+  grid-template-columns: 140px 1fr;
+  align-items: center;
+}
+
+.transaction-item div:last-child {
+  margin-bottom: 0;
+}
+
+.transaction-item strong {
+  color: #1e293b;
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+.amount {
+  color: #059669;
+  font-weight: 600;
+  font-size: 1rem;
+  background: #ecfdf5;
+  padding: 0.25rem 0.75rem;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.payment-method {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0.85rem;
+  background: #f1f5f9;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  color: #475569;
+  font-weight: 500;
+}
+
+.payment-method::before {
+  content: "💳";
+  margin-right: 0.5rem;
+}
+
+.date {
+  color: #64748b;
+  font-size: 0.875rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.date::before {
+  content: "📅";
+}
+
+.project-name {
+  font-weight: 600;
+  color: #334155;
+  font-size: 1.05rem;
+}
+
+.contractor-name {
+  color: #475569;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.contractor-name::before {
+  content: "👤";
+}
+
+@media (max-width: 640px) {
+  .transaction-item div {
+    grid-template-columns: 1fr;
+    gap: 0.25rem;
+  }
+
+  .transaction-item {
+    padding: 1.25rem;
+  }
+}
+
+.portfolio-images-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-gap: 1rem;
+}
+
+.portfolio-image-card {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.portfolio-image {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  cursor: pointer;
+  transition: transform 0.3s ease, filter 0.3s ease;
+}
+
+.delete-button {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background-color: rgba(255, 255, 255, 0.8);
+  border: none;
+  border-radius: 50%;
+  width: 24px;
+  height: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 16px;
+  cursor: pointer;
+  color: #dc3545;
+}
+
+.add-image-card {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+.add-image-button {
+  background-color: #769fcd;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  margin: 10px;
+  font-size: 24px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+/* Modal Styles */
+.portfolio-preview-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.portfolio-preview-modal-content {
+  position: relative;
+  width: 800px;  /* Fixed width */
+  height: 600px; /* Fixed height */
+  background: white; /* Added background to see the container */
+}
+
+.portfolio-preview-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain; /* This will maintain aspect ratio */
+  background: black; /* Optional: adds background for images that don't fill the space */
+}
+
+.portfolio-preview-close {
+  position: absolute;
+  top: 0px;
+  right: 10px;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+  background: none;
+  border: none;
+  padding: 5px;
+  z-index: 1001;
+}
+
+/* For mobile responsiveness (optional) */
+@media (max-width: 850px) {
+  .portfolio-preview-modal-content {
+    width: 90%;
+    height: 70vh;
+  }
+}
+.portfolio-image:hover {
+  transform: scale(1.05);
+  filter: brightness(1.1);
+}
+
+/* Optional: Add a subtle shadow on hover for more depth */
+.portfolio-image-card {
+  transition: box-shadow 0.3s ease;
+}
+
+.portfolio-image-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
 </style>

@@ -2,10 +2,10 @@
 import LogedInLayout from "@/components/logedInLayout.vue";
 import { db, auth } from "@/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc, updateDoc, setDoc, collection, query, where, getDocs,orderBy, } from "firebase/firestore";
+import { doc, getDoc, updateDoc, setDoc, collection, query, where, getDocs, orderBy } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import defaultProfileIcon from "@/assets/defaultProfileIcon.jpg"; //to display default picture if no profile picture set
-import { updatePassword, EmailAuthProvider, reauthenticateWithCredential } from "firebase/auth";
+import { updatePassword, EmailAuthProvider, reauthenticateWithCredential} from "firebase/auth";
 import Cropper from "cropperjs";
 import "cropperjs/dist/cropper.css";
 export default {
@@ -31,12 +31,14 @@ export default {
       cropper: null,
       profilePictureUrl: "",
       loading: true, // Set loading to true initially
-       reviews: [],
+      reviews: [],
       averageRating: 0,
       userId: "", // user ID of the logged-in user
       defaultProfileIcon: "../assets/default_profile.png",
       currentPage: 1,
       perPage: 1,
+      transactions: [],
+      isLoading: true,
     };
   },
 
@@ -223,135 +225,159 @@ export default {
       }
     },
     async loadReviewsWithIndex() {
-
-  try {
-    this.isLoadingReviews = true;
-    const reviewsCollection = collection(db, "reviews");
-    // Query reviews where customerID matches the current userId
-    const q = query(
-      reviewsCollection,
-      where("customerID", "==", this.userId),
-      orderBy("createdAt", "desc")
-    );
-
-    const querySnapshot = await getDocs(q);
-    this.reviews = [];
-
-    const reviewPromises = querySnapshot.docs.map(async (docSnapshot) => {
-      const reviewData = docSnapshot.data();
-      const contractorDocRef = doc(db, "users", reviewData.contractorID);
-
       try {
-        const contractorDoc = await getDoc(contractorDocRef);
+        this.isLoadingReviews = true;
+        const reviewsCollection = collection(db, "reviews");
+        // Query reviews where customerID matches the current userId
+        const q = query(
+          reviewsCollection,
+          where("customerID", "==", this.userId),
+          orderBy("createdAt", "desc")
+        );
 
-        if (contractorDoc.exists()) {
-          const contractorData = contractorDoc.data();
-          return {
-            id: docSnapshot.id,
-            customerID: reviewData.customerID,
-            contractorName: `${contractorData.firstName} ${contractorData.lastName}`,
-            contractorImage: contractorData.imageUrl || defaultProfileIcon,
-            createdAt: reviewData.createdAt.toDate().toLocaleString(),
-            averageRating: parseFloat(reviewData.averageRating),
-            qualityOfWork: reviewData.qualityOfWork,
-            timeliness: reviewData.timeliness,
-            budgetAdherence: reviewData.budgetAdherence,
-            communication: reviewData.communication,
-            comment: reviewData.comment || "No comment provided.",
-          };
-        }
+        const querySnapshot = await getDocs(q);
+        this.reviews = [];
+
+        const reviewPromises = querySnapshot.docs.map(async (docSnapshot) => {
+          const reviewData = docSnapshot.data();
+          const contractorDocRef = doc(db, "users", reviewData.contractorID);
+
+          try {
+            const contractorDoc = await getDoc(contractorDocRef);
+
+            if (contractorDoc.exists()) {
+              const contractorData = contractorDoc.data();
+              return {
+                id: docSnapshot.id,
+                customerID: reviewData.customerID,
+                contractorName: `${contractorData.firstName} ${contractorData.lastName}`,
+                contractorImage: contractorData.imageUrl || defaultProfileIcon,
+                createdAt: reviewData.createdAt.toDate().toLocaleString(),
+                averageRating: parseFloat(reviewData.averageRating),
+                qualityOfWork: reviewData.qualityOfWork,
+                timeliness: reviewData.timeliness,
+                budgetAdherence: reviewData.budgetAdherence,
+                communication: reviewData.communication,
+                comment: reviewData.comment || "No comment provided.",
+              };
+            }
+          } catch (error) {
+            console.error("Error fetching contractor data:", error);
+            return null;
+          }
+        });
+
+        const results = await Promise.all(reviewPromises);
+        this.reviews = results.filter((review) => review !== null);
       } catch (error) {
-        console.error("Error fetching contractor data:", error);
-        return null;
+        if (error.code === "failed-precondition") {
+          console.log("Index not found, falling back to alternative method");
+          await this.loadReviewsWithoutIndex();
+        } else {
+          console.error("Error loading reviews:", error);
+        }
+      } finally {
+        this.isLoadingReviews = false;
       }
-    });
+    },
 
-    const results = await Promise.all(reviewPromises);
-    this.reviews = results.filter((review) => review !== null);
-   
-  } catch (error) {
-    if (error.code === "failed-precondition") {
-      console.log("Index not found, falling back to alternative method");
-      await this.loadReviewsWithoutIndex();
-    } else {
-      console.error("Error loading reviews:", error);
-    }
-  } finally {
-    this.isLoadingReviews = false;
-  }
-},
-
-async loadReviewsWithoutIndex() {
-  try {
-    this.isLoadingReviews = true;
-    const reviewsCollection = collection(db, "reviews");
-    // Query reviews where customerID matches the current userId
-    const q = query(
-      reviewsCollection,
-      where("customerID", "==", this.userId)
-    );
-
-    const querySnapshot = await getDocs(q);
-    this.reviews = [];
-
-    const reviewPromises = querySnapshot.docs.map(async (docSnapshot) => {
-      const reviewData = docSnapshot.data();
-      const contractorDocRef = doc(db, "users", reviewData.contractorID);
-
+    async loadReviewsWithoutIndex() {
       try {
-        const contractorDoc = await getDoc(contractorDocRef);
+        this.isLoadingReviews = true;
+        const reviewsCollection = collection(db, "reviews");
+        // Query reviews where customerID matches the current userId
+        const q = query(
+          reviewsCollection,
+          where("customerID", "==", this.userId)
+        );
 
-        if (contractorDoc.exists()) {
-          const contractorData = contractorDoc.data();
-          return {
-            id: docSnapshot.id,
-            customerID: reviewData.customerID,
-            contractorName: `${contractorData.firstName} ${contractorData.lastName}`,
-            contractorImage: contractorData.imageUrl || defaultProfileIcon,
-            createdAt: reviewData.createdAt.toDate().toLocaleString(),
-            averageRating: parseFloat(reviewData.averageRating),
-            qualityOfWork: reviewData.qualityOfWork,
-            timeliness: reviewData.timeliness,
-            budgetAdherence: reviewData.budgetAdherence,
-            communication: reviewData.communication,
-            problemResolution: reviewData.problemResolution,
-            comment: reviewData.comment || "No comment provided.",
-          };
-        }
+        const querySnapshot = await getDocs(q);
+        this.reviews = [];
+
+        const reviewPromises = querySnapshot.docs.map(async (docSnapshot) => {
+          const reviewData = docSnapshot.data();
+          const contractorDocRef = doc(db, "users", reviewData.contractorID);
+
+          try {
+            const contractorDoc = await getDoc(contractorDocRef);
+
+            if (contractorDoc.exists()) {
+              const contractorData = contractorDoc.data();
+              return {
+                id: docSnapshot.id,
+                customerID: reviewData.customerID,
+                contractorName: `${contractorData.firstName} ${contractorData.lastName}`,
+                contractorImage: contractorData.imageUrl || defaultProfileIcon,
+                createdAt: reviewData.createdAt.toDate().toLocaleString(),
+                averageRating: parseFloat(reviewData.averageRating),
+                qualityOfWork: reviewData.qualityOfWork,
+                timeliness: reviewData.timeliness,
+                budgetAdherence: reviewData.budgetAdherence,
+                communication: reviewData.communication,
+                problemResolution: reviewData.problemResolution,
+                comment: reviewData.comment || "No comment provided.",
+              };
+            }
+          } catch (error) {
+            console.error("Error fetching contractor data:", error);
+            return null;
+          }
+        });
+
+        const results = await Promise.all(reviewPromises);
+        this.reviews = results
+          .filter((review) => review !== null)
+          .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
       } catch (error) {
-        console.error("Error fetching contractor data:", error);
-        return null;
+        console.error("Error loading reviews:", error);
+      } finally {
+        this.isLoadingReviews = false;
       }
-    });
+    },
 
-    const results = await Promise.all(reviewPromises);
-    this.reviews = results
-      .filter((review) => review !== null)
-      .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+    async loadReviews() {
+      console.log("Current reviews:", this.reviews);
+      try {
+        await this.loadReviewsWithIndex();
+      } catch (error) {
+        console.error("Error in loadReviews:", error);
+      }
+    },
 
-  } catch (error) {
-    console.error("Error loading reviews:", error);
-  } finally {
-    this.isLoadingReviews = false;
-  }
-},
+    changePage(page) {
+      if (page > 0 && page <= this.totalPages) {
+        this.currentPage = page;
+      }
+    },
 
-async loadReviews() {
-  console.log("Current reviews:", this.reviews);
-  try {
-    await this.loadReviewsWithIndex();
-  } catch (error) {
-    console.error("Error in loadReviews:", error);
-  }
-},
+    async loadTransactionHistory() {
+      try {
+        const paymentsCollection = collection(db, "payments");
+        const q = query(
+          paymentsCollection,
+          where("customerID", "==", this.userId),
+          where("projstatus", "in", ["paid", "completed"]),
+        );
 
-changePage(page) {
-  if (page > 0 && page <= this.totalPages) {
-    this.currentPage = page;
-  }
-}
-
-      
+        const querySnapshot = await getDocs(q);
+        this.transactions = querySnapshot.docs.map((doc) => {
+          const data = doc.data();
+          return {
+            id: doc.id,
+            projectname: data.projectname,
+            contractorname: data.contractorname,
+            amount: data.amount,
+            paymentMethod: data.paymentMethod,
+            paidOn: data.paidOn.toDate().toLocaleString(),
+          };
+        });
+      } catch (error) {
+        console.error("Error loading transaction history:", error);
+        this.transactions = [];
+      } finally {
+        this.isLoading = false;
+      }
+    },
   },
   computed: {
     totalPages() {
@@ -390,8 +416,8 @@ changePage(page) {
         const docSnap = await getDoc(userDoc);
         this.userId = user.uid; // Store logged-in user ID
         await this.loadReviews();
-        console.log("Document data:", docSnap.data());
-        
+        await this.loadTransactionHistory();
+        console.log("UserID:", this.userId);
 
         if (docSnap.exists()) {
           const userData = docSnap.data();
@@ -479,11 +505,44 @@ changePage(page) {
           <div class="col-md-6">
             <div class="card mb-4">
               <div class="card-header">Transaction History</div>
-              <div class="card-body">
-                <div class="transaction-item">
-                  <p class="bio-placeholder">No transactions available.</p>
-                </div>
-              </div>
+
+    <div class="card-body">
+    <div v-if="isLoading" class="loading-state">
+      <p>Loading transactions...</p>
+    </div>
+    <div v-else>
+      <div v-if="transactions.length === 0" class="empty-state">
+        <p>No transactions available.</p>
+      </div>
+      <div v-else>
+        <div v-for="transaction in transactions" :key="transaction.id" class="transaction-item">
+          <div>
+            <strong>Project</strong>
+            <span class="project-name">{{ transaction.projectname }}</span>
+          </div>
+          <div>
+            <strong>Contractor</strong>
+            <span class="contractor-name">{{ transaction.contractorname }}</span>
+          </div>
+          <div>
+            <strong>Amount</strong>
+            <span class="amount">${{ transaction.amount.toFixed(2) }}</span>
+          </div>
+          <!-- <div>
+            <strong>Payment Method</strong>
+            <span class="payment-method">{{ transaction.paymentMethod }}</span>
+          </div> -->
+          <div>
+            <strong>Date Paid</strong>
+            <span class="date">{{ transaction.paidOn }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+
             </div>
             <div class="card mb-4 review-card">
               <div class="card-header">Review History</div>
@@ -509,7 +568,9 @@ changePage(page) {
                         class="profile-image-review"
                       />
                       <div class="profile-info">
-                        <h6 class="customer-name">{{ review.contractorName }}</h6>
+                        <h6 class="customer-name">
+                          {{ review.contractorName }}
+                        </h6>
                         <span class="metric-number">Overall Rating</span><br />
                         <div class="metric-stars">
                           <span
@@ -626,7 +687,6 @@ changePage(page) {
                     <p class="review-comment">{{ review.comment }}</p>
                   </div>
 
-                
                   <div class="pagination-container" v-if="totalPages > 1">
                     <button
                       class="pagination-button"
@@ -863,33 +923,33 @@ h6 {
 }
 
 .profile-image-container {
-    position: relative;
-    display: inline-block;
-    cursor: pointer;
+  position: relative;
+  display: inline-block;
+  cursor: pointer;
 }
 
 .profile-image {
-    border-radius: 50%;
-    transition: filter 0.3s ease; /* Smooth transition for darkening */
+  border-radius: 50%;
+  transition: filter 0.3s ease; /* Smooth transition for darkening */
 }
 
 .profile-image-container:hover .profile-image {
-    filter: brightness(0.7); /* Darkens the image on hover */
+  filter: brightness(0.7); /* Darkens the image on hover */
 }
 
 .hover-text {
-    position: absolute;
-    top: 50%; /* Center vertically */
-    left: 50%; /* Center horizontally */
-    transform: translate(-50%, -50%); /* Offset to truly center */
-    color: white; /* Text color */
-    font-size: 16px; /* Adjust as needed */
-    opacity: 0; /* Initially hidden */
-    transition: opacity 0.3s ease; /* Smooth transition for text appearance */
+  position: absolute;
+  top: 50%; /* Center vertically */
+  left: 50%; /* Center horizontally */
+  transform: translate(-50%, -50%); /* Offset to truly center */
+  color: white; /* Text color */
+  font-size: 16px; /* Adjust as needed */
+  opacity: 0; /* Initially hidden */
+  transition: opacity 0.3s ease; /* Smooth transition for text appearance */
 }
 
 .profile-image-container:hover .hover-text {
-    opacity: 1; /* Show text on hover */
+  opacity: 1; /* Show text on hover */
 }
 
 .edit-icon {
@@ -912,7 +972,6 @@ h6 {
 .selected-image-preview {
   width: 100%; /* Adjust this as necessary */
 }
-
 
 .marker-label {
   background-color: rgba(255, 255, 255, 0.8); /* Background for readability */
@@ -1038,4 +1097,124 @@ h6 {
   padding: 2rem;
   font-style: italic;
 }
+   .transactions-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 24px;
+
+      background: #f8fafc;
+      min-height: 100vh;
+    }
+
+   
+
+    .transaction-item {
+      background: white;
+      border-radius: 16px;
+      padding: 1rem;
+      margin-bottom: 1.25rem;
+
+      transition: all 0.3s ease;
+      border: 1px solid rgba(226, 232, 240, 0.8);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .transaction-item::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      height: 100%;
+      width: 4px;
+      background: #789ccc;
+      border-radius: 4px 0 0 4px;
+    }
+
+ 
+
+    .transaction-item div {
+      margin-bottom: 0.40rem;
+      display: grid;
+      grid-template-columns: 140px 1fr;
+      align-items: center;
+    }
+
+    .transaction-item div:last-child {
+      margin-bottom: 0;
+    }
+
+    .transaction-item strong {
+      color: #1e293b;
+      font-weight: 500;
+      font-size: 1rem;
+     
+     
+    }
+
+    .amount {
+      color: #059669;
+      font-weight: 600;
+      font-size: 1rem;
+      background: #ecfdf5;
+      padding: 0.25rem 0.75rem;
+      border-radius: 999px;
+      display: inline-block;
+    }
+
+    .payment-method {
+      display: inline-flex;
+      align-items: center;
+      padding: 0.35rem 0.85rem;
+      background: #f1f5f9;
+      border-radius: 999px;
+      font-size: 0.875rem;
+      color: #475569;
+      font-weight: 500;
+    }
+
+    .payment-method::before {
+      content: '💳';
+      margin-right: 0.5rem;
+    }
+
+    .date {
+      color: #64748b;
+      font-size: 0.875rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .date::before {
+      content: '📅';
+    }
+
+    .project-name {
+      font-weight: 600;
+      color: #334155;
+      font-size: 1.05rem;
+    }
+
+    .contractor-name {
+      color: #475569;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .contractor-name::before {
+      content: '👤';
+    }
+
+    @media (max-width: 640px) {
+      .transaction-item div {
+        grid-template-columns: 1fr;
+        gap: 0.25rem;
+      }
+      
+      .transaction-item {
+        padding: 1.25rem;
+      }
+    }
 </style>

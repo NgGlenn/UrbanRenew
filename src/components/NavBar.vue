@@ -51,8 +51,11 @@ export default {
 <template>
     <!-- Start Header/Navigation -->
     <!-- removed "fixed-top" from nav's class as it was blocking the header of dashboard -->
-    <nav
+    <nav v-if="userRole === 'customer'"
       class="custom-navbar navbar navbar navbar-expand-md navbar-light bg-light"
+      style="background: #F7FBFC ;
+    padding-top: 20px;
+    padding-bottom: 20px;"
       arial-label="Furni navigation bar"
     >
       <div class="container-fluid">
@@ -75,10 +78,58 @@ export default {
         <div class="collapse navbar-collapse" id="navbarsFurni">
           <ul class="custom-navbar-nav navbar-nav ms-auto mb-2 mb-md-0">
             <li class="nav-item">
+                <router-link class="nav-link" :to="{ name: 'paymentOverview' }" active-class="active"><i class="fa-solid fa-dollar"></i> Payment</router-link >
+            </li>
+            <li class="nav-item">
                 <router-link class="nav-link" :to="{ name: 'jobRequest' }" active-class="active"><i class="fa-solid fa-handshake-simple"></i> Job Requests</router-link >
             </li>
             <li>
                 <router-link class="nav-link" :to="{ name: 'contractors' }" active-class="active"><i class="fa-solid fa-helmet-safety"></i> Contractors</router-link >
+            </li>
+            <li>
+                <router-link class="nav-link" :to="{ name: 'dashboard' }" exact-active-class="active"> <i class="fa-solid fa-chart-gantt"></i> Dashboard</router-link >
+            </li>
+            <li>
+                <router-link class="nav-link" :to="profileLink" active-class="active"> <i class="fa-solid fa-user"></i> Profile</router-link >
+            </li>
+
+            <li>
+            <a href="#" class="nav-link" id="logout" @click="logout">
+                <i class="fa-solid fa-right-from-bracket"></i> Logout
+            </a>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </nav>
+    <nav v-if="userRole === 'contractor'"
+      class="custom-navbar navbar navbar-expand-md navbar-light"
+      style="background-color: lightcyan"
+      aria-label="Furni navigation bar">
+      <div class="container-fluid">
+        <router-link class="nav-link" :to="{ name: 'dashboard' }" active-class="active">
+            <img src="../assets/UrbanRenew.png" width="80px" alt="" />
+        </router-link >
+
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbarsFurni"
+          aria-controls="navbarsFurni"
+          aria-expanded="false"
+          aria-label="Toggle navigation"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarsFurni">
+          <ul class="custom-navbar-nav navbar-nav ms-auto mb-2 mb-md-0">
+            <li class="nav-item">
+                <router-link class="nav-link" :to="{ name: 'paymentOverview' }" active-class="active"><i class="fa-solid fa-dollar"></i> Payment</router-link >
+            </li>
+            <li class="nav-item">
+                <router-link class="nav-link" :to="{ name: 'jobRequest' }" active-class="active"><i class="fa-solid fa-handshake-simple"></i> Job Requests</router-link >
             </li>
             <li>
                 <router-link class="nav-link" :to="{ name: 'dashboard' }" exact-active-class="active"> <i class="fa-solid fa-chart-gantt"></i> Dashboard</router-link >
@@ -151,7 +202,7 @@ a {
 
 
 .custom-navbar {
-    background: #F7FBFC !important;
+    background: #F7FBFC;
     padding-top: 20px;
     padding-bottom: 20px;
 }
