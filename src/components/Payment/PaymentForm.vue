@@ -5,36 +5,41 @@
             <div class="col-12 col-md-6 payment-form">
                 <h4><strong>Proceed with Payment</strong></h4>
                 <form @submit.prevent="handleSubmit">
+
                     <div class="mb-3">
-                        <label for="amount" class="form-label">Amount</label>
+                        <label class="form-label">Enter Custom Amount</label>
+                        <div class="row mb-3">
+                            <div class="col-auto">
+                                <strong>SGD</strong>
+                            </div>
+                            <div class='col'>
+                                <input type="number" v-model.number="customPaymentAmount"
+                                    placeholder="Enter amount in SGD" class="form-control" required />
+                            </div>
+                            <small v-if="customPaymentAmount > totalFees" class="text-danger">
+                                Payment amount cannot exceed the total fees.
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label for="amount" class="form-label">Total Fees</label>
                         <div class="row mb-3">
                             <div class="col-auto">
                                 <strong>SGD</strong>
                             </div>
                             <div class="col">
-                                <input type="text" class="form-control" id="amount" :value="((calculatedAmount * 0.0025) + (calculatedAmount * 0.0010) + calculatedAmount).toLocaleString(undefined, {
-                                    minimumFractionDigits: 2, maximumFractionDigits:
-                                        2
-                                })" disabled />
+                                <input type="text" class="form-control" id="amount" :value="totalFeesFormatted" disabled />
                             </div>
                         </div>
                     </div>
-
-                    <label class="form-label">Enter Payment Percentage</label>
-                    <div class="mb-3">
-                        <input type="number" v-model.number="customPaymentPercentage"
-                            placeholder="Enter percentage (1-100)" class="form-control" min="1" max="100" required />
-                        <small v-if="customPaymentPercentage > 100" class="text-danger">Percentage cannot exceed
-                            100%.</small>
-                    </div>
-
                     <div class="mb-3">
                         <label class="form-label">Payment Method</label>
                         <div>
                             <div class="form-check d-flex justify-content-between align-items-center">
                                 <div>
                                     <input type="radio" id="paynow" value="paynow" v-model="paymentMethod"
-                                        class="form-check-input" required />
+                                        class="form-check-input"  />
                                     <label for="paynow" class="form-check-label">PayNow</label>
                                 </div>
                                 <img src="../icons/paynow.png" alt="PayNow" class="payment-method-icon" />
@@ -98,7 +103,7 @@
                         </div>
                         <div class="col">
                             <div class="project-info mb-2">
-                                <h5 class="project-name">{{ project.projectName }}</h5>
+                                <h5 class="project-name">{{ project.description}}</h5>
                             </div>
                             <div class="contractor-info">
                                 <p class="mb-1"><strong>Contractor:</strong></p>
@@ -108,38 +113,24 @@
                     </div>
                     <div class="fees-container">
                         <div class="d-flex justify-content-between mb-1">
-                            <em>Project Cost:</em>
-                            <span>SGD {{ project.price.toLocaleString(undefined, {
+                            <em>Custom Amount:</em>
+                            <span>SGD {{ calculatedAmount.toLocaleString(undefined, {
                                 minimumFractionDigits: 2,
                                 maximumFractionDigits: 2
                             }) }}</span>
                         </div>
                         <div class="d-flex justify-content-between mb-1">
                             <em>Administration Fee:</em>
-                            <span>SGD {{ (project.price * 0.0010).toLocaleString(undefined, {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2
-                            }) }}</span>
+                            <span>SGD {{ adminFeeFormatted }}</span>
                         </div>
                         <div class="d-flex justify-content-between mb-1">
                             <em>Platform Fee:</em>
-                            <span>SGD {{ (project.price * 0.0025).toLocaleString(undefined, {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2
-                            }) }}</span>
+                            <span>SGD {{ platformFeeFormatted }}</span>
                         </div>
                         <hr />
                         <div class="d-flex justify-content-between mb-1">
                             <strong>Total Fees:</strong>
-                            <span class="font-weight-bold">
-                                <strong>
-                                    SGD {{ ((project.price * 0.0025) + (project.price * 0.0010) +
-                                        project.price).toLocaleString(undefined, {
-                                            minimumFractionDigits: 2, maximumFractionDigits:
-                                                2
-                                        }) }}
-                                </strong>
-                            </span>
+                            <span class="font-weight-bold"><strong>SGD {{ totalFeesFormatted }}</strong></span>
                         </div>
                     </div>
                 </div>
@@ -167,18 +158,34 @@ export default {
     data() {
         return {
             userID: null,
-            paymentMethod: '', // No default payment method
-            customPaymentPercentage: 100, // Default to full payment (100%)
+            paymentMethod: '',
+            customPaymentAmount: this.project.price,
         };
     },
     computed: {
         calculatedAmount() {
-            // Calculate the payment amount based on the percentage entered by the user
-            const percentage = Math.min(this.customPaymentPercentage, 100) / 100;
-            return this.project && this.project.price ? this.project.price * percentage : 0;
+            return this.project && this.customPaymentAmount <= this.project.price
+                ? this.customPaymentAmount
+                : this.project.price;
         },
-        formattedPartialPrice() {
-            return this.calculatedAmount.toLocaleString();
+
+        adminFee() {
+            return this.calculatedAmount * 0.001;
+        },
+        platformFee() {
+            return this.calculatedAmount * 0.0025;
+        },
+        totalFees() {
+            return this.calculatedAmount + this.adminFee + this.platformFee;
+        },
+        totalFeesFormatted() {
+            return this.totalFees.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        },
+        adminFeeFormatted() {
+            return this.adminFee.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        },
+        platformFeeFormatted() {
+            return this.platformFee.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         },
     },
     async created() {
@@ -190,7 +197,7 @@ export default {
     },
     methods: {
         async handleSubmit() {
-            const amountToPay = this.calculatedAmount;
+            const amountToPay = this.customPaymentAmount;
 
             // Add payment record to 'payments' collection
             await addDoc(collection(db, 'payments'), {
@@ -199,7 +206,7 @@ export default {
                 projectID: this.project.jobID,
                 amount: amountToPay,
                 paymentMethod: this.paymentMethod,
-                projstatus: this.customPaymentPercentage === 100 ? 'paid' : 'pending',
+                projstatus: amountToPay === this.totalFees ? 'paid' : 'pending',
                 paidOn: new Date(),
                 CustomerID: this.userID,
                 contractorID: this.project.contractorId,
@@ -213,7 +220,7 @@ export default {
                     const jobData = jobSnapshot.data();
                     const remainingBalance = jobData.price - amountToPay;
 
-                    if (this.customPaymentPercentage === 100) {
+                    if (amountToPay === this.totalFees) {
                         await updateDoc(jobRef, {
                             paidstatus: 'paid',
                             price: 0, // Set to 0 if fully paid
@@ -221,7 +228,7 @@ export default {
                     } else {
                         await updateDoc(jobRef, {
                             paidstatus: 'partiallypaid',
-                            price: remainingBalance, // Update remaining balance
+                            price: remainingBalance, 
                         });
                     }
                 }
@@ -230,11 +237,8 @@ export default {
 
                 // Redirect with appropriate messages
                 const queryParams = new URLSearchParams({ contractorID: this.project.contractorId }).toString();
-                // const message = this.paymentMethod === 'paynow' 
-                //     ? `Proceeding with PayNow for amount: $${this.formattedPartialPrice}`
-                //     : `Proceeding with Credit Card payment for amount: $${this.formattedPartialPrice}`;
-                //alert(message);
-                if (this.customPaymentPercentage === 100) {
+    
+                if (amountToPay === this.totalFees) {
                     this.$router.push(`/contractorReview?${queryParams}`);
                 } else {
                     this.$router.push(`/dashboard`);
@@ -267,8 +271,11 @@ export default {
 h4,
 h5 {
     font-size: 1.5rem;
-    color: #769FCD;
-    margin-bottom: 20px;
+    color: #769FCD
+}
+
+h4   {
+    margin-bottom: 10px;
 }
 
 p {
