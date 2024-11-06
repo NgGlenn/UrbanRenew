@@ -47,8 +47,9 @@
 <script>
 import NavBar from '@/components/NavBar.vue';
 import ProjectItem from '@/components/Payment/ProjectItem.vue';
-import { db } from '../firebase'  // Ensure your firebase.js is correctly configured
-import { collection, getDocs } from 'firebase/firestore';
+import { db, auth } from '../firebase'  // Ensure your firebase.js is correctly configured
+import { onAuthStateChanged } from 'firebase/auth';
+import { collection, getDocs, getDoc, doc } from 'firebase/firestore';
 export default {
     components: {
         ProjectItem,
@@ -56,6 +57,8 @@ export default {
     },
     data() {
         return {
+            userID: null,
+            userRole: null,
             selectedButton: 'pending',
             renoPaymentItems:[],
             currentDate: new Date(),
@@ -63,27 +66,50 @@ export default {
         };
     },
     async created() {
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                this.userID = user.uid; // Store logged-in user ID
+                console.log("User ID:", this.userID);
+                try {
+                    // Retrieve the user's document from Firestore
+                    const userDoc = await getDoc(doc(db, "users", this.userID));
+                    if (userDoc.exists()) {
+                        this.userRole = userDoc.data().role; // Store the user's role
+                        //console.log("User role:", this.userRole);  
+                    } else {
+                        console.error("No such user document!");
+                    }
+                } catch (error) {
+                    console.error("Error fetching user role:", error);
+                }
+            }
+        });
         await this.fetchJobs();
     },
     computed: {
         filteredProjects() {
-        return this.renoPaymentItems.filter((project) => {
-            // Parse endDate from project data (assuming endDate is in seconds, adjust if in milliseconds)
-            const endDate = new Date(project.endDate.seconds * 1000); // Adjust this if endDate is stored differently
-            //console.log("End Date:", endDate);
-            // Calculate the time difference in days
-            const daysDifference = (this.currentDate - endDate) / (1000 * 60 * 60 * 24);
-            //console.log("Days difference:", daysDifference);
-            // Filter projects based on selected button and date conditions
-            if (this.selectedButton === 'held') {
-                return project.paidstatus === 'paid' && daysDifference <= 7 && daysDifference >= 0;
-            } else if (this.selectedButton === 'released') {
-                return project.paidstatus === 'paid' && daysDifference > 7;
-            } else {
-                return project.paidstatus === this.selectedButton;
-            }
-        });
-    },
+            return this.renoPaymentItems.filter((project) => {
+                // Ensure project involves the logged-in user
+                if (project.contractorID !== this.userID && project.customerID !== this.userID) {
+                    return false; // Exclude projects that don't involve the user
+                }
+
+                // Parse endDate from project data (assuming endDate is in seconds, adjust if in milliseconds)
+                const endDate = new Date(project.endDate.seconds * 1000); // Adjust this if endDate is stored differently
+                
+                // Calculate the time difference in days
+                const daysDifference = (this.currentDate - endDate) / (1000 * 60 * 60 * 24);
+
+                // Filter projects based on selected button and date conditions
+                if (this.selectedButton === 'held') {
+                    return project.paidstatus === 'paid' && daysDifference <= 7 && daysDifference >= 0;
+                } else if (this.selectedButton === 'released') {
+                    return project.paidstatus === 'paid' && daysDifference > 7;
+                } else {
+                    return project.paidstatus === this.selectedButton;
+                }
+            });
+        },
     },
     methods: {
         async fetchJobs() {
