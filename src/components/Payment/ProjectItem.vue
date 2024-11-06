@@ -7,7 +7,7 @@ export default {
     data() {
         return {
             userID: null,
-            userRole: '', // Make userRole reactive by declaring it in data
+            userRole: '', 
         };
     },
     props: {
@@ -55,7 +55,7 @@ export default {
         <div class="col-sm-6">
             <h5 class="mb-1">{{ project.description }}</h5>
             <p class="mb-1"><strong>Contractor:</strong> {{ project.contractorName }}</p>
-            <p class="mb-1"><strong>Project Cost:</strong> ${{ project.price }}</p>
+            <p class="mb-1"><strong>Remaining Cost:</strong> ${{ project.remainingBalance }}</p>
         </div>
         <div class="col-sm-4 d-flex justify-content-sm-end justify-content-center mt-2 mt-sm-0">
             <button

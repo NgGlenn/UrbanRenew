@@ -81,7 +81,7 @@ export default {
         //     );
         // }
         this.project = this.renoPaymentItems.find(p => p.id === jobID);
-
+        
     },
     methods:{
         async fetchJobs(){
@@ -89,7 +89,8 @@ export default {
                 const jobCollection = await getDocs(collection(db, 'jobs'));
                 this.renoPaymentItems = jobCollection.docs.map(doc => ({
                     id: doc.id, // Document ID
-                    ...doc.data() // Document data
+                    ...doc.data(), // Document data
+
                 }));
                 console.log(this.renoPaymentItems);
             } catch (e) {

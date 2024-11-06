@@ -159,14 +159,14 @@ export default {
         return {
             userID: null,
             paymentMethod: '',
-            customPaymentAmount: this.project.price,
+            customPaymentAmount: this.project.remainingBalance,
         };
     },
     computed: {
         calculatedAmount() {
-            return this.project && this.customPaymentAmount <= this.project.price
+            return this.project && this.customPaymentAmount <= this.project.remainingBalance
                 ? this.customPaymentAmount
-                : this.project.price;
+                : this.project.remainingBalance;
         },
 
         adminFee() {
@@ -198,7 +198,11 @@ export default {
     methods: {
         async handleSubmit() {
             const amountToPay = this.customPaymentAmount;
-
+            if (amountToPay <= 0) {
+            alert("Please enter a valid payment amount.");
+            return;
+            }
+            const paymentStatus = amountToPay === this.project.remainingBalance ? 'paid' : 'partiallypaid';
             // Add payment record to 'payments' collection
             await addDoc(collection(db, 'payments'), {
                 projectname: this.project.Jobname,
@@ -206,10 +210,14 @@ export default {
                 projectID: this.project.jobID,
                 amount: amountToPay,
                 paymentMethod: this.paymentMethod,
-                projstatus: amountToPay === this.totalFees ? 'paid' : 'pending',
+                //projstatus: amountToPay === this.totalFees ? 'paid' : 'pending',
                 paidOn: new Date(),
                 CustomerID: this.userID,
                 contractorID: this.project.contractorId,
+                remainingBalance: this.project.remainingBalance - amountToPay,
+                paymentStatus: paymentStatus,
+                price: this.project.price,
+                
             });
 
             // Update job's paid status and remaining amount in the 'jobs' collection
@@ -218,17 +226,17 @@ export default {
                 const jobSnapshot = await getDoc(jobRef);
                 if (jobSnapshot.exists()) {
                     const jobData = jobSnapshot.data();
-                    const remainingBalance = jobData.price - amountToPay;
-
-                    if (amountToPay === this.totalFees) {
+                    const leftBalance = jobData.remainingBalance - amountToPay;
+                    console.log('Remaining balance:', jobData);
+                    if (paymentStatus === 'paid') {
                         await updateDoc(jobRef, {
                             paidstatus: 'paid',
-                            price: 0, // Set to 0 if fully paid
+                            remainingBalance: 0,
                         });
                     } else {
                         await updateDoc(jobRef, {
                             paidstatus: 'partiallypaid',
-                            price: remainingBalance, 
+                            remainingBalance: leftBalance, 
                         });
                     }
                 }
@@ -238,7 +246,7 @@ export default {
                 // Redirect with appropriate messages
                 const queryParams = new URLSearchParams({ contractorID: this.project.contractorId }).toString();
     
-                if (amountToPay === this.totalFees) {
+                if (paymentStatus === 'paid') {
                     this.$router.push(`/contractorReview?${queryParams}`);
                 } else {
                     this.$router.push(`/dashboard`);
