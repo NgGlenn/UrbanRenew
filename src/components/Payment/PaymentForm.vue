@@ -17,8 +17,8 @@
                         </div>
                     </div>
 
-                    <label v-if="project.paidstatus === 'pending'" class="form-label">Enter Payment Percentage</label>
-                    <div v-if="project.paidstatus === 'pending'" class="mb-3">
+                    <label class="form-label">Enter Payment Percentage</label>
+                    <div class="mb-3">
                         <input
                             type="number"
                             v-model.number="customPaymentPercentage"
