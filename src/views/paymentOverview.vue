@@ -2,7 +2,7 @@
     <NavBar />
     <div class="payment">
         <div class="header">
-            <h2>Payment</h2>
+            <h3>Payment</h3>
 
             <div class="button-group">
                 <button type="button" class="btn btn-link" :class="{ selected: selectedButton === 'pending' }"
@@ -36,12 +36,12 @@
         <p>If you're unsure about the payment statuses:</p>
         <ul>
             <li><strong>Pending</strong> - Payment not yet made.</li>
-            <li><strong>Held</strong> - Payment is being processed or held by admin.</li>
-            <li><strong>Released</strong> - Payment has been completed.</li>
+            <li><strong>Partially Paid</strong> - Job is partially paid.</li>
+            <li><strong>Held</strong> - Payment is being processed and held by Urban Renew.</li>
+            <li><strong>Released</strong> - Project has been completed and payment has been released to the contractor.</li>
         </ul>
         <p>For further assistance, contact <a href="mailto:support@urbanrenew.com">support@urbanrenew.com</a>.</p>
     </div>
-
 </template>
 
 <script>
@@ -106,14 +106,14 @@ export default {
 </script>
 
 <style scoped>
-h2 {
-    font-size: 2.4rem;
+h3 {
+    font-size: 2rem;
     font-weight: 700;
-    /* font-size: 30px; */
-    padding: 20px 0px 0px 20px;
-    /* margin-bottom: 30px; */
     color: #769FCD;
+    margin-bottom: 10px;
+    /* font-size: 30px; */
     border-bottom: 2px solid #ccc;
+
 }
 
 .button-group {
@@ -125,7 +125,7 @@ h2 {
     text-decoration: none;
     font-size: 1.1rem;
     color: #769FCD;
-    padding: 10px 15px;
+    padding: 5px;
     border-radius: 8px;
     transition: background-color 0.2s ease;
 }
@@ -139,7 +139,7 @@ h2 {
     font-weight: bold;
     color: #1170dd;
     border-radius: 8px;
-    padding: 10px 15px;
+    padding: 5px;
     pointer-events: none;
     opacity: 0.85;
     background-color: rgb(193, 249, 249);
@@ -149,6 +149,9 @@ h2 {
     font-family: "Inter", sans-serif;
 }
 
+.payment-items {
+    padding: 5px;
+}
 
 .header {
     padding: 20px;

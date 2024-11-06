@@ -17,22 +17,23 @@
             </div>
             <div class="fees-container">
                 <div class="d-flex justify-content-between mb-1">
-                    <em>Project Cost:</em>
-                    <span>SGD {{ project.price.toLocaleString() }}</span>
+                    <em>Project Cost hellow:</em>
+                    <span class="price">SGD {{ projectCost }}</span>
                 </div>
                 <div class="d-flex justify-content-between mb-1">
                     <em>Administration Fee:</em>
-                    <span>SGD {{ (project.price * 0.0010).toLocaleString() }}</span> <!-- Example calculation -->
+                    <span class="price">SGD {{ administrationFee }}</span>
                 </div>
                 <div class="d-flex justify-content-between mb-1">
                     <em>Platform Fee:</em>
-                    <span>SGD {{ (project.price * 0.0025).toLocaleString() }}</span> <!-- Example calculation -->
+                    <span class="price">SGD {{ platformFee }}</span>
                 </div>
                 <hr />
                 <div class="d-flex justify-content-between mb-1">
                     <strong>Total Fees:</strong>
-                    <span class="font-weight-bold"><strong>SGD {{ ((project.price * 0.0025) + (project.price * 0.0010) +
-                        project.price).toLocaleString() }}</strong></span>
+                    <span class="price font-weight-bold">
+                        <strong>SGD {{ totalFees }}</strong>
+                    </span>
                 </div>
             </div>
         </div>
@@ -53,15 +54,29 @@ export default {
         },
     },
     computed: {
-        formattedPrice() {
-            return this.project ? parseFloat(this.project.price).toLocaleString() : '';
+        projectCost() {
+            return this.formatPrice(this.project.price);
         },
-    },
+        administrationFee() {
+            return this.formatPrice(this.project.price * 0.0010);
+        },
+        platformFee() {
+            return this.formatPrice(this.project.price * 0.0025);
+        },
+        totalFees() {
+            return this.formatPrice((this.project.price * 0.0025) + (this.project.price * 0.0010) + this.project.price);
+        },
+        formatPrice(amount) {
+            return amount.toLocaleString(undefined, {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+            });
+        }
+    }
 };
 </script>
 
 <style scoped>
-/* Payment Details Container */
 .payment-details {
     padding: 20px;
     background-color: #ffffff;
@@ -70,7 +85,6 @@ export default {
     margin: 20px 0;
 }
 
-/* Contractor Logo Styling */
 .contractor-logo {
     width: 100px;
     height: 100px;
@@ -78,7 +92,6 @@ export default {
     margin-right: 15px;
 }
 
-/* Project and Contractor Info Styling */
 .project-info,
 .contractor-info {
     border-bottom: 1px solid #e0e0e0;
@@ -95,7 +108,6 @@ export default {
     color: #555;
 }
 
-/* Fees Container */
 .fees-container {
     background-color: #f8f9fa;
     padding: 20px;
@@ -103,14 +115,12 @@ export default {
     margin-top: 20px;
 }
 
-/* Hover Effects for Interactive Elements */
 .project-info:hover,
 .contractor-info:hover {
     background-color: #f9f9f9;
     border-radius: 5px;
 }
 
-/* Consistent Typography */
 h5,
 p {
     margin: 0;
@@ -127,5 +137,11 @@ p {
     color: #555;
     max-width: 900px;
     margin: 0 auto 15px;
+}
+
+.fees-container .d-flex .price {
+    text-align: right;
+    width: 100px;
+    /* Adjust width based on your layout for consistent alignment */
 }
 </style>

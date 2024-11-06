@@ -49,16 +49,18 @@ export default {
 </script>
 <template>
     <div class="row project-item align-items-center mb-4 p-3 border rounded shadow-sm">
-        <div class="col-sm-2 auto">
+        <div class="col-sm-2 d-flex justify-content-center align-items-center">
             <img src="../icons/moodeng.png" alt="Contractor Logo" class="contractor-logo">
         </div>
         <div class="col-sm-6">
             <h5 class="mb-1">{{ project.description }}</h5>
             <p class="mb-1"><strong>Contractor:</strong> {{ project.contractorName }}</p>
-            <p class="mb-1"><strong>Price:</strong> ${{ project.price}}</p>
+            <p class="mb-1"><strong>Project Cost:</strong> ${{ project.price }}</p>
         </div>
-        <div class="col-sm-4 text-md-end">
-            <button  v-if="userRole === 'customer' && (project.paidstatus === 'pending' || project.paidstatus === 'partiallypaid')"  type="button" class="btn btn-primary" @click="goToPaymentPage">
+        <div class="col-sm-4 d-flex justify-content-sm-end justify-content-center mt-2 mt-sm-0">
+            <button
+                v-if="userRole === 'customer' && (project.paidstatus === 'pending' || project.paidstatus === 'partiallypaid')"
+                type="button" class="btn btn-primary" @click="goToPaymentPage">
                 Make Payment
             </button>
         </div>
@@ -78,9 +80,35 @@ export default {
 }
 
 .contractor-logo {
-    width: 60px; /* Adjust size */
-    height: 60px;
-    border-radius: 50%; /* Circle shape */
-    object-fit: cover; /* Ensures the image fits well */
+    width: 100px;
+    height: 100px;
+    margin: auto;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.btn {
+    background-color: #769FCD;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+h5,
+p {
+    margin: 0;
+}
+
+h5 {
+    font-size: 1.5rem;
+    color: #769FCD;
+    margin-bottom: 10px;
+}
+
+p {
+    font-size: 1rem;
+    color: #555;
+    max-width: 900px;
+    margin: 0 auto 15px;
 }
 </style>

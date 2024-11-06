@@ -1,8 +1,8 @@
 <template>
     <div class="container my-5">
         <div class="row">
-             <!-- Payment Form (left Column on desktop) -->
-             <div class="col-12 col-md-6 payment-form">
+            <!-- Payment Form (left Column on desktop) -->
+            <div class="col-12 col-md-6 payment-form">
                 <h4><strong>Proceed with Payment</strong></h4>
                 <form @submit.prevent="handleSubmit">
                     <div class="mb-3">
@@ -12,23 +12,20 @@
                                 <strong>SGD</strong>
                             </div>
                             <div class="col">
-                                <input type="text" class="form-control" id="amount" :value=" ((calculatedAmount * 0.0025) + (calculatedAmount* 0.0010) + calculatedAmount).toLocaleString()" disabled />
+                                <input type="text" class="form-control" id="amount" :value="((calculatedAmount * 0.0025) + (calculatedAmount * 0.0010) + calculatedAmount).toLocaleString(undefined, {
+                                    minimumFractionDigits: 2, maximumFractionDigits:
+                                        2
+                                })" disabled />
                             </div>
                         </div>
                     </div>
 
                     <label class="form-label">Enter Payment Percentage</label>
                     <div class="mb-3">
-                        <input
-                            type="number"
-                            v-model.number="customPaymentPercentage"
-                            placeholder="Enter percentage (1-100)"
-                            class="form-control"
-                            min="1"
-                            max="100"
-                            required
-                        />
-                        <small v-if="customPaymentPercentage > 100" class="text-danger">Percentage cannot exceed 100%.</small>
+                        <input type="number" v-model.number="customPaymentPercentage"
+                            placeholder="Enter percentage (1-100)" class="form-control" min="1" max="100" required />
+                        <small v-if="customPaymentPercentage > 100" class="text-danger">Percentage cannot exceed
+                            100%.</small>
                     </div>
 
                     <div class="mb-3">
@@ -36,14 +33,16 @@
                         <div>
                             <div class="form-check d-flex justify-content-between align-items-center">
                                 <div>
-                                    <input type="radio" id="paynow" value="paynow" v-model="paymentMethod" class="form-check-input" required />
+                                    <input type="radio" id="paynow" value="paynow" v-model="paymentMethod"
+                                        class="form-check-input" required />
                                     <label for="paynow" class="form-check-label">PayNow</label>
                                 </div>
                                 <img src="../icons/paynow.png" alt="PayNow" class="payment-method-icon" />
                             </div>
                             <div class="form-check d-flex justify-content-between align-items-center">
                                 <div>
-                                    <input type="radio" id="creditcard" value="creditcard" v-model="paymentMethod" class="form-check-input" required />
+                                    <input type="radio" id="creditcard" value="creditcard" v-model="paymentMethod"
+                                        class="form-check-input" required />
                                     <label for="creditcard" class="form-check-label">Credit Card</label>
                                 </div>
                                 <img src="../icons/credit_card.png" alt="Credit Card" class="payment-method-icon" />
@@ -65,13 +64,15 @@
                                 <label class="form-label">Expiry Date</label>
                                 <div class="row">
                                     <div class="col-4">
-                                        <input type="text" class="form-control" id="expiryMonth" placeholder="MM" required />
+                                        <input type="text" class="form-control" id="expiryMonth" placeholder="MM"
+                                            required />
                                     </div>
                                     <div class="col-1">
                                         <p style="font-size:x-large">/</p>
                                     </div>
                                     <div class="col-6">
-                                        <input type="text" class="form-control" id="expiryYear" placeholder="YYYY" required />
+                                        <input type="text" class="form-control" id="expiryYear" placeholder="YYYY"
+                                            required />
                                     </div>
                                 </div>
                             </div>
@@ -108,20 +109,37 @@
                     <div class="fees-container">
                         <div class="d-flex justify-content-between mb-1">
                             <em>Project Cost:</em>
-                            <span>SGD {{ formattedPartialPrice }}</span>
+                            <span>SGD {{ project.price.toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                            }) }}</span>
                         </div>
                         <div class="d-flex justify-content-between mb-1">
                             <em>Administration Fee:</em>
-                            <span>SGD {{ (calculatedAmount* 0.0010).toLocaleString() }}</span>
+                            <span>SGD {{ (project.price * 0.0010).toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                            }) }}</span>
                         </div>
                         <div class="d-flex justify-content-between mb-1">
                             <em>Platform Fee:</em>
-                            <span>SGD {{ (calculatedAmount * 0.0025).toLocaleString() }}</span>
+                            <span>SGD {{ (project.price * 0.0025).toLocaleString(undefined, {
+                                minimumFractionDigits: 2,
+                                maximumFractionDigits: 2
+                            }) }}</span>
                         </div>
                         <hr />
                         <div class="d-flex justify-content-between mb-1">
                             <strong>Total Fees:</strong>
-                            <span class="font-weight-bold"><strong>SGD {{ ((calculatedAmount * 0.0025) + (calculatedAmount* 0.0010) + calculatedAmount).toLocaleString() }}</strong></span>
+                            <span class="font-weight-bold">
+                                <strong>
+                                    SGD {{ ((project.price * 0.0025) + (project.price * 0.0010) +
+                                        project.price).toLocaleString(undefined, {
+                                            minimumFractionDigits: 2, maximumFractionDigits:
+                                                2
+                                        }) }}
+                                </strong>
+                            </span>
                         </div>
                     </div>
                 </div>
@@ -165,10 +183,10 @@ export default {
     },
     async created() {
         onAuthStateChanged(auth, (user) => {
-        if (user) {
-        this.userID = user.uid; // Store logged-in user ID
-      }
-    });
+            if (user) {
+                this.userID = user.uid; // Store logged-in user ID
+            }
+        });
     },
     methods: {
         async handleSubmit() {
@@ -218,9 +236,9 @@ export default {
                 //alert(message);
                 if (this.customPaymentPercentage === 100) {
                     this.$router.push(`/contractorReview?${queryParams}`);
-                    } else {
-                        this.$router.push(`/dashboard`);
-                    }
+                } else {
+                    this.$router.push(`/dashboard`);
+                }
                 //this.$router.push(`/contractorReview?${queryParams}`);
             } catch (error) {
                 console.error('Error updating job status or remaining balance:', error);
@@ -234,7 +252,10 @@ export default {
 
 <style scoped>
 /* Payment Form Container */
-.payment-form {
+/* General Layout */
+.payment-form,
+.payment-details,
+.fees-container {
     padding: 20px;
     background-color: #ffffff;
     border-radius: 5px;
@@ -242,19 +263,44 @@ export default {
     margin: 20px 0;
 }
 
-/* Label and Input Styling */
+/* Typography */
+h4,
+h5 {
+    font-size: 1.5rem;
+    color: #769FCD;
+    margin-bottom: 20px;
+}
+
+p {
+    font-size: 1rem;
+    color: #555;
+    max-width: 900px;
+    margin: 0 auto 15px;
+}
+
 .form-label {
     font-weight: bold;
     color: #555;
 }
 
+.project-name,
+.h5 {
+    font-weight: bold;
+    color: #769FCD;
+}
+
+.contractor-name {
+    font-weight: 400;
+    color: #555;
+}
+
+/* Form Controls */
 .form-control {
     padding: 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
 }
 
-/* Button Styling */
 .btn {
     background-color: #769FCD;
     color: white;
@@ -267,61 +313,12 @@ export default {
     background-color: #5a8bbf;
 }
 
-h4 {
-    font-size: 1.5rem;
-    color: #769FCD;
-    margin-bottom: 20px;
-}
-
+/* Margins */
 .mb-3 {
     margin-bottom: 1.5rem;
 }
 
-/* Hover Effects for Interactive Elements */
-.form-check:hover {
-    background-color: #f9f9f9;
-    border-radius: 5px;
-}
-
-.payment-method-icon {
-    width: auto;
-    height: 30px;
-    margin-left: 10px;
-}
-.payment-details {
-    padding: 20px;
-    background-color: #ffffff;
-    border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    margin: 20px 0;
-}
-
-/* Contractor Logo Styling */
-.contractor-logo {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
-    margin-right: 15px;
-}
-
-/* Project and Contractor Info Styling */
-.project-info,
-.contractor-info {
-    border-bottom: 1px solid #e0e0e0;
-    padding-bottom: 10px;
-}
-
-.project-name {
-    font-weight: bold;
-    color: #769FCD;
-}
-
-.contractor-name {
-    font-weight: 500;
-    color: #555;
-}
-
-/* Fees Container */
+/* Payment Form and Fees */
 .fees-container {
     background-color: #f8f9fa;
     padding: 20px;
@@ -329,30 +326,32 @@ h4 {
     margin-top: 20px;
 }
 
-/* Hover Effects for Interactive Elements */
+/* Interactive Elements */
+.form-check:hover,
 .project-info:hover,
 .contractor-info:hover {
     background-color: #f9f9f9;
     border-radius: 5px;
 }
 
-/* Consistent Typography */
-h5,
-p {
-    margin: 0;
+/* Icons and Images */
+.payment-method-icon {
+    width: auto;
+    height: 30px;
+    margin-left: 10px;
 }
 
-h5 {
-    font-size: 1.5rem;
-    color: #769FCD;
-    margin-bottom: 10px;
+.contractor-logo {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    margin-right: 15px;
 }
 
-p {
-    font-size: 1rem;
-    color: #555;
-    max-width: 900px;
-    margin: 0 auto 15px;
+/* Sections */
+.project-info,
+.contractor-info {
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 10px;
 }
-
 </style>
