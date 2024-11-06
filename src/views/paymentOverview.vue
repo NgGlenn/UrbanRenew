@@ -90,7 +90,8 @@ export default {
         filteredProjects() {
             return this.renoPaymentItems.filter((project) => {
                 // Ensure project involves the logged-in user
-                if (project.contractorID !== this.userID && project.customerID !== this.userID) {
+                console.log(project.customerId);
+                if (project.contractorID !== this.userID && project.customerId !== this.userID) {
                     return false; // Exclude projects that don't involve the user
                 }
 
