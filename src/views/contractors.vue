@@ -31,11 +31,10 @@
             <!-- Placeholder cards -->
             <div id="contractors-section">
                 <div class="row">
-
                     <ContractorCards 
                     v-for="contractor of contractorsDisplay"
                     :id="contractor.id"
-                    :image="processImage(contractor.image)"
+                    :image="contractor.image"
                     :first-name="contractor.firstName"
                     :last-name="contractor.lastName"
                     :company="contractor.companyName"
@@ -116,17 +115,6 @@
                         this.filter_state = "filter-off";
                     }
                 },
-
-                processImage(image) {
-                    //file path must be from root directory
-                    if (image == null) {
-                        return "/src/assets/UrbanRenew.png";
-                    } else {
-                        //adjust to wherever the images will be stored
-                        return "/src/assets/" + image; 
-                    }
-                },
-
 
                 addFilter(event){
                     let btn = event.target

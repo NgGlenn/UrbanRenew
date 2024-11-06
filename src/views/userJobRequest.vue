@@ -5,44 +5,67 @@
     import { useCollection } from 'vuefire';
     import { QueryEndAtConstraint, collection, documentId, orderBy, query, where } from 'firebase/firestore';
     import { inject } from 'vue';
-
+    import { db } from "@/firebase";
+    import { getAuth } from "firebase/auth";
 
     export default{
-        setup(){
-            const db = inject('db');
-            const jobRequests = useCollection(collection(db, 'jobRequests'));
+
+        async created() {
+            this.jobRequests = await this.getJobRequests();
         },
 
         data(){
             return {
-                
+                //jobRequests: this.getJobRequests(), // will not load if not called twice for some reason
+                jobRequests: [],
+                userId: this.getUserID(),
+                temp: sessionStorage.getItem("userId")
             }
         },
 
         methods: {
-            getJobRequests(){ //returns JSON of job requests from database
-                return [
-                    {
-                        id: 1,
-                        contractor: "Contractor 1",
-                        status: "Pending",
-                        desc: "Lorem ipsum jbscbchjvjhknjknjbmnbmnbbjkbkjbkhvhvbnvvnvjvhvjhvnmvvhvhvhv",
-                        startDate: "01/01/24",
-                        endDate: "01/01/25",
-                        budget: 110,
-                        quoteReceived: false
-                    },
-                    {
-                        id: 2,
-                        contractor: "Contractor 2",
-                        status: "Quotation Received",
-                        desc: "Lorem ipsum jbscbchjvjh",
-                        startDate: "02/02/24",
-                        endDate: "02/02/25",
-                        budget: 110,
-                        quoteReceived: true
-                    }
-                ]
+            getUserID(){
+                const auth = getAuth();
+                const user = auth.currentUser;
+
+                if (user) {
+                const uid = user.uid;  // Retrieve the user's ID
+                console.log("User ID:", uid);
+                return uid;
+                } else {
+                console.log("No user is signed in.");
+                }
+            },
+
+            async getJobRequests() {
+                const jobRequestsCollection = collection(db, "jobRequests");
+
+                // Add filters for both customerId and status
+                const jobRequestsQuery = query(
+                    jobRequestsCollection,
+                    where("customerId", "==", this.userId),
+                    //where("quoteReceived", "==", "Pending") // Filter by "Pending"
+                );
+
+                const jobRequestsSnapshot = await getDocs(jobRequestsQuery);
+                const jobRequests = jobRequestsSnapshot.docs.map(doc => ({
+                    id: doc.id,
+                    contractorId: doc.data().contractorId,
+                    contractorName: doc.data().contractorName,
+                    createdAt: doc.data().createdAt,
+                    customerId: doc.data().customerId,
+                    jobType: doc.data().jobType,
+                    jobDetails: doc.data().jobDetails,
+                    projectId: doc.data().projectId,
+                    status: doc.data().status,
+                    updatedAt: doc.data().updatedAt,
+                    budget: doc.data().budget,
+                    startDate: doc.data().startDate,
+                    endDate: doc.data().endDate,
+                    quoteamt: doc.data().quoteamt,
+                    quoteReceived: doc.data().quoteReceived
+                }));
+                return jobRequests;
             }
         },
 
@@ -55,19 +78,24 @@
 
 <template>
     <LogedInLayout>
-        <div class="main-body">
+        <div class="main-body" style="padding: 10px">
             <h2><b> Job Requests </b></h2>
-            
+
             <UserJobRequests
             v-for="request of jobRequests"
             :id="request.id"
-            :contractor="request.contractor"
+            :contractor-id="request.contractorId"
+            :contractor-name="request.contractorName"
+            :customer-id="request.customerId"
             :status="request.status"
-            :desc="request.desc"
+            :job-type="request.jobType"
+            :desc="request.jobDetails"
             :start-date="request.startDate"
             :end-date="request.endDate"
             :budget="request.budget"
-            :quote-received="request.quoteReceived"></UserJobRequests>
+            :quoteamt="request.quoteamt"
+            :quote-received="request.quoteReceived"
+            :project-id="request.projectId"></UserJobRequests>
         </div>
     </LogedInLayout>
 </template>

@@ -48,7 +48,8 @@
     import { useCollection } from 'vuefire';
     import { doc, getDoc, getDocs, addDoc } from "firebase/firestore";
     import { QueryEndAtConstraint, collection, documentId, orderBy, query, where } from 'firebase/firestore';
-    import { db } from '../firebase.js'
+    import { db } from '../firebase.js';
+    import { getAuth } from "firebase/auth";
 
     export default {
       components: {
@@ -59,7 +60,7 @@
         const contractors = useCollection(collection(db, 'contractors'));
         var services = ref([]); // Make services reactive
 
-        // Watch for changes in contractors and update services & styles once contractors has data
+        // Watch for changes in contractors and update services once contractors has data
         watch(contractors, (newContractors) => {
         if (newContractors && newContractors.length) {
             services.value = getServices(newContractors);
@@ -79,10 +80,16 @@
         return {contractors, services}
     },
 
+    async created() {
+        this.projectID = await this.getProjectID(); // Resolve and assign projectID after retrieval
+    },
+
       data() {
         return {
+            userID: this.getUserID(),
             contractor_id: this.$route.params.contractor_id,
             contractorName: '',
+            projectID: null,
             jobType: '',
             desc: '',
             budget: null,
@@ -93,6 +100,37 @@
       },
 
       methods: {
+        getUserID(){
+            const auth = getAuth();
+            const user = auth.currentUser;
+
+            if (user) {
+            const uid = user.uid;  // Retrieve the user's ID
+            console.log("User ID:", uid);
+            return uid;
+            } else {
+            console.log("No user is signed in.");
+            }
+        },
+
+        async getProjectID(){
+            const ProjectsCollection = collection(db, "projects");
+
+            // Add filters for both contractorId and status
+            const ProjectsQuery = query(
+                ProjectsCollection,
+                where("customerId", "==", this.getUserID()),
+                //where("location", "==", "bishan")
+            );
+
+            const ProjectsSnapshot = await getDocs(ProjectsQuery);
+            if (!ProjectsSnapshot.empty){
+                const Project = ProjectsSnapshot.docs[0];
+                console.log(Project.id)
+            return Project.id;
+            }
+        },
+
         async initPage(){
             // Get Contractors
             const contractors = doc(db, "contractors", this.contractor_id); 
@@ -112,21 +150,24 @@
         async createRequest() {
             try {
                 const docRef = await addDoc(collection(db, "jobRequests"), {
-                contractorId: this.contractor_id,
-                customerId: "", // add this later
-                budget: this.budget,
-                jobType: this.jobType,
-                jobDetails: this.desc,
-                startDate: this.startDate,
-                endDate: this.endDate,
-                status: "Pending",
-                createdAt: new Date(),
-                });
-                console.log("Document written with ID: ", docRef.id);
-            } catch (e) {
-                console.error("Error adding document: ", e);
-                prompt("Submission Unsuccessful");
-            }
+                    projectId: this.projectID,
+                    contractorId: this.contractor_id,
+                    contractorName: this.contractorName,
+                    customerId: this.userID, // add this later
+                    budget: this.budget,
+                    jobType: this.jobType,
+                    jobDetails: this.desc,
+                    startDate: this.startDate,
+                    endDate: this.endDate,
+                    status: "Pending",
+                    createdAt: new Date(),
+                    });
+                    //console.log("Document written with ID: ", docRef.id);
+                    this.$router.push({ path: `/jobRequest` });
+                } catch (e) {
+                    console.error("Error adding document: ", e);
+                    alert("Submission Unsuccessful");
+                }
             }
       },
 
@@ -138,11 +179,11 @@
     
     <style scoped>
           .page-container {
-          background-color: #ffd580;
-          padding: 50px;
-          margin: 0;
-          padding: 0;
-          font-family: 'Roboto', sans-serif;
+            background-color: #ffd580;
+            padding: 50px;
+            margin: 0;
+            padding: 0;
+            font-family: 'Roboto', sans-serif;
           }
           
           .review-container {

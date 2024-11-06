@@ -46,10 +46,10 @@ export default {
                 // Update the `quoteamt` and `quoteReceived` fields
                 await updateDoc(jobRequestRef, {
                     quoteamt: this.quoteAmount,
-                    quoteReceived: 'quoteReceived',
+                    quoteReceived: true,
                 });
                 alert('Quotation submitted successfully.');
-                this.$router.push({ name: 'dashboard' }); // Redirect to the desired page after submission
+                this.$router.push({ path: '/contractorJobRequests' }); // Redirect to the desired page after submission
             } catch (error) {
                 console.error('Error submitting quotation:', error);
                 alert('Failed to submit quotation. Please try again.');

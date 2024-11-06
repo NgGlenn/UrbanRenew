@@ -2,7 +2,7 @@
     <div class="col-12 col-sm-6 col-lg-4">
         <div class="card">
             <div class="card-header p-10" style="text-align: center;">
-                <img :src="image" style="width: 100%; margin-bottom: 15px; max-width: 300px; max-height: 250px;">
+                <img :src="displayImage" style="width: 100%; margin-bottom: 15px; max-width: 300px; max-height: 250px;">
                 <h4 style="font-weight: bold;"> {{firstName}}  {{ lastName }} </h4>
                 <p> Rating: {{rating.toFixed(1)}} / 5.0 </p>
             </div>
@@ -19,6 +19,9 @@
 </template>
 
 <script>
+import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
+
+
 export default{
     props: [ 'id', 'image', 'firstName', 'lastName', 'company', 'rating', 'servicesOffered', 'stylesOffered' ],
             // props: {
@@ -33,15 +36,32 @@ export default{
             data() {
                 return {
                     // key: value
+                    displayImage: ""
                 }
             }, // data
             
             methods: {
                 redirect() {
                     this.$emit('redirect', this.id); // Emit the contractor ID when the button is clicked
-                }
+                },
+
+                async processImage(image) {
+                    const storage = getStorage()
+                    if (image == null) {
+                        image = "default_image.jpg";
+                        const fileRef = storageRef(storage, 'images/' + image);
+                        // Get the file's download URL
+                        this.displayImage = await getDownloadURL(fileRef);
+                    }
+                    else{
+                        return image;
+                    }
+                },
             }, // methods
-            
+
+            mounted(){
+                this.processImage(this.image);
+            }
         
     }
 </script>

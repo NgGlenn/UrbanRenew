@@ -1,6 +1,8 @@
 <template>
-    <div style="display: flex;">
-    
+    <div style="padding-bottom: 10px">
+        <div class="jobID">
+            <b> Request ID: </b> {{id}}
+        </div>
 
         <div class="jobRequest">
             <div class="row">
@@ -22,8 +24,10 @@
                 </div>
             </div>
 
-            <div>
+            <div v-if="quoteReceived">
                 <br>
+                <div> <b>Quoted Price:</b> {{quotedPrice}} </div>
+                <div> <b>Contractor's comments:</b> {{comments}} </div>
                 <div style="margin-top: 15px;">
                     <a :href="paymentLink" target="_blank">
                         <button style="margin-inline: 20px;" v-on:click="Accept"> Accept </button>
@@ -31,8 +35,6 @@
                     <a href="#" target="_blank">
                         <button style="margin-inline: 20px;" v-on:click="Decline"> Decline </button>
                     </a>
-                        <button style="margin-inline: 20px;" v-on:click="SendQuotation"> Send Quotation </button>
-                    
                 </div>
             </div>
 
@@ -95,12 +97,11 @@ export default{
     .jobID{
         min-width: 70px;
         display: inline-block;
-        margin: auto;
+        margin-left: 5px;
       }
 
       .jobRequest{
         background-color: lightgrey;
-        flex: 1;
         border: 2px solid gray;
         padding: 10px;
         position: relative;;
