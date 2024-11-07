@@ -129,7 +129,7 @@ export default {
                 <router-link class="nav-link" :to="{ name: 'paymentOverview' }" active-class="active"><i class="fa-solid fa-dollar"></i> Payment</router-link >
             </li>
             <li class="nav-item">
-                <router-link class="nav-link" :to="{ name: 'jobRequest' }" active-class="active"><i class="fa-solid fa-handshake-simple"></i> Job Requests</router-link >
+                <router-link class="nav-link" :to="{ name: 'contractorJobRequests' }" active-class="active"><i class="fa-solid fa-handshake-simple"></i> Job Requests</router-link >
             </li>
             <li>
                 <router-link class="nav-link" :to="{ name: 'dashboard' }" exact-active-class="active"> <i class="fa-solid fa-chart-gantt"></i> Dashboard</router-link >
