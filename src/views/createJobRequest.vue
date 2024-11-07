@@ -45,7 +45,7 @@
     <script>
     import Navbar from '@/components/NavBar.vue';
     import { ref, watch } from 'vue'
-    import { useCollection } from 'vuefire';
+    import { useCollection, useDocument } from 'vuefire';
     import { doc, getDoc, getDocs, addDoc } from "firebase/firestore";
     import { QueryEndAtConstraint, collection, documentId, orderBy, query, where } from 'firebase/firestore';
     import { db } from '../firebase.js';
@@ -82,6 +82,7 @@
 
     async created() {
         this.projectID = await this.getProjectID(); // Resolve and assign projectID after retrieval
+        this.username = await this.getUsername();
     },
 
       data() {
@@ -116,7 +117,6 @@
         async getProjectID(){
             const ProjectsCollection = collection(db, "projects");
 
-            // Add filters for both contractorId and status
             const ProjectsQuery = query(
                 ProjectsCollection,
                 where("customerId", "==", this.getUserID()),
@@ -128,6 +128,24 @@
                 const Project = ProjectsSnapshot.docs[0];
                 console.log(Project.id)
             return Project.id;
+            }
+        },
+
+        async getUsername() {
+            // Reference to the user document
+            const userDocRef = doc(db, 'users', this.getUserID());
+
+            // Fetch the document data once
+            const userDoc = await getDoc(userDocRef);
+
+            if (userDoc.exists()) {
+                const data = userDoc.data();
+                const username = `${data.firstName || ''} ${data.lastName || ''}`;
+                console.log(username);
+                return username;
+            } else {
+                console.log('No such document!');
+                return null;
             }
         },
 
@@ -153,7 +171,8 @@
                     projectId: this.projectID,
                     contractorId: this.contractor_id,
                     contractorName: this.contractorName,
-                    customerId: this.userID, // add this later
+                    customerId: this.userID,
+                    customerName: this.username,
                     budget: this.budget,
                     jobType: this.jobType,
                     jobDetails: this.desc,
