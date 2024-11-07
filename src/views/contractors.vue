@@ -34,7 +34,7 @@
                     <ContractorCards 
                     v-for="contractor of contractorsDisplay"
                     :id="contractor.id"
-                    :image="contractor.image"
+                    :image="contractor.portfolioImages"
                     :first-name="contractor.firstName"
                     :last-name="contractor.lastName"
                     :company="contractor.companyName"

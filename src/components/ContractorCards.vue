@@ -47,14 +47,15 @@ export default{
 
                 async processImage(image) {
                     const storage = getStorage()
-                    if (image == null) {
+                    if (image.length != 0) {
+                        //console.log(image)
+                        this.displayImage = image[0];
+                    }
+                    else{
                         image = "default_image.jpg";
                         const fileRef = storageRef(storage, 'images/' + image);
                         // Get the file's download URL
                         this.displayImage = await getDownloadURL(fileRef);
-                    }
-                    else{
-                        return image;
                     }
                 },
             }, // methods
@@ -70,6 +71,6 @@ export default{
     .card{
         margin-top: 10px;
         margin-bottom: 10px;
-        min-height: 560px;
+        min-height: 500px;
     }
 </style>
