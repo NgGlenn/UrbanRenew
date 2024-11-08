@@ -15,10 +15,11 @@
                     />
 
                     <label for="comment">Comments:</label>
-                    <textarea>
+                    <textarea
                         v-model="comments"
                         id="comment"
                         placeholder="Add your comments"
+                    >
                     </textarea>
                 </div>
                 <button type="submit">Submit Quotation</button>
