@@ -99,7 +99,7 @@
                 <div v-if="project">
                     <div class="row align-items-center mb-3">
                         <div class="col-auto">
-                            <img src="../icons/moodeng.png" alt="Contractor Logo" class="contractor-logo">
+                            <img :src="contractorImageUrl || '../icons/moodeng.png'" alt="Contractor Logo" class="contractor-logo">
                         </div>
                         <div class="col">
                             <div class="project-info mb-2">
@@ -164,6 +164,7 @@ export default {
             userID: null,
             paymentMethod: '',
             customPaymentAmount: this.project.remainingBalance,
+            contractorImageUrl: '',
         };
     },
     computed: {
@@ -193,11 +194,33 @@ export default {
         },
     },
     async created() {
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                this.userID = user.uid; // Store logged-in user ID
+        if (this.project.contractorId) {
+            try {
+                const contractorDoc = await getDoc(doc(db, "users", this.project.contractorId));
+                if (contractorDoc.exists()) {
+                    this.contractorImageUrl = contractorDoc.data().imageUrl; // Store contractor's image URL
+                } else {
+                    console.error("No such contractor document!");
+                }
+            } catch (error) {
+                console.error("Error fetching contractor image:", error);
             }
-        });
+        }
+
+        // Fetch user role
+        try {
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    const userDoc = await getDoc(doc(db, "users", user.uid));
+                    if (userDoc.exists()) {
+                        this.userRole = userDoc.data().role; // Store user role
+                        this.userID = user.uid; // Store logged-in user ID
+                    }
+                }
+            });
+        } catch (error) {
+            console.error("Error fetching user role:", error);
+        }
     },
     methods: {
         async handleSubmit() {
@@ -209,9 +232,9 @@ export default {
             const paymentStatus = amountToPay === this.project.remainingBalance ? 'paid' : 'partiallypaid';
             // Add payment record to 'payments' collection
             await addDoc(collection(db, 'payments'), {
-                projectname: this.project.Jobname,
+                projectname: this.project.jobName,
                 contractorname: this.project.contractorName,
-                projectID: this.project.jobID,
+                projectID: this.project.id,
                 amount: amountToPay,
                 paymentMethod: this.paymentMethod,
                 //projstatus: amountToPay === this.totalFees ? 'paid' : 'pending',
