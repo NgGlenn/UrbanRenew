@@ -219,7 +219,7 @@ export default {
           createdAt: new Date(),
           contractorID: this.$route.query.contractorID,
           averageRating: averageRating,
-          CustomerID: this.userID, // Use this.userID instead of userID
+          customerID: this.userID, // Use this.userID instead of userID
           comment: this.reviewText,
         };
 
