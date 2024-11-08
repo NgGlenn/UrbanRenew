@@ -4,7 +4,7 @@ import { computed } from "vue";
 export function useDonutFormat(jobs, tasks) {
     const jobProgress = computed(() => {
         // if (!jobs.value || !tasks.value) return [];
-        if (!jobs?.value || !tasks?.value) {
+        if (!jobs?.value?.length || !tasks?.value?.length) {
             console.log('No jobs or tasks data:', { jobs, tasks });
             return [{
                 donutSections: [],

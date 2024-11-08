@@ -42,9 +42,9 @@ const initGantt = () => {
         try {
             const taskRef = doc(db, 'tasks', id);
             await updateDoc(taskRef, {
-                name: task.text,
-                startDate: task.start_date,
-                endDate: task.end_date,
+                name: task.name,
+                startDate: task.startDate,
+                endDate: task.endDate,
                 progress: task.progress || 0,
                 // Add any other fields you're tracking
             });
@@ -95,7 +95,7 @@ const initGantt = () => {
         if (mode === 'progress') {
             try {
                 await updateDoc(doc(db, 'tasks', id), {
-                    progress: task.progress
+                    progress: task.progress*100
                 });
                 console.log('Progress updated in Firestore');
             } catch (error) {
@@ -107,32 +107,32 @@ const initGantt = () => {
     });
 
     // Add columns for status and progress
-    gantt.config.columns = [
-        { name: "text", label: "Task name", tree: true, width: 200 },
-        { 
-            name: "status", 
-            label: "Status", 
-            width: 100,
-            template: (task) => {
-                const statusClasses = {
-                    'pending': 'bg-warning',
-                    'in-progress': 'bg-primary',
-                    'completed': 'bg-success'
-                };
-                return `<span class="badge ${statusClasses[task.status] || 'bg-secondary'} status-cell">
-                    ${task.status || 'pending'}
-                </span>`;
-            }
-        },
-        { name: "start_date", label: "Start", align: "center" },
-        { name: "end_date", label: "End", align: "center" },
-        { 
-            name: "progress", 
-            label: "Progress", 
-            align: "center",
-            template: (task) => Math.round((task.progress || 0) * 100) + "%" 
-        }
-    ];
+    // gantt.config.columns = [
+    //     { name: "text", label: "Task name", tree: true, width: 200 },
+    //     { 
+    //         name: "status", 
+    //         label: "Status", 
+    //         width: 100,
+    //         template: (task) => {
+    //             const statusClasses = {
+    //                 'pending': 'bg-warning',
+    //                 'in-progress': 'bg-primary',
+    //                 'completed': 'bg-success'
+    //             };
+    //             return `<span class="badge ${statusClasses[task.status] || 'bg-secondary'} status-cell">
+    //                 ${task.status || 'pending'}
+    //             </span>`;
+    //         }
+    //     },
+    //     { name: "start_date", label: "Start", align: "center" },
+    //     { name: "end_date", label: "End", align: "center" },
+    //     { 
+    //         name: "progress", 
+    //         label: "Progress", 
+    //         align: "center",
+    //         template: (task) => Math.round((task.progress || 0) * 100) + "%" 
+    //     }
+    // ];
 
     gantt.init(ganttContainer.value);
     isInitialized = true;
@@ -246,7 +246,7 @@ watch(() => tasks.value, async (newTasks) => {
         height: 100%;
     }
 
-    :deep(.status-cell) {
+    /* :deep(.status-cell) {
         cursor: pointer;
         padding: 2px 6px;
         border-radius: 3px;
@@ -258,12 +258,13 @@ watch(() => tasks.value, async (newTasks) => {
     }
 
     /* Add some hover effect to tasks */
-    :deep(.gantt_task_row:hover) {
+    /* :deep(.gantt_task_row:hover) {
         background-color: #f5f5f5;
-    }
+    } */
 
     /* Style the progress bar */
-    :deep(.gantt_task_progress) {
-        background-color: #2196F3;
-    }
+    /*:deep(.gantt_task_progress) {
+        /* background-color: #2196F3; */
+   /* } */
+
 </style>

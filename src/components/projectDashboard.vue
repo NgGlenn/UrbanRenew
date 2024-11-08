@@ -48,15 +48,36 @@
     const { jobProgress } = useDonutFormat(jobs, tasks);
 
     // // console.log(props.projectData)
-    // console.log(ganttData)
-    // console.log(jobs)
+    console.log('ganttData', ganttData)
+    console.log('jobs data',jobs)
     // console.log(tasks)
     // // console.log(jobs.value)
 
 
     // State management
-    const activeJobIndex = ref(0);
+    const currentJobIndex = ref(0);
     const hasActiveJobs = computed(() => props.projectData.jobs.value?.length > 0);
+    console.log("hasActiveJobs", hasActiveJobs)
+
+    // const totalJobs = computed(() => ganttData.value.length);
+
+    // const nextJob = () => {
+    //     if (currentJobIndex.value < totalJobs.value - 1) {
+    //         currentJobIndex.value++;
+    //     } else {
+    //         currentJobIndex.value = 0;
+    //     }
+    //     console.log('Next job:', currentJobIndex.value);
+    // };
+
+    // const prevJob = () => {
+    //     if (currentJobIndex.value > 0) {
+    //         currentJobIndex.value--;
+    //     } else {
+    //         currentJobIndex.value = totalJobs.value - 1;
+    //     }
+    //     console.log('Previous job:', currentJobIndex.value);
+    // };
 
     //Mobile View
     const isMobile = ref(false);
@@ -67,7 +88,8 @@
 
     // Format tasks for mobile timeline
     const currentPhaseForMobile = computed(() => {
-        const currStage = projectProgress.currentStep;
+        const currStage = projectProgress.pro;
+        console.log(currStage)
 
         if (currStage < 20) return 'Planning';
         if (currStage < 40) return 'Design';
@@ -87,17 +109,8 @@
         }
     };
 
-    // Carousel setup
-    onMounted(() => {
-        if (hasActiveJobs.value) {
-            const carouselElement = document.getElementById('carouselControls');
-            if (carouselElement) {
-                carouselElement.addEventListener('slide.bs.carousel', (event) => {
-                    activeJobIndex.value = event.to;
-                });
-            };
-        };
 
+    onMounted(() => {
         checkMobile();
         window.addEventListener('resize', checkMobile);
     });
@@ -115,9 +128,10 @@
     };
 
     const showPaymentButton = (index) => {
-        !isContractor && 
-        props.projectData.jobs?.value?.[index]?.status === 'completed' && 
-        props.projectData.jobs?.value?.[index]?.paidstatus === 'pending';
+        // const isContractor = props.isContractor;
+        !isContractor;
+        // props.projectData.jobs?.value?.[index]?.status === 'completed' && 
+        props.projectData.jobs?.value?.[index]?.paidstatus !== 'paid';
     }
 
     const handleTaskUpdate = ({ id, task }) => {
@@ -131,6 +145,10 @@
     const handleTaskDelete = (id) => {
         console.log('Task deleted:', id);
     };
+
+    const hasNoTasks = computed(() => {
+        return !ganttData.value?.[currentJobIndex.value]?.task?.data?.length;
+    });
 </script>
 
 <template>
@@ -139,7 +157,7 @@
         <div class="mobileView">
             <div>
                 <span style="color: #769FCD; font-size: 40px; font-weight: bold;">Project Progress: </span>
-                <span style="font-size: 30px; font-weight: bold;">{{ currentPhaseForMobile }} Phase</span>
+                <span style="font-size: 30px; font-weight: bold;">{{ projectProgress.currPhase }} Phase</span>
             </div>
             <div class="timelineContainer">
                 <h2 style="font-weight: bold;">Timeline</h2>
@@ -148,11 +166,11 @@
                         <div class="timelineMarker"></div>
                         <div>
                             <div class="jobHeader">
-                                <div>
+                                <div style="width: 70%;">
                                     <span class="jobName">{{ job.description }}</span>
                                     <span class="jobDates"><br>{{ formatDate(job.startDate) }} - {{ formatDate(job.endDate) }}</span>
                                 </div>
-                                <div>
+                                <div style="width: 30%;">
                                     <span class="jobStatus" :style="{ color: job.status === 'completed' ? 'green' : 
                                                                         job.status === 'in_progress' ? '#769fcd' : '#D3D3D3',}">
                                         {{  
@@ -167,16 +185,18 @@
                     </div>
                 </div>
             </div>
-            <div class="taskContainer">
-                <div id="carouselExampleIndicators" class="carousel slide">
+            <!-- <div id="task"> -->
+                <div id="mobileCarouselIndicator" class="carousel carousel-dark slide taskContainer">
                     <div class="carousel-indicators">
-                        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="0" class="active" aria-current="true" aria-label="Slide 1"></button>
-                        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="1" aria-label="Slide 2"></button>
-                        <button type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide-to="2" aria-label="Slide 3"></button>
+                        <div v-for="(data, index) in ganttData" :key="index">
+                            <button type="button" data-bs-target="#mobileCarouselIndicator" :data-bs-slide-to="index" :class="{active: index === 0}" :aria-current="index===0" :aria-label="`Slide ${index+1}`"></button>
+                        </div>
+                        
+                        <!-- <button type="button" data-bs-target="#mobileCarouselIndicator" data-bs-slide-to="1" aria-label="Slide 2"></button>
+                        <button type="button" data-bs-target="#mobileCarouselIndicator" data-bs-slide-to="2" aria-label="Slide 3"></button> -->
                     </div>
                     <div class="carousel-inner">
-                        <div v-for="(data, index) in ganttData" :key="index"
-                            :class="['carousel-item', index === 0 ? 'active' : '']">
+                        <div v-for="(data, index) in ganttData" :key="index" class="carousel-item" :class="{active: index === 0}">
                             <h2 style="font-weight: bold;">{{ data.jobName }}</h2>
                             <div v-for="task in data.task.data" :key="task.id" class="progress-item">
                                 <div class="progress-header">
@@ -192,16 +212,16 @@
                             </div>
                         </div>
                     </div>
-                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="prev">
+                    <button class="carousel-control-prev" type="button" data-bs-target="#mobileCarouselIndicator" data-bs-slide="prev">
                         <span class="carousel-control-prev-icon" aria-hidden="true"></span>
                         <span class="visually-hidden">Previous</span>
                     </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleIndicators" data-bs-slide="next">
+                    <button class="carousel-control-next" type="button" data-bs-target="#mobileCarouselIndicator" data-bs-slide="next">
                         <span class="carousel-control-next-icon" aria-hidden="true"></span>
                         <span class="visually-hidden">Next</span>
                     </button>
                 </div>
-            </div>
+            <!-- </div> -->
         </div>
     </div>
     <LogedInLayout v-else>    
@@ -215,14 +235,14 @@
                 </button>
             </div>
 
-            <div class="row mx-0 py-4">
-                <div class="font header">Progress</div>
+            <div class="row my-4 py-3">
+                <div class="font header">Project Dashboard</div>
             </div>
 
             <div v-if="isContractor" class="contractor-header">
                 <div class="containerBorder font text-start px-3">
-                    <div>Project ID: <span class="text-dark fw-normal">{{ projectData.projectId }}</span></div>
-                    <div>Customer ID: <span class="text-dark fw-normal">{{ customerDetails.id }}</span></div>
+                    <div>Project Description: <span class="text-dark fw-normal">{{ jobs.value[0].description }}</span></div>
+                    <!-- <div>Customer ID: <span class="text-dark fw-normal">{{ customerDetails.id }}</span></div> -->
                     <div>Customer Name: <span class="text-dark fw-normal">{{ customerDetails.name }}</span></div>
                     <div>Location: <span class="text-dark fw-normal">{{ customerDetails.location }}</span></div>
                     <div>Paid Status: <span class="text-dark fw-normal">{{ customerDetails.paidStatus }}</span></div>
@@ -242,50 +262,62 @@
             <div class="customRow">
                 <!-- Job Progress Donut Chart -->
                 <div class="jobProgressionContainer font containerBorder" 
-                    :class="{'has-payment': showPaymentButton}">
-                    <p class="my-3">Overall Progression for Job {{ activeJobIndex + 1 }}</p>
+                    :class="{'hasPayment': showPaymentButton}">
+                    <p class="my-3">Overall Progression for Job {{ currentJobIndex + 1 }}</p>
                     <div class="my-3">
-                        <ProjectDonutChart :sections="jobProgress[activeJobIndex]?.donutSections"/>
-                        Completion: {{ jobProgress[activeJobIndex]?.completionPercentage }}%
+                        <ProjectDonutChart :sections="jobProgress[currentJobIndex]?.donutSections" :key="currentJobIndex"/>
+                        Completion: {{ jobProgress[currentJobIndex]?.completionPercentage }}%
                     </div>
                 </div>
-
-                <!-- Gantt Chart Carousel -->
-                <div id="carouselControls" class="carousel slide carouselContainer font containerBorder"
-                    :class="{'has-payment': showPaymentButton}">
-                    <div class="carousel-inner">
-                        <div v-for="(job, index) in ganttData" :key="job.jobId" :class="['carousel-item', index === 0 ? 'active' : '']">
-                            <div class="gantt-title">
-                                <h4>Job #{{ activeJobIndex + 1 }}: {{ ganttData[activeJobIndex]?.jobName }}</h4>
-                                <h4>Contractor: {{ ganttData[activeJobIndex]?.contractorCompanyName }}, 
-                                    {{ ganttData[activeJobIndex]?.contractorStaff }}
-                                </h4>
-                                <div v-if="!isContractor && 
-                                    props.projectData.jobs.value && 
-                                    props.projectData.jobs.value[index] && 
-                                    props.projectData.jobs.value[index].status === 'completed' && 
-                                    props.projectData.jobs.value[index].paidstatus === 'pending'" >
-                                    <RouterLink :to="{name: 'payment2', query: {jobID: props.projectData.jobs.value[index]?.id}}">
-                                        Job completed. Please complete payment&nbsp;<button>Payment</button>
-                                    </RouterLink>
-                                </div>
-                            </div>
-                            <div class="gantt-container">
-                                <GanttChart class="left-container" :tasks="ganttData[activeJobIndex]?.task" 
-                                    @taskUpdated="handleTaskUpdate" @taskAdded="handleNewTask" @taskDeleted="handleTaskDelete"/>
+                <!-- Option 1: Select -->
+                <div class="ganttSection font containerBorder" :class="{'hasPayment': showPaymentButton}">
+                    <!-- Job Selector -->
+                    <div class="jobSelector">
+                        <select v-model="currentJobIndex" class="form-select w-auto mx-auto">
+                            <option v-for="(job, index) in ganttData" :key="job.jobId" :value="index" class="p-0">
+                                Job #{{index + 1}}: {{ job.jobName }}
+                            </option>
+                        </select>
+                    </div>
+                    <div v-if="hasNoTasks" class="contractorHaveNotStart">
+                        <div>Contractor has yet to start. Come back later !</div>
+                    </div>
+                    <div v-else>            
+                        <!-- Current Job Info -->
+                        <div class="ganttTitle">
+                            <h3>Job #{{ currentJobIndex + 1 }}: {{ ganttData[currentJobIndex]?.jobName }}</h3>
+                            <h4 v-if="!isContractor">
+                                Contractor: {{ ganttData[currentJobIndex]?.contractorCompanyName }}, 
+                                {{ ganttData[currentJobIndex]?.contractorStaff }}
+                            </h4>
+                            <div v-if="!isContractor && 
+                                props.projectData.jobs.value && 
+                                props.projectData.jobs.value[currentJobIndex] && 
+                                // props.projectData.jobs.value[currentJobIndex].status === 'completed' && 
+                                props.projectData.jobs.value[currentJobIndex].paidstatus !== 'paid'">
+                                <RouterLink 
+                                    :to="{
+                                        name: 'payment2', 
+                                        query: {
+                                            jobID: props.projectData.jobs.value[currentJobIndex]?.id
+                                        }
+                                    }">
+                                    Job Accepted. Please proceed with payment&nbsp;<button>Payment</button>
+                                </RouterLink>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Carousel Controls -->
-                    <button class="carousel-control-prev" type="button" data-bs-target="#carouselControls" data-bs-slide="prev">
-                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Previous</span>
-                    </button>
-                    <button class="carousel-control-next" type="button" data-bs-target="#carouselControls" data-bs-slide="next">
-                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
-                        <span class="visually-hidden">Next</span>
-                    </button>
+                        <!-- Gantt Chart -->
+                        <div class="ganttContainer">
+                            <GanttChart 
+                                class="leftContainer" 
+                                :tasks="ganttData[currentJobIndex]?.task"
+                                @taskUpdated="handleTaskUpdate" 
+                                @taskAdded="handleNewTask" 
+                                @taskDeleted="handleTaskDelete"
+                            />
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -323,20 +355,22 @@
     .containerBorder {
         border: 3px solid ;
         border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     }
 
     .carousel-control-next, .carousel-control-prev{
-        width: 3%;
+        width: 5%;
         height: auto;
     }
 
     .customRow{
         display: flex;
         flex-direction: column;
-        min-height: 800px;
+        /* min-height: 800px; */
+        height: 80%;
     }
 
-    .carouselContainer, .jobProgressionContainer{
+    .carouselContainer,.ganttSection, .jobProgressionContainer{
         width: 100%;
         margin-top: 16px;
         /* margin-bottom: 16px; */
@@ -347,13 +381,13 @@
     }
 
     .carouselContainer {
-        /* height: 720px; */
-        height: auto;
+        height: 720px;
+        /* height: auto; */
     }
 
     .carouselContainer.has-payment {
-        /* height: 950px; */
-        height: auto;
+        height: 1500px;
+        /* height: auto; */
     }
 
     .jobProgressionContainer{
@@ -362,9 +396,40 @@
         height: auto;
     }
 
-    .jobProgressionContainer.has-payment {
+    .jobProgressionContainer.hasPayment {
         /* height: 950px; */
         height: auto;
+    }
+
+        /* .ganttSection {
+        width: 100%;
+        margin-top: 16px;
+        height: 720px;
+        display: flex;
+        flex-direction: column;
+        transition: height 0.3s ease;
+    } */
+
+    .ganttSection.hasPayment {
+        /* min-height: 800px; */
+        /* height: 1500px; */
+    }
+
+    .jobSelector {
+       margin: 10px;
+    }
+
+    .jobSelector select {
+        font-size: 18px;
+        /* padding: 10px; */
+        color: #769FCD;
+        border-color: #769FCD;
+        min-width: 150px;
+    }
+
+    .jobSelector select:focus {
+        border-color: #769FCD;
+        box-shadow: 0 0 0 0.25rem rgba(118, 159, 205, 0.25);
     }
 
      .carousel-inner {
@@ -383,9 +448,18 @@
         
     }
 
-    .gantt-container {
-        width: 100%;
+    .contractorHaveNotStart {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 50px;
         height: 100%;
+    }
+
+    .ganttContainer {
+        width: 100%;
+        height: 84%;
+        /* height: 1500px; */
         display: flex;
         flex-direction: row;
         justify-content: center;
@@ -395,7 +469,7 @@
         /* margin: 10px auto; */
     }
 
-    .left-container {
+    .leftContainer {
         /* overflow: hidden;
         position: relative;
         height: 100%; */
@@ -413,13 +487,13 @@
         margin-right: auto; */
     }
 
-    .gantt-title{ 
+    .ganttTitle{ 
         text-align: center;
         font-size: 24px;
 
     }
 
-    @media (min-width: 1550px){
+    @media (min-width: 1080px){
         .carousel-inner {
             /* flex: 1; */
             width: 100%;
@@ -427,15 +501,38 @@
 
             overflow: hidden;
         }
+
         .customRow{
             display: flex;
             flex-direction: row;
             column-gap: 1%;
             /* height: auto; */
-            min-height: 800px;
+            /* min-height: 800px; */
+            min-height: 1040px;
+            /* min-height: 80vh; */
+            /* min-height: 80%; */
+            /* flex-grow: 1; */
         }
 
-         .carouselContainer {
+        .ganttSection {
+            width: 80%;
+            max-width: 80%;
+            margin-bottom: 0px;
+            min-height: 720px;
+            /* flex: 1; */
+        }
+
+        .ganttSection.hasPayment {
+            /* min-height: 900px; */
+        }
+
+        /* .jobProgressionContainer {
+            width: 19%;
+            max-width: 19%;
+            min-height: 720px;
+        } */
+
+         /* .carouselContainer {
             width: 80%; 
             max-width: 80%;
             margin-bottom: 0px; 
@@ -446,8 +543,8 @@
         }
 
         .carouselContainer.has-payment {
-            min-height: 970px;
-        }
+            min-height: 900px;
+        } */
 
         .jobProgressionContainer {
             width: 19%; 
@@ -458,13 +555,15 @@
             min-height: 720px;
         }
 
-        .jobProgressionContainer.has-payment {
-            min-height: 970px;
+        .jobProgressionContainer.hasPayment {
+            /* min-height: 900px; */
+            min-height: 80vh;
         }
 
-         .gantt-container {
+         .ganttContainer {
             width: 100%;
-            height: 90%;
+            /* height: 100%; */
+            min-height: 830px;
             display: flex;
             flex-direction: row;
             justify-content: center;
@@ -474,7 +573,7 @@
             /* margin: 10px auto; */
         }
 
-        .left-container {
+        .leftContainer {
             /* overflow: hidden;
             position: relative;
             height: 100%; */
@@ -486,8 +585,8 @@
             justify-content: center; */
             
             /* flex: 1; */
-            width: 95%;
-            height: 95%; 
+            width: 98%;
+            height: 98%; 
             /* margin-left: auto;
             margin-right: auto; */
         }
@@ -498,17 +597,21 @@
             padding: 13px;
         }
 
+        .carousel-indicators {
+            bottom: -20px;
+        }
+
         .timelineContainer, .taskContainer{
             background-color: white;
-            padding: 18px;
+            padding: 14px;
             border-radius: 10px;
             box-shadow: 0 2px 4px grey;
             margin-bottom: 20px;
-            height: auto;
+            min-height: 300px;
         }
 
         .taskContainer{
-            min-height: 250px;
+           padding: 24px;      
         }
         .timeline {
             position: relative;
@@ -548,11 +651,12 @@
         .timelineItem:not(:last-child)::before {
             content: '';
             position: absolute;
-            left: -18px;
+            left: -19px;
             top: 36px;
-            bottom: -16px;
+            bottom: -20px;
             width: 2px;
             background: #e0e0e0;
+            height: 125px;
         }
 
         .jobHeader {

@@ -2,6 +2,7 @@
 import { db, auth } from '../../firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { doc, getDoc } from "firebase/firestore";
+import defaultProfileIcon from "@/assets/defaultProfileIcon.jpg"; //to display default picture if no profile picture set
 export default {
     name: "ProjectItem",
     data() {
@@ -17,13 +18,13 @@ export default {
             required: true,
         },
     },
-    async created() {
+    async mounted() {
         // Fetch contractor's image based on contractorId from project
         if (this.project.contractorId) {
             try {
                 const contractorDoc = await getDoc(doc(db, "users", this.project.contractorId));
                 if (contractorDoc.exists()) {
-                    this.contractorImageUrl = contractorDoc.data().imageUrl; // Store contractor's image URL
+                    this.contractorImageUrl = contractorDoc.data().imageUrl || defaultProfileIcon ; // Store contractor's image URL
                 } else {
                     console.error("No such contractor document!");
                 }
@@ -61,7 +62,7 @@ export default {
 <template>
     <div class="row project-item align-items-center mb-4 p-3 border rounded shadow-sm">
         <div class="col-sm-2 d-flex justify-content-center align-items-center">
-            <img :src="contractorImageUrl || '../icons/moodeng.png'" alt="User Logo" class="contractor-logo">
+            <img :src="contractorImageUrl" alt="User Logo" class="contractor-logo">
         </div>
         <div class="col-sm-6">
             <h5 class="mb-1">{{ project.description }}</h5>
