@@ -109,6 +109,10 @@
                                 <p class="mb-1"><strong>Contractor:</strong></p>
                                 <span class="contractor-name">{{ project.contractorName }}</span>
                             </div>
+                            <div class="project-price">
+                                <p class="mb-1"><strong> Remaining Cost:</strong></p>
+                                <span class="contractor-name">{{ project.remainingBalance }}</span>
+                            </div>
                         </div>
                     </div>
                     <div class="fees-container">

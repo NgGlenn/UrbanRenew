@@ -164,12 +164,23 @@ h3 {
 
 .selected {
     font-weight: bold;
-    color: #1170dd;
+    color: darkblue;
     border-radius: 8px;
     padding: 5px;
     pointer-events: none;
     opacity: 0.85;
-    background-color: rgb(193, 249, 249);
+    /* background-color: rgb(193, 249, 249); */
+    position: relative; /* Position relative for the ::after element */
+}
+
+.selected::after {
+    content: "";
+    position: absolute;
+    bottom: -3px; /* Position the underline a bit below the element */
+    left: 0;
+    width: 100%;
+    height: 4px; /* Thickness of the underline */
+    background-color: #f9bf29; /* Color of the underline */
 }
 
 .payment {
