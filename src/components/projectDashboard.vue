@@ -458,8 +458,8 @@
 
     .ganttContainer {
         width: 100%;
-        /* height: 84%; */
-        height: 1500px;
+        height: 84%;
+        /* height: 1500px; */
         display: flex;
         flex-direction: row;
         justify-content: center;
