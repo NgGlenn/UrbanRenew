@@ -1,5 +1,5 @@
 <template>
-    <NavBar />
+    <NavBar></NavBar>
     <div class="payment">
         <div class="header">
             <h3>Payment</h3>
@@ -91,7 +91,7 @@ export default {
             return this.renoPaymentItems.filter((project) => {
                 // Ensure project involves the logged-in user
                 console.log(project.customerId);
-                if (project.contractorID !== this.userID && project.customerId !== this.userID) {
+                if (project.contractorId !== this.userID && project.customerId !== this.userID) {
                     return false; // Exclude projects that don't involve the user
                 }
 
@@ -138,15 +138,15 @@ h3 {
     font-weight: 700;
     color: #769FCD;
     margin-bottom: 10px;
-    /* font-size: 30px; */
     padding-bottom: 10px;
     border-bottom: 2px solid #ccc;
-
 }
 
 .button-group {
     display: flex;
-    gap: 15px;
+    flex-wrap: wrap;
+    gap: 10px;
+    width: 100%;
 }
 
 .btn-link {
@@ -189,7 +189,7 @@ h3 {
 }
 
 .payment-items {
-    padding: 5px;
+    padding: 10px;
 }
 
 .header {
@@ -222,5 +222,25 @@ h3 {
 
 .help-section li {
     margin-bottom: 6px;
+}
+@media (max-width: 768px) {
+    h3 {
+        font-size: 1.5rem;
+    }
+
+    .button-group {
+        flex-direction: column;
+        gap: 8px;
+        align-items: center;
+    }
+
+    .btn-link {
+        font-size: 1rem;
+        padding: 8px;
+    }
+
+    .help-section {
+        font-size: 0.8rem;
+    }
 }
 </style>
