@@ -139,6 +139,7 @@ h3 {
     color: #769FCD;
     margin-bottom: 10px;
     /* font-size: 30px; */
+    padding-bottom: 10px;
     border-bottom: 2px solid #ccc;
 
 }
