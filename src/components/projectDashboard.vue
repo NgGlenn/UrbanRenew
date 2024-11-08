@@ -411,7 +411,8 @@
     } */
 
     .ganttSection.hasPayment {
-        min-height: 800px;
+        /* min-height: 800px; */
+        /* height: 1500px; */
     }
 
     .jobSelector {
@@ -457,7 +458,8 @@
 
     .ganttContainer {
         width: 100%;
-        height: 84%;
+        /* height: 84%; */
+        height: 1500px;
         display: flex;
         flex-direction: row;
         justify-content: center;
@@ -491,7 +493,7 @@
 
     }
 
-    @media (min-width: 1550px){
+    @media (min-width: 1080px){
         .carousel-inner {
             /* flex: 1; */
             width: 100%;
@@ -521,7 +523,7 @@
         }
 
         .ganttSection.hasPayment {
-            min-height: 900px;
+            /* min-height: 900px; */
         }
 
         /* .jobProgressionContainer {
