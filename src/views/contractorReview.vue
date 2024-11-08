@@ -9,6 +9,9 @@
         
         <form @submit.prevent="submitReview">
           <h1>Review Contractor</h1>
+          <div class="image-container">
+              <img :src="contractorImageUrl || '../icons/moodeng.png'" alt="User Logo" class="contractor-logo">
+            </div>
             <label class="metric-label">Contractor's Name:</label>         
             <input type="text" :value="contractorName" disabled>
             <!-- <input type="text" class="form-control" id="amount" :value="formattedPrice" disabled /> -->
@@ -124,6 +127,7 @@ export default {
       reviewText: '',
       submitted: false,
       userID: '',
+      contractorImageUrl: '',
     };
   },
   async created() {
@@ -136,15 +140,17 @@ export default {
         // Directly reference the document by its ID
         const contractorRef = doc(db, 'contractors', contractorID);
         const contractorDoc = await getDoc(contractorRef);
-
+        const UserDoc = await getDoc(doc(db, "users", contractorID));
         // Check if the document exists, and combine firstName and lastName
-        if (contractorDoc.exists()) {
+        if (contractorDoc.exists() && UserDoc.exists()) {
+          this.contractorImageUrl = UserDoc.data().imageUrl; // Store contractor's image URL
           const contractorData = contractorDoc.data();
           console.log('Fetched contractor data:', contractorData);
 
           // Combine firstName and lastName with a space
           this.contractorName = `${contractorData.firstName} ${contractorData.lastName}`;
-        } else {
+        }
+         else {
           console.warn('No contractor found with the provided ID.');
         }
       } catch (error) {
@@ -238,6 +244,31 @@ export default {
 
   
   <style scoped>
+.image-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 20px; /* Space between image and other elements */
+}
+
+.contractor-logo {
+    width: 100%;
+    max-width: 200px; /* Maximum width for larger screens */
+    height: auto; /* Maintain aspect ratio */
+    border-radius: 50%;
+    object-fit: cover;
+}
+@media (max-width: 768px) {
+    .contractor-logo {
+        max-width: 150px; /* Adjust max-width for smaller screens */
+    }
+}
+
+@media (max-width: 576px) {
+    .contractor-logo {
+        max-width: 120px; /* Further adjust max-width for very small screens */
+    }
+}
   
         .page-container {
         padding: 50px;
@@ -248,23 +279,20 @@ export default {
         
         .review-container {
             background-color: #ffffff;
-            padding: 30px;
+            padding: 20px;
             border-radius: 8px;
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-            max-width: 400px;
-          
-            margin: 40px auto;
+            max-width: 600px;
+            margin: 15% auto;
         
         }
         form{
           background-color: white;
           border-radius: 10px;
           padding:2%;
-          width: 80%;
-          margin-left: 10%;
-          margin-right: 10%;
-          margin-top: 5%;
-          margin-bottom: 5%;
+          margin: 5% auto;
+          width: 70%;
+
 
         }
         .review-container h1 {
@@ -275,7 +303,12 @@ export default {
             margin-bottom: 40px;
         }
 
-
+        button{
+          margin: auto;
+          border-radius: 6px;
+          cursor: pointer;
+          
+        }
         button:hover {
             background-color: #5333a0;
         }

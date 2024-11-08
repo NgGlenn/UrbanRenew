@@ -8,6 +8,7 @@ export default {
         return {
             userID: null,
             userRole: '', 
+            contractorImageUrl: '',
         };
     },
     props: {
@@ -17,23 +18,33 @@ export default {
         },
     },
     async created() {
-        onAuthStateChanged(auth, async (user) => {
-            if (user) {
-                this.userID = user.uid; // Store logged-in user ID
-                try {
-                    // Retrieve the user's document from Firestore
-                    const userDoc = await getDoc(doc(db, "users", this.userID));
-                    if (userDoc.exists()) {
-                        this.userRole = userDoc.data().role; // Store the user's role
-                        //console.log("User role:", this.userRole);  
-                    } else {
-                        console.error("No such user document!");
-                    }
-                } catch (error) {
-                    console.error("Error fetching user role:", error);
+        // Fetch contractor's image based on contractorId from project
+        if (this.project.contractorId) {
+            try {
+                const contractorDoc = await getDoc(doc(db, "users", this.project.contractorId));
+                if (contractorDoc.exists()) {
+                    this.contractorImageUrl = contractorDoc.data().imageUrl; // Store contractor's image URL
+                } else {
+                    console.error("No such contractor document!");
                 }
+            } catch (error) {
+                console.error("Error fetching contractor image:", error);
             }
-        });
+        }
+
+        // Fetch user role
+        try {
+            onAuthStateChanged(auth, async (user) => {
+                if (user) {
+                    const userDoc = await getDoc(doc(db, "users", user.uid));
+                    if (userDoc.exists()) {
+                        this.userRole = userDoc.data().role; // Store user role
+                    }
+                }
+            });
+        } catch (error) {
+            console.error("Error fetching user role:", error);
+        }
     },
     methods: {
         goToPaymentPage() {
@@ -50,12 +61,13 @@ export default {
 <template>
     <div class="row project-item align-items-center mb-4 p-3 border rounded shadow-sm">
         <div class="col-sm-2 d-flex justify-content-center align-items-center">
-            <img src="../icons/moodeng.png" alt="Contractor Logo" class="contractor-logo">
+            <img :src="contractorImageUrl || '../icons/moodeng.png'" alt="User Logo" class="contractor-logo">
         </div>
         <div class="col-sm-6">
             <h5 class="mb-1">{{ project.description }}</h5>
             <p v-if="userRole=== 'customer'" class="mb-1"><strong>Contractor:</strong> {{ project.contractorName }}</p>
             <p v-if="userRole=== 'contractor'" class="mb-1"><strong>Customer:</strong> {{ project.customerName }}</p>
+            <p v-if="userRole=== 'contractor'" class="mb-1"><strong>Percentage Paid:</strong> {{ ((project.price - project.remainingBalance) / project.price * 100).toFixed(2) }}%</p>
             <p class="mb-1"><strong>Remaining Cost:</strong> ${{ project.remainingBalance }}</p>
         </div>
         <div class="col-sm-4 d-flex justify-content-sm-end justify-content-center mt-2 mt-sm-0">
