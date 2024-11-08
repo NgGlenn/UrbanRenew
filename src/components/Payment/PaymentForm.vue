@@ -216,7 +216,7 @@ export default {
                 paymentMethod: this.paymentMethod,
                 //projstatus: amountToPay === this.totalFees ? 'paid' : 'pending',
                 paidOn: new Date(),
-                CustomerID: this.userID,
+                customerID: this.userID,
                 contractorID: this.project.contractorId,
                 remainingBalance: this.project.remainingBalance - amountToPay,
                 paymentStatus: paymentStatus,
