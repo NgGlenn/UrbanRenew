@@ -9,7 +9,6 @@
             <div class="card-body">
                 <p> Company: <span style="font-style: italic;"> {{company}} </span> </p>
                 <p> Service offered: <span style="font-style: italic;"> {{servicesOffered.join(", ")}} </span> </p>
-                <p v-if="stylesOffered!=null"> Style(s): <span style="font-style: italic;"> {{stylesOffered.join(", ")}} </span> </p>
             </div>
             <div class="card-footer" style="text-align: center;">
                 <button @click="redirect" style="padding-inline: 50px;"> View Profile </button>
@@ -23,7 +22,7 @@ import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "fire
 
 
 export default{
-    props: [ 'id', 'image', 'firstName', 'lastName', 'company', 'rating', 'servicesOffered', 'stylesOffered' ],
+    props: [ 'id', 'image', 'firstName', 'lastName', 'company', 'rating', 'servicesOffered' ],
             // props: {
             //     img: string, 
             //     name: string, 
@@ -71,6 +70,6 @@ export default{
     .card{
         margin-top: 10px;
         margin-bottom: 10px;
-        min-height: 500px;
+        min-height: 450px;
     }
 </style>

@@ -173,13 +173,6 @@ export default {
                   <li v-for="service of details.services"> {{ service }} </li>
                 </ul>
 
-                <p v-if="details.styles!=null">
-                  <h6>Styles:</h6>
-                  <!-- Services Offered Section -->
-                  {{ details.styles.join(', ') }}
-                </p>
-                
-
                 <h6>Store Location:</h6>
                 <!-- Store Location Section -->
                 {{ details.storeAddress }} <br>

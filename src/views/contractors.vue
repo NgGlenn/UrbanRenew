@@ -22,10 +22,6 @@
                 <p>
                     Service(s): <button class="filter" v-for="service of services" @click="addFilter($event)"> {{service}} </button>
                 </p>
-
-                <p>
-                    Cosmetic style(s): <button class="filter" v-for="style of styles" v-on:click="addFilter($event)"> {{style}} </button>
-                </p>
             </div>
 
             <!-- Placeholder cards -->
@@ -40,7 +36,6 @@
                     :company="contractor.companyName"
                     :rating="contractor.rating"
                     :services-offered="contractor.services"
-                    :styles-offered="contractor.styles"
                     @redirect="viewProfile">
                     </ContractorCards>
 
@@ -65,13 +60,11 @@
             const contractors = useCollection(collection(db, 'contractors'));
             var contractorsDisplay = useCollection(collection(db, 'contractors'));
             var services = ref([]); // Make services reactive
-            var styles = ref([]); // Make styles reactive
 
-            // Watch for changes in contractors and update services & styles once contractors has data
+            // Watch for changes in contractors and update services once contractors has data
             watch(contractors, (newContractors) => {
             if (newContractors && newContractors.length) {
                 services.value = getServices(newContractors);
-                styles.value = getStyles(newContractors)
             }
             });
 
@@ -85,17 +78,7 @@
                 return results;
             };
 
-            const getStyles = (contractors) => {
-                const results = [];
-                for (let contractor of contractors) {
-                    if (contractor.styles) {
-                    results.push(...contractor.styles);
-                    }
-                }
-                return results;
-            };
-
-            return {contractors, contractorsDisplay, services, styles}
+            return {contractors, contractorsDisplay, services}
         },
 
         data() {
@@ -145,12 +128,6 @@
                                     // Check if any selected service is provided
                                     if (contractor.services.indexOf(filter) != -1){
                                         results.push(contractor);
-                                    }
-                                    // Check if any selected style is provided
-                                    if (contractor.styles){
-                                        if (contractor.styles.indexOf(filter) != -1){
-                                            results.push(contractor);
-                                        }
                                     }
                                 }
                             }
