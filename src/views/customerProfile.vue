@@ -356,7 +356,7 @@ export default {
         const q = query(
           paymentsCollection,
           where("customerID", "==", this.userId),
-          where("projstatus", "in", ["paid", "completed"]),
+          where("paymentStatus", "in", ["paid", "completed"]),
         );
 
         const querySnapshot = await getDocs(q);
@@ -366,7 +366,7 @@ export default {
             id: doc.id,
             projectname: data.projectname,
             contractorname: data.contractorname,
-            amount: data.amount,
+            amount: data.price,
             paymentMethod: data.paymentMethod,
             paidOn: data.paidOn.toDate().toLocaleString(),
           };

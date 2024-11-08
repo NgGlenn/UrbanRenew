@@ -41,7 +41,7 @@
 <template>
     <LogedInLayout>
         <div class="projectContent">
-            <h1><strong>Current Projects</strong></h1>
+            <h1 style="color: ##769FCD;"><strong>Current Projects</strong></h1>
             <div v-if="OngoingProjects">
                 <div class="row mx-0 mt-4" style="font-size: 24px;" v-for="(job, index) in OngoingProjects">
                     <div class="col-1 d-flex align-items-center">Project: #{{index + 1}}</div>
@@ -66,7 +66,7 @@
             </div>
         </div>
         <div class="projectContent">
-            <h1><strong>Completed Projects</strong></h1>
+            <h1 style="color: ##769FCD;"><strong>Completed Projects</strong></h1>
             <div v-if="CompletedProjects">
                 <div class="row mx-0 mt-4" style="font-size: 24px;" v-for="(job, index) in CompletedProjects" :key="job">
                     <div class="col-1 d-flex align-items-center p-0 projectNo">Project: #{{index + 1}}</div>
@@ -77,7 +77,7 @@
                                 &nbsp;<strong>Customer ID:</strong> {{job.customerId}}
                             </div>
                             <div class="bottomText">
-                                 <strong>Location:</strong> {{job.location}}
+                                <strong>Location:</strong> {{job.location}}
                                 <strong>Project ID:</strong> {{job.projectId}}
                             </div>
                         </div>

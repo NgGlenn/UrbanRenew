@@ -149,6 +149,7 @@
     const hasNoTasks = computed(() => {
         return !ganttData.value?.[currentJobIndex.value]?.task?.data?.length;
     });
+    console.log('is contracotr', props.isContractor.valueOf);
 </script>
 
 <template>
@@ -279,7 +280,7 @@
                             </option>
                         </select>
                     </div>
-                    <div v-if="hasNoTasks" class="contractorHaveNotStart">
+                    <div v-if="hasNoTasks && !props.isContractor" class="contractorHaveNotStart">
                         <div>Contractor has yet to start. Come back later !</div>
                     </div>
                     <div v-else>            

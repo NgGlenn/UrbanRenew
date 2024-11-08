@@ -102,7 +102,7 @@ export function useGanttFormat(jobs, tasks, contractorCompany, contractorStaff) 
                 // contractorStaff: contractorPOC,
                 // task: formattedTasks
                 jobId: job.id,
-                jobName: job.description,
+                jobName: job.jobName,
                 contractorCompanyName: companyName,
                 contractorStaff: staffName,
                 task: formattedTasks

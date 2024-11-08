@@ -490,7 +490,7 @@ export default {
               id: docSnapshot.id,
               projectname: data.projectname,
               customername: customerName,
-              amount: data.amount,
+              amount: data.price,
               paymentMethod: data.paymentMethod,
               paidOn: data.paidOn.toDate().toLocaleString(),
             };

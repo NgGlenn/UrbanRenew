@@ -103,11 +103,11 @@ export default{
                     price: this.quotedPrice,
                     remainingBalance: this.quotedPrice,
                     paidstatus: "pending",
-                    jobName: this.jobType + " by " + this.contractorName,
+                    jobName: this.jobType,
                     description: this.desc,
                     startDate: this.startDate,
                     endDate: this.endDate,
-                    status: "Pending",
+                    status: "in_pending",
                     createdAt: new Date(),
                     });
                     //console.log("Document written with ID: ", docRef.id);
