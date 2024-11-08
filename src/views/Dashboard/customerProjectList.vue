@@ -30,7 +30,7 @@ const getJobTasks = (jobId) => {
 };
 
 const goToMarketplace = () => {
-    router.push({ name: 'marketplace' });
+    router.push({ name: 'contractors' });
 };
 </script>
 
