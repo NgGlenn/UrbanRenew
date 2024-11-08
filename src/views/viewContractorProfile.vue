@@ -174,7 +174,7 @@ export default {
                 </ul>
 
                 <p v-if="details.styles!=null">
-                  <h6>Styles:</h6>
+                  <!-- <h6>Styles:</h6> -->
                   <!-- Services Offered Section -->
                   {{ details.styles.join(', ') }}
                 </p>
