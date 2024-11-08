@@ -6,7 +6,7 @@
 
         <div class="jobRequest">
             <div class="row">
-                <div class="col-lg-6 col-sm-12"> <b>Contractor:</b> {{contractor}} </div>
+                <div class="col-lg-6 col-sm-12"> <b>Customer:</b> {{customerName}} </div>
                 <div class="col-lg-6 col-sm-12"> <b>Status:</b> {{status}} </div>
             </div> 
             <a class="icon" href="#" v-on:click="toggleExpansion">
@@ -24,13 +24,10 @@
                 </div>
             </div>
 
-            <div v-if="quoteReceived">
-                <br>
-                <div> <b>Quoted Price:</b> {{quotedPrice}} </div>
-                <div> <b>Contractor's comments:</b> {{comments}} </div>
+            <div v-if="status=='Pending'">
                 <div style="margin-top: 15px;">
-                    <a :href="paymentLink" target="_blank">
-                        <button style="margin-inline: 20px;" v-on:click="Accept"> Accept </button>
+                    <a href="#" target="_blank">
+                        <button style="margin-inline: 20px;" v-on:click="SendQuotation"> Send Quotation </button>
                     </a>
                     <a href="#" target="_blank">
                         <button style="margin-inline: 20px;" v-on:click="Decline"> Decline </button>
@@ -44,8 +41,9 @@
 
 <script>
 export default{
-    props: [ 'id', 'contractor', 'status', 'desc', 
-            'startDate', 'endDate', 'budget', 
+    props: [ 'id', 'projectId', 'contractorId', 'contractorName', 
+            'customerId', 'customerName', 'status', 'jobType',
+            'desc', 'startDate', 'endDate', 'budget', 
             'quoteReceived', 'quotedPrice', 'comments' ],
             // props: {
             //     prop1: String, 
@@ -69,13 +67,22 @@ export default{
             }
         },
 
-        Accept(){
-            // Add the job to dashboard & payment
+        async Decline(){
+            // Reference to the specific job request document
+            const jobRequestRef = doc(db, 'jobRequests', this.id); 
+
+            try {
+                updateDoc(jobRequestRef, {
+                    status: "Declined",
+                    //quoteReceived: false
+                });
+                alert('You have declined this job request. Please refresh the page.');
+            } catch (error) {
+                console.error('Error submitting quotation:', error);
+                alert('Something went wrong. Please try again.');
+            }
         },
 
-        Decline(){
-            // Inform contractor
-        },
         SendQuotation(){
             // Send quotation to contractor
             const queryParams = new URLSearchParams({
@@ -86,9 +93,7 @@ export default{
     }, // methods
 
     computed: {
-        paymentLink(){
-            return "@/views/userProfile"; // Payment page
-        }
+        
     }
 }
 </script>

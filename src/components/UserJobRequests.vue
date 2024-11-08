@@ -27,7 +27,7 @@
             
             <div v-if="quoteReceived">
                 <br>
-                <div> <b>Quoted Price:</b> {{quotedPrice}} </div>
+                <div> <b>Quoted Price:</b> ${{quotedPrice}} </div>
                 <div> <b>Contractor's comments:</b> {{comments}} </div>
                 <div style="margin-top: 15px;">
                     <a :href="paymentLink">
@@ -49,7 +49,7 @@ import { doc, getDoc, getDocs, updateDoc, addDoc, collection } from "firebase/fi
 
 export default{
     props: [ 'id', 'projectId', 'contractorId', 'contractorName', 
-            'customerId', 'status', 'jobType',
+            'customerId', 'customerName', 'status', 'jobType',
             'desc', 'startDate', 'endDate', 'budget', 
             'quoteReceived', 'quotedPrice', 'comments' ],
             // props: {
@@ -74,15 +74,16 @@ export default{
             }
         },
 
-        Accept(){
+        async Accept(){
             // Add the job to dashboard & payment
             // Update job request
             const jobRequestRef = doc(db, 'jobRequests', this.id); 
+            const jobRequestDoc = await getDoc(jobRequestRef);
 
             try {
                 updateDoc(jobRequestRef, {
                     status: "Accepted",
-                    //quoteReceived: false
+                    quoteReceived: false
                 });
             } catch (error) {
                 console.error('Error submitting quotation:', error);
@@ -93,33 +94,37 @@ export default{
             try {
                 const docRef = addDoc(collection(db, "jobs"), {
                     projectId: this.projectId,
+                    requestId: jobRequestDoc.id,
                     contractorId: this.contractorId,
                     contractorName: this.contractorName,
-                    customerId: this.customerId, // add this later
-                    budget: this.budget,
-                    jobName: this.jobType,
+                    customerId: this.customerId,
+                    customerName: this.customerName,
+                    price: this.quotedPrice,
+                    remainingBalance: this.quotedPrice,
+                    paidstatus: "pending",
+                    jobName: this.jobType + " by " + this.contractorName,
                     jobDetails: this.desc,
                     startDate: this.startDate,
                     endDate: this.endDate,
                     status: "Pending",
                     createdAt: new Date(),
                     });
-                    console.log("Document written with ID: ", docRef.id);
-                    alert("You have accepted this job request. Please refresh the page.")
+                    //console.log("Document written with ID: ", docRef.id);
+                    this.$router.push({path: '/dashboard'});
                 } catch (e) {
                     console.error("Error adding document: ", e);
                     alert('Something went wrong. Please try again.');
                 }
         },
 
-        Decline(){
+        async Decline(){
             // Reference to the specific job request document
             const jobRequestRef = doc(db, 'jobRequests', this.id); 
 
             try {
                 updateDoc(jobRequestRef, {
                     status: "Declined",
-                    //quoteReceived: false
+                    quoteReceived: false
                 });
                 alert('You have declined this job request. Please refresh the page.');
             } catch (error) {

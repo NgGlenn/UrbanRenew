@@ -179,6 +179,7 @@
                     startDate: this.startDate,
                     endDate: this.endDate,
                     status: "Pending",
+                    quoteReceived: false,
                     createdAt: new Date(),
                     });
                     //console.log("Document written with ID: ", docRef.id);

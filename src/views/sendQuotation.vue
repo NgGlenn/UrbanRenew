@@ -13,6 +13,13 @@
                         placeholder="Enter quotation amount"
                         required
                     />
+
+                    <label for="comment">Comments:</label>
+                    <textarea>
+                        v-model="comments"
+                        id="comment"
+                        placeholder="Add your comments"
+                    </textarea>
                 </div>
                 <button type="submit">Submit Quotation</button>
             </form>
@@ -34,6 +41,7 @@ export default {
     data() {
         return {
             quoteAmount: 0,
+            comments: ""
         };
     },
     methods: {
@@ -45,10 +53,12 @@ export default {
             try {
                 // Update the `quoteamt` and `quoteReceived` fields
                 await updateDoc(jobRequestRef, {
+                    status: "Awaiting Decision",
                     quoteamt: this.quoteAmount,
                     quoteReceived: true,
+                    comments: this.comments
                 });
-                alert('Quotation submitted successfully.');
+                //alert('Quotation submitted successfully.');
                 this.$router.push({ path: '/contractorJobRequests' }); // Redirect to the desired page after submission
             } catch (error) {
                 console.error('Error submitting quotation:', error);

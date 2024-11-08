@@ -52,18 +52,18 @@
                     id: doc.id,
                     contractorId: doc.data().contractorId,
                     contractorName: doc.data().contractorName,
-                    createdAt: doc.data().createdAt,
                     customerId: doc.data().customerId,
+                    customerName: doc.data().customerName,
                     jobType: doc.data().jobType,
                     jobDetails: doc.data().jobDetails,
                     projectId: doc.data().projectId,
                     status: doc.data().status,
-                    updatedAt: doc.data().updatedAt,
                     budget: doc.data().budget,
                     startDate: doc.data().startDate,
                     endDate: doc.data().endDate,
                     quoteamt: doc.data().quoteamt,
-                    quoteReceived: doc.data().quoteReceived
+                    quoteReceived: doc.data().quoteReceived,
+                    comments: doc.data().comments
                 }));
                 return jobRequests;
             }
@@ -79,7 +79,7 @@
 <template>
     <LogedInLayout>
         <div class="main-body" style="padding: 10px">
-            <h2><b> Job Requests </b></h2>
+            <h2><b> Job Requests (Customers) </b></h2>
 
             <UserJobRequests
             v-for="request of jobRequests"
@@ -87,13 +87,15 @@
             :contractor-id="request.contractorId"
             :contractor-name="request.contractorName"
             :customer-id="request.customerId"
+            :customer-name="request.customerName"
             :status="request.status"
             :job-type="request.jobType"
             :desc="request.jobDetails"
             :start-date="request.startDate"
             :end-date="request.endDate"
             :budget="request.budget"
-            :quoteamt="request.quoteamt"
+            :quoted-price="request.quoteamt"
+            :comments="request.comments"
             :quote-received="request.quoteReceived"
             :project-id="request.projectId"></UserJobRequests>
         </div>
