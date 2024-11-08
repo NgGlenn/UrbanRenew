@@ -81,6 +81,8 @@
         <div class="main-body" style="padding: 10px">
             <h2><b> Job Requests (Customers) </b></h2>
 
+            <p v-if="jobRequests.length==0" style="font-style: italic;"> No job requests yet. </p>
+
             <UserJobRequests
             v-for="request of jobRequests"
             :id="request.id"
