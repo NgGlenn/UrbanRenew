@@ -173,13 +173,6 @@ export default {
                   <li v-for="service of details.services"> {{ service }} </li>
                 </ul>
 
-                <p v-if="details.styles!=null">
-                  <h6>Styles:</h6>
-                  <!-- Services Offered Section -->
-                  {{ details.styles.join(', ') }}
-                </p>
-                
-
                 <h6>Store Location:</h6>
                 <!-- Store Location Section -->
                 {{ details.storeAddress }} <br>
@@ -209,9 +202,6 @@ export default {
                   <i class="fas fa-trophy"></i> Certificates & Awards
                 </h5>
                 <!-- Certificates & Awards Section Title -->
-                 <p v-if="details.certsAndAwards.length==0" class="bio-placeholder"> 
-                  None 
-                </p>
                 <ul class="list-unstyled">
                   <li v-for="award of details.certsAndAwards"> <i class="fas fa-award"></i> {{ award }} </li>
                 </ul>
@@ -233,7 +223,7 @@ export default {
             <div class="card mb-4 review-card">
               <div class="card-header">Reviews</div>
               <div class="card-body">
-                <p v-if="reviews.length==0" class="bio-placeholder"> No reviews yet. </p>
+                <p v-if="reviews==null" class="bio-placeholder"> No reviews yet. </p>
                 <div v-else class="review-item mb-4 border-bottom pb-3" v-for="review of reviews">
                   <div class="d-flex align-items-center">
                     <img
