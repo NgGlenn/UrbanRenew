@@ -22,7 +22,7 @@ export default {
     async initPage(id) {
       try {
         // Get Contractors
-        const contractors = doc(db, "contractors", id); 
+        const contractors = doc(db, "contractors", id);
         const docSnap = await getDoc(contractors);
 
         // Check if the document exists
@@ -41,19 +41,19 @@ export default {
         // Execute query
         const querySnapshot = await getDocs(q);
         const results = [];
-        
+
         querySnapshot.forEach((doc) => {
           results.push(doc.data()); // Collect data and ID for each document
         });
 
         this.reviews = results;
-      } 
+      }
       catch (error) {
         console.error("Error fetching document:", error);
       }
     },
 
-    createRequest(id){
+    createRequest(id) {
       this.$router.push({ path: `/jobRequest/newRequest/${id}` });
       this.$emit(this.createRequest, id);
     },
@@ -118,13 +118,13 @@ export default {
   },
 
   computed: {
-    storeLocation(){
+    storeLocation() {
       return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(this.details.storeAddress)}`
     }
   },
 
- mounted() {
-  this.initPage(this.id);
+  mounted() {
+    this.initPage(this.id);
   },
 
   components: {
@@ -144,15 +144,13 @@ export default {
           <div class="col-md-6">
             <div class="card mb-4">
               <div class="text-center mb-3">
-                <img
-                  src="https://via.placeholder.com/150"
-                  alt="User Profile"
-                  class="rounded-circle profile-image mb-3"
-                />
+                <img src="https://via.placeholder.com/150" alt="User Profile"
+                  class="rounded-circle profile-image mb-3" />
                 <h5 class="card-title">
-                  <i class="fas fa-user-circle"></i> {{ details.firstName}} {{ details.lastName }}
+                  <i class="fas fa-user-circle"></i> {{ details.firstName }} {{ details.lastName }}
                 </h5>
-                <button @click="createRequest(id)" style="margin: 5px;"> Send Job Request </button>
+                <button @click="createRequest(id)" class="btn btn-primary" style="margin: 5px;"> Send Job Request
+                </button>
               </div>
             </div>
             <div class="card mb-4">
@@ -176,14 +174,10 @@ export default {
                 <h6>Store Location:</h6>
                 <!-- Store Location Section -->
                 {{ details.storeAddress }} <br>
-                <a
-                  :href="storeLocation"
-                  target="_blank"
-                  class="text-primary hover-text-decoration-underline"
-                >
+                <a :href="storeLocation" target="_blank" class="text-primary hover-text-decoration-underline">
                   <i class="fas fa-map-marker-alt"></i> View on Google Maps
                 </a>
-  
+
                 <hr />
 
 
@@ -193,10 +187,10 @@ export default {
 
                 <h6 class=""><i class="fas fa-phone-alt"></i> Phone: {{ details.phoneNumber }}</h6>
 
-                <h6 class=""><i class="fas fa-envelope"></i> Email: {{ details.businessEmail }}</h6>  
+                <h6 class=""><i class="fas fa-envelope"></i> Email: {{ details.businessEmail }}</h6>
 
                 <hr />
-      
+
 
                 <h5 class="mt-4">
                   <i class="fas fa-trophy"></i> Certificates & Awards
@@ -216,26 +210,26 @@ export default {
               <div class="card-header">Past Renovation Projects</div>
               <div class="card-body">
                 <div class="transaction-item">
-                  <p class="bio-placeholder">No past projects available.</p>
+                  <div v-if="reviews.length === 0" class="no-reviews">
+                    No past projects available.
+                  </div>
                 </div>
               </div>
             </div>
             <div class="card mb-4 review-card">
               <div class="card-header">Reviews</div>
               <div class="card-body">
-                <p v-if="reviews==null" class="bio-placeholder"> No reviews yet. </p>
+                <div v-if="reviews.length === 0" class="no-reviews">
+                  No reviews yet.
+                </div>
                 <div v-else class="review-item mb-4 border-bottom pb-3" v-for="review of reviews">
                   <div class="d-flex align-items-center">
-                    <img
-                      src="../assets/home_testi3.jpg"
-                      alt="John Doe"
-                      class="rounded-circle me-2"
-                      style="width: 50px; height: 50px"
-                    />
+                    <img src="../assets/home_testi3.jpg" alt="John Doe" class="rounded-circle me-2"
+                      style="width: 50px; height: 50px" />
                     <!-- Increased image size -->
                     <div class="flex-grow-1">
-                      <h6 class="mb-0 text-muted"> 
-                        <span v-if="review.reviewerName"> {{ review.reviewerName }} </span> 
+                      <h6 class="mb-0 text-muted">
+                        <span v-if="review.reviewerName"> {{ review.reviewerName }} </span>
                         <span v-else> Anonymous </span>
                       </h6>
                       <!-- Changed to h6 for smaller text -->
@@ -248,12 +242,30 @@ export default {
                       </div>
                     </div>
                   </div>
-                  <p class="mt-2 small text-muted"> 
+                  <p class="mt-2 small text-muted">
                     Quality of work: {{ review.qualityOfWork }} / 5 <br>
                     Communication: {{ review.communication }} / 5 <br>
                     Budget Adherence: {{ review.budgetAdherence }} / 5 <br>
                     Problem Resolution: {{ review.problemResolution }} / 5
                   </p>
+                </div>
+
+              </div>
+            </div>
+            <div class="card mb-4">
+              <div class="card-header">Portfolio Images</div>
+              <div class="card-body">
+                <div class="portfolio-images-container">
+                  <div v-if="reviews.length === 0" class="no-reviews">
+                    No photos available.
+                  </div>
+                  <!-- <div v-for="(imageUrl, index) in portfolioImages" :key="index" class="portfolio-image-card">
+                    <img :src="imageUrl" alt="Portfolio Image" class="portfolio-image"
+                      @click="openPreviewModal(imageUrl)" />
+                    <button class="delete-button" @click="deletePortfolioImage(index)">
+                      &times;
+                    </button>
+                  </div> -->
                 </div>
               </div>
             </div>
@@ -270,6 +282,7 @@ export default {
 body {
   background-color: #f7fbfc;
 }
+
 .card {
   background-color: #ffffff;
   border: none;
@@ -277,52 +290,77 @@ body {
   width: 100%;
   box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
+
 .bio-placeholder {
   color: #6c757d;
 }
+
 .review-card {
   background-color: #ffffff;
 }
+
+.review-card .card-body {
+  padding: 1.5rem;
+}
+
+.no-reviews {
+  text-align: center;
+  color: #64748b;
+  padding: 2rem;
+  font-style: italic;
+}
+
 .profile-image {
   width: 150px;
   height: 150px;
   border: 3px solid #769fcd;
 }
+
 .button-container {
   margin-top: 10px;
 }
+
 .container {
   margin-top: 50px;
 }
+
 .card-header {
   background-color: #769fcd;
   color: white;
   font-weight: bold;
 }
+
 h6 {
   font-weight: bold;
 }
+
 .text-center {
   padding-top: 30px;
 }
+
 .btn-primary {
-  background-color: #007bff;
+  background-color: #769fcd;
   border: none;
 }
+
 .btn-primary:hover {
   background-color: #0056b3;
 }
+
 .btn-secondary {
   background-color: #6c757d;
   border: none;
 }
+
 .btn-secondary:hover {
   background-color: #5a6268;
 }
+
 .icon {
   font-size: 18px;
   margin-right: 8px;
 }
+
 .transaction-item {
   margin-bottom: 15px;
 }
@@ -340,6 +378,7 @@ h6 {
   justify-content: center;
   z-index: 1000;
 }
+
 .modal-content {
   background-color: #ffffff;
   padding: 20px;
@@ -348,12 +387,35 @@ h6 {
   width: 300px;
   text-align: center;
 }
+
 .modal-content h5 {
   color: #769fcd;
   margin-bottom: 15px;
 }
+
 .modal-content .btn {
   width: 100%;
   margin-bottom: 10px;
+}
+
+.portfolio-images-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  grid-gap: 1rem;
+}
+
+.portfolio-image-card {
+  position: relative;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.portfolio-image {
+  width: 100%;
+  height: 150px;
+  object-fit: cover;
+  cursor: pointer;
+  transition: transform 0.3s ease, filter 0.3s ease;
 }
 </style>

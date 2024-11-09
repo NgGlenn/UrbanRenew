@@ -2,10 +2,31 @@
 import LogedInLayout from "@/components/logedInLayout.vue";
 import { db, auth } from "@/firebase";
 import { onAuthStateChanged } from "firebase/auth";
-import { doc, getDoc, updateDoc, setDoc, collection, query, where, getDocs, orderBy} from "firebase/firestore";
-import { getStorage, ref, uploadBytes,getDownloadURL,deleteObject, getMetadata} from "firebase/storage";
+import {
+  doc,
+  getDoc,
+  updateDoc,
+  setDoc,
+  collection,
+  query,
+  where,
+  getDocs,
+  orderBy,
+} from "firebase/firestore";
+import {
+  getStorage,
+  ref,
+  uploadBytes,
+  getDownloadURL,
+  deleteObject,
+  getMetadata,
+} from "firebase/storage";
 import defaultProfileIcon from "@/assets/defaultProfileIcon.jpg"; //to display default picture if no profile picture set
-import { updatePassword, EmailAuthProvider, reauthenticateWithCredential} from "firebase/auth";
+import {
+  updatePassword,
+  EmailAuthProvider,
+  reauthenticateWithCredential,
+} from "firebase/auth";
 import Cropper from "cropperjs";
 import "cropperjs/dist/cropper.css";
 export default {
@@ -51,7 +72,7 @@ export default {
       newPortfolioImage: null, // Store the new image to be uploaded
       showPortfolioImageModal: false, // Control the portfolio image modal
       imagePortfolioUrl: "",
-      previewImage: null
+      previewImage: null,
     };
   },
 
@@ -82,8 +103,12 @@ export default {
         names.length > 1 ? names.slice(0, -1).join(" ") : names[0];
       this.updateLastName = names.length > 1 ? names[names.length - 1] : "";
       this.updatedCompanyName = this.companyName;
-      this.updatedServicesOffered = [...this.servicesOffered];
-      this.updatedCertificatesAndAwards = [...this.certificatesAndAwards];
+      this.updatedServicesOffered = [...this.servicesOffered].filter(
+        (service) => service !== "None"
+      );
+      this.updatedCertificatesAndAwards = [
+        ...this.certificatesAndAwards,
+      ].filter((cert) => cert !== "None");
       this.updatedAddress = this.address || "";
       this.updatedPostalCode = this.postalCode || "";
       this.updatedPhone = this.phone || "";
@@ -504,78 +529,81 @@ export default {
       }
     },
 
-   openPortfolioImageModal() {
-  this.showPortfolioImageModal = true;
-},
+    openPortfolioImageModal() {
+      this.showPortfolioImageModal = true;
+    },
 
-closePortfolioImageModal() {
-  this.showPortfolioImageModal = false;
-  this.imagePortfolioUrl = null;
-  if (this.cropperPortfolio) {
-    this.cropperPortfolio.destroy();
-    this.cropperPortfolio = null;
-  }
-},
-
-handlePortfolioImageUpload(event) {
-  const file = event.target.files[0];
-  console.log("Selected portfolio file:", file);
-  if (file) {
-    const reader = new FileReader();
-
-    reader.onload = (e) => {
-      this.imagePortfolioUrl = e.target.result;
-      console.log("Portfolio Image URL:", this.imagePortfolioUrl);
-      this.$nextTick(() => {
-        this.initializePortfolioCropper();
-      });
-    };
-
-    reader.readAsDataURL(file);
-  }
-},
-
-initializePortfolioCropper() {
-  if (this.$refs.portfolioImageToCrop) {
-    this.cropperPortfolio = new Cropper(this.$refs.portfolioImageToCrop, {
-      aspectRatio: 16 / 9, // Changed to landscape for portfolio images
-      viewMode: 1,
-      autoCropArea: 1,
-    });
-  }
-},
-
-async uploadPortfolioImage() {
-  if (this.cropperPortfolio) {
-    this.cropperPortfolio.getCroppedCanvas().toBlob(async (blob) => {
-      if (blob) {
-        try {
-          const storage = getStorage();
-          const storageRef = ref(storage, `portfolio-images/${Date.now()}.png`);
-
-          const uploadTask = await uploadBytes(storageRef, blob);
-          const downloadURL = await getDownloadURL(uploadTask.ref);
-          const contractorDocRef = doc(db, "contractors", this.userId);
-          await updateDoc(contractorDocRef, {
-            portfolioImages: [...this.portfolioImages, downloadURL],
-          });
-
-          this.portfolioImages.push(downloadURL);
-          
-          this.closePortfolioImageModal();
-          alert("Portfolio image uploaded successfully.");
-        } catch (error) {
-          console.error("Error uploading portfolio image:", error);
-          alert("Failed to upload portfolio image. Please try again.");
-        }
-      } else {
-        console.error("Blob is null or undefined.");
+    closePortfolioImageModal() {
+      this.showPortfolioImageModal = false;
+      this.imagePortfolioUrl = null;
+      if (this.cropperPortfolio) {
+        this.cropperPortfolio.destroy();
+        this.cropperPortfolio = null;
       }
-    });
-  } else {
-    alert("Please select and crop an image first.");
-  }
-},
+    },
+
+    handlePortfolioImageUpload(event) {
+      const file = event.target.files[0];
+      console.log("Selected portfolio file:", file);
+      if (file) {
+        const reader = new FileReader();
+
+        reader.onload = (e) => {
+          this.imagePortfolioUrl = e.target.result;
+          console.log("Portfolio Image URL:", this.imagePortfolioUrl);
+          this.$nextTick(() => {
+            this.initializePortfolioCropper();
+          });
+        };
+
+        reader.readAsDataURL(file);
+      }
+    },
+
+    initializePortfolioCropper() {
+      if (this.$refs.portfolioImageToCrop) {
+        this.cropperPortfolio = new Cropper(this.$refs.portfolioImageToCrop, {
+          aspectRatio: 16 / 9, // Changed to landscape for portfolio images
+          viewMode: 1,
+          autoCropArea: 1,
+        });
+      }
+    },
+
+    async uploadPortfolioImage() {
+      if (this.cropperPortfolio) {
+        this.cropperPortfolio.getCroppedCanvas().toBlob(async (blob) => {
+          if (blob) {
+            try {
+              const storage = getStorage();
+              const storageRef = ref(
+                storage,
+                `portfolio-images/${Date.now()}.png`
+              );
+
+              const uploadTask = await uploadBytes(storageRef, blob);
+              const downloadURL = await getDownloadURL(uploadTask.ref);
+              const contractorDocRef = doc(db, "contractors", this.userId);
+              await updateDoc(contractorDocRef, {
+                portfolioImages: [...this.portfolioImages, downloadURL],
+              });
+
+              this.portfolioImages.push(downloadURL);
+
+              this.closePortfolioImageModal();
+              alert("Portfolio image uploaded successfully.");
+            } catch (error) {
+              console.error("Error uploading portfolio image:", error);
+              alert("Failed to upload portfolio image. Please try again.");
+            }
+          } else {
+            console.error("Blob is null or undefined.");
+          }
+        });
+      } else {
+        alert("Please select and crop an image first.");
+      }
+    },
 
     async deletePortfolioImage(index) {
       try {
@@ -593,13 +621,12 @@ async uploadPortfolioImage() {
       }
     },
 
-         openPreviewModal(imageUrl) {
-    this.previewImage = imageUrl;
-  },
-  closePreviewModal() {
-    this.previewImage = null;
+    openPreviewModal(imageUrl) {
+      this.previewImage = imageUrl;
     },
-  
+    closePreviewModal() {
+      this.previewImage = null;
+    },
   },
   computed: {
     storeLocation() {
@@ -631,7 +658,6 @@ async uploadPortfolioImage() {
 
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     },
-
   },
   mounted() {
     onAuthStateChanged(auth, async (user) => {
@@ -760,28 +786,28 @@ async uploadPortfolioImage() {
 
                 <h6>Store Location:</h6>
                 <!-- Store Location Section -->
-                <p class="text-muted">{{ address }}, S{{ postalCode }}</p>
-                <a
-                  :href="storeLocation"
-                  target="_blank"
-                  class="text-primary hover-text-decoration-underline"
-                >
-                  <i class="fas fa-map-marker-alt"></i> View on Google Maps
-                </a>
-                <div id="map" style="height: 400px; width: 100%"></div>
-                <hr />
-
-                <h5 class="mt-4">
-                  <i class="fas fa-address-card"></i> Contact Info
-                </h5>
-
-                <h6 class="">
-                  <i class="fas fa-phone-alt"></i> Phone: {{ phone }}
-                </h6>
-
-                <h6 class="">
-                  <i class="fas fa-envelope"></i> Email: {{ userEmail }}
-                </h6>
+                <div v-if="postalCode">
+                  <p style="color: #6c757d">{{ address }}, S{{ postalCode }}</p>
+                  <a
+                    :href="storeLocation"
+                    target="_blank"
+                    style="color: #007bff; text-decoration: none"
+                    @mouseover="
+                      $event.target.style.textDecoration = 'underline'
+                    "
+                    @mouseout="$event.target.style.textDecoration = 'none'"
+                  >
+                    <i class="fas fa-map-marker-alt"></i> View on Google Maps
+                  </a>
+                  <div id="map" style="height: 400px; width: 100%"></div>
+                </div>
+                <div v-else>
+                  <p style="color: #ffc107">
+                    <i class="fas fa-exclamation-circle"></i>
+                    Please add your address and postal code so customers can
+                    locate your business.
+                  </p>
+                </div>
 
                 <hr />
 
@@ -835,9 +861,7 @@ async uploadPortfolioImage() {
                       </div>
                       <div>
                         <strong>Amount</strong>
-                        <span class="amount"
-                          >${{ transaction.amount.toFixed(2) }}</span
-                        >
+                        <span class="amount">${{ transaction.amount }}</span>
                       </div>
                       <!-- <div>
             <strong>Payment Method</strong>
@@ -1065,12 +1089,22 @@ async uploadPortfolioImage() {
         </div>
       </div>
 
-      <div class="portfolio-preview-modal" v-if="previewImage" @click="closePreviewModal">
-  <div class="portfolio-preview-modal-content">
-    <button class="portfolio-preview-close" @click="closePreviewModal">&times;</button>
-    <img :src="previewImage" alt="Preview" class="portfolio-preview-image">
-  </div>
-</div>
+      <div
+        class="portfolio-preview-modal"
+        v-if="previewImage"
+        @click="closePreviewModal"
+      >
+        <div class="portfolio-preview-modal-content">
+          <button class="portfolio-preview-close" @click="closePreviewModal">
+            &times;
+          </button>
+          <img
+            :src="previewImage"
+            alt="Preview"
+            class="portfolio-preview-image"
+          />
+        </div>
+      </div>
       <div v-if="showPortfolioImageModal" class="modal-overlay">
         <div class="modal-content">
           <h5>Upload Portfolio Image</h5>
@@ -1080,14 +1114,14 @@ async uploadPortfolioImage() {
             class="form-control mb-2"
             accept=".jpg,.jpeg,.png"
           />
-           <div v-if="imagePortfolioUrl" class="image-crop-container mb-3">
-        <img
-          ref="portfolioImageToCrop"
-          :src="imagePortfolioUrl"
-          alt="Image to crop"
-          class="selected-image-preview"
-        />
-      </div>
+          <div v-if="imagePortfolioUrl" class="image-crop-container mb-3">
+            <img
+              ref="portfolioImageToCrop"
+              :src="imagePortfolioUrl"
+              alt="Image to crop"
+              class="selected-image-preview"
+            />
+          </div>
           <button class="btn btn-primary" @click="uploadPortfolioImage">
             Upload
           </button>
@@ -1751,7 +1785,7 @@ h6 {
 
 .portfolio-preview-modal-content {
   position: relative;
-  width: 800px;  /* Fixed width */
+  width: 800px; /* Fixed width */
   height: 600px; /* Fixed height */
   background: white; /* Added background to see the container */
 }
@@ -1796,5 +1830,4 @@ h6 {
 .portfolio-image-card:hover {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
-
 </style>
