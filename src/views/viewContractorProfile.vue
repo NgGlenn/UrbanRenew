@@ -5,7 +5,7 @@ import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, getDocs } from "firebase/firestore";
 import { useCollection } from 'vuefire';
 import { QueryEndAtConstraint, collection, documentId, orderBy, query, where } from 'firebase/firestore';
-
+import defaultProfileIcon from "@/assets/defaultProfileIcon.jpg";
 
 export default {
   data() {
@@ -14,7 +14,8 @@ export default {
       details: null,
       reviews: null,
       portfolioImages: [],
-      loading: true
+      loading: true,
+      profilePictureUrl: '',
     };
   },
 
@@ -31,9 +32,9 @@ export default {
           // Assign the document data to a variable
           this.details = docSnap.data();
           this.loading = false;
-
         } else {
           console.log("No such document");
+          return; // Exit if contractor doesn't exist to prevent further code execution
         }
 
         // Get Reviews
@@ -45,10 +46,25 @@ export default {
         const results = [];
 
         querySnapshot.forEach((doc) => {
-          results.push(doc.data()); // Collect data and ID for each document
+          results.push(doc.data()); // Collect data for each document
         });
 
         this.reviews = results;
+
+        // Get User Profile
+        const users = collection(db, "users");
+        const p = query(users, where("email", "==", this.details.businessEmail));
+
+        // Execute user profile query
+        const querySnapshot2 = await getDocs(p);
+
+        let userData = null;
+        // Check if we found a user profile
+        if (!querySnapshot2.empty) {
+          userData = querySnapshot2.docs[0].data(); // Get the first user's data
+        }
+        
+        this.profilePictureUrl = userData?.imageUrl || defaultProfileIcon;
       }
       catch (error) {
         console.error("Error fetching document:", error);
@@ -146,8 +162,7 @@ export default {
           <div class="col-md-6">
             <div class="card mb-4">
               <div class="text-center mb-3">
-                <img src="https://via.placeholder.com/150" alt="User Profile"
-                  class="rounded-circle profile-image mb-3" />
+                <img :src="profilePictureUrl" alt=" User Profile" class="rounded-circle profile-image mb-3" />
                 <h5 class="card-title">
                   <i class="fas fa-user-circle"></i> {{ details.firstName }} {{ details.lastName }}
                 </h5>
