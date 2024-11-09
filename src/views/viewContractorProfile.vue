@@ -13,6 +13,7 @@ export default {
       id: this.$route.params.id,
       details: null,
       reviews: null,
+      portfolioImages: [],
       loading: true
     };
   },
@@ -30,6 +31,7 @@ export default {
           // Assign the document data to a variable
           this.details = docSnap.data();
           this.loading = false;
+        
         } else {
           console.log("No such document");
         }
@@ -256,16 +258,15 @@ export default {
               <div class="card-header">Portfolio Images</div>
               <div class="card-body">
                 <div class="portfolio-images-container">
-                  <div v-if="reviews.length === 0" class="no-reviews">
+                  <div v-if="details.portfolioImages.length === 0" class="no-reviews">
                     No photos available.
                   </div>
-                  <!-- <div v-for="(imageUrl, index) in portfolioImages" :key="index" class="portfolio-image-card">
-                    <img :src="imageUrl" alt="Portfolio Image" class="portfolio-image"
-                      @click="openPreviewModal(imageUrl)" />
-                    <button class="delete-button" @click="deletePortfolioImage(index)">
-                      &times;
-                    </button>
-                  </div> -->
+                  <div v-else>
+                    <div v-for="(imageUrl, index) in details.portfolioImages" :key="index" class="portfolio-image-card">
+                      <img :src="imageUrl" alt="Portfolio Image" class="portfolio-image"
+                        @click="openPreviewModal(imageUrl)" />
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
