@@ -5,18 +5,16 @@
             <div class="col-12 col-md-6 payment-form">
                 <h4><strong>Proceed with Payment</strong></h4>
                 <form @submit.prevent="handleSubmit">
-
                     <div class="mb-3">
                         <label class="form-label">Enter Custom Amount</label>
                         <div class="row mb-3">
                             <div class="col-auto">
                                 <strong>SGD</strong>
                             </div>
-                            <div class='col'>
-                                <input type="number" v-model.number="customPaymentAmount"
-                                    placeholder="Enter amount in SGD" class="form-control" required />
+                            <div class="col">
+                                <input type="number" v-model.number="customPaymentAmount" placeholder="Enter amount in SGD" class="form-control" required />
                             </div>
-                            <small v-if="customPaymentAmount > calculatedAmount || customPaymentAmount<=0" class="text-danger">
+                            <small v-if="customPaymentAmount > calculatedAmount || customPaymentAmount <= 0" class="text-danger">
                                 Payment amount invalid. Please enter a valid amount.
                             </small>
                         </div>
@@ -33,21 +31,20 @@
                             </div>
                         </div>
                     </div>
+
                     <div class="mb-3">
                         <label class="form-label">Payment Method</label>
                         <div>
                             <div class="form-check d-flex justify-content-between align-items-center">
                                 <div>
-                                    <input type="radio" id="paynow" value="paynow" v-model="paymentMethod"
-                                        class="form-check-input"  />
+                                    <input type="radio" id="paynow" value="paynow" v-model="paymentMethod" class="form-check-input" />
                                     <label for="paynow" class="form-check-label">PayNow</label>
                                 </div>
                                 <img src="../icons/paynow.png" alt="PayNow" class="payment-method-icon" />
                             </div>
                             <div class="form-check d-flex justify-content-between align-items-center">
                                 <div>
-                                    <input type="radio" id="creditcard" value="creditcard" v-model="paymentMethod"
-                                        class="form-check-input" required />
+                                    <input type="radio" id="creditcard" value="creditcard" v-model="paymentMethod" class="form-check-input"/>
                                     <label for="creditcard" class="form-check-label">Credit Card</label>
                                 </div>
                                 <img src="../icons/credit_card.png" alt="Credit Card" class="payment-method-icon" />
@@ -57,39 +54,39 @@
 
                     <div v-if="paymentMethod === 'creditcard'" class="mb-3">
                         <label for="cardName" class="form-label">Name on Card</label>
-                        <input type="text" class="form-control" id="cardName" required />
+                        <input type="text" class="form-control" id="cardName" v-model="cardName" required pattern="[A-Za-z ]+" title="Card name can only contain alphabets and spaces" />
                     </div>
 
                     <div v-if="paymentMethod === 'creditcard'" class="mb-3">
                         <label for="cardNumber" class="form-label">Card Number</label>
-                        <input type="text" class="form-control" id="cardNumber" required />
+                        <input type="text" class="form-control" id="cardNumber" v-model="cardNumber" required pattern="\d{16}" title="Card number must be 16 digits" maxlength="16" />
                         <br />
                         <div class="row">
                             <div class="col mb-3">
                                 <label class="form-label">Expiry Date</label>
                                 <div class="row">
                                     <div class="col-4">
-                                        <input type="text" class="form-control" id="expiryMonth" placeholder="MM"
-                                            required />
+                                        <input type="text" class="form-control" id="expiryMonth" v-model="expiryMonth" placeholder="MM" required pattern="(0[1-9]|1[0-2])" title="Enter a valid month (01-12)" maxlength="2" />
                                     </div>
                                     <div class="col-1">
                                         <p style="font-size:x-large">/</p>
                                     </div>
                                     <div class="col-6">
-                                        <input type="text" class="form-control" id="expiryYear" placeholder="YYYY"
-                                            required />
+                                        <input type="text" class="form-control" id="expiryYear" v-model="expiryYear" placeholder="YYYY" required pattern="\d{4}" title="Enter a valid year" maxlength="4" />
                                     </div>
                                 </div>
+                                <small v-if="!isExpiryValid" class="text-danger">Expiry date must be later than today.</small>
                             </div>
                             <div class="col mb-3">
                                 <label for="cvv" class="form-label">CVV</label>
-                                <input type="text" class="form-control" id="cvv" required />
+                                <input type="text" class="form-control" id="cvv" v-model="cvv" required pattern="\d{3}" title="CVV must be 3 digits" maxlength="3" />
                             </div>
                         </div>
                     </div>
                     <div class="row">
                         <div class="col text-center">
-                            <button type="submit" class="btn btn-primary w-100">Make Payment</button>
+                            <button v-if="paymentMethod=== 'creditcard'" type="submit" class="btn btn-primary w-100" :disabled="!isExpiryValid">Make Payment</button>
+                            <button v-if="paymentMethod=== 'paynow'" type="submit" class="btn btn-primary w-100" >Make Payment</button>
                         </div>
                     </div>
                 </form>
@@ -103,7 +100,7 @@
                         </div>
                         <div class="col">
                             <div class="project-info mb-2">
-                                <h5 class="project-name">{{ project.description}}</h5>
+                                <h5 class="project-name">{{ project.description }}</h5>
                             </div>
                             <div class="contractor-info">
                                 <p class="mb-1"><strong>Contractor:</strong></p>
@@ -118,10 +115,7 @@
                     <div class="fees-container">
                         <div class="d-flex justify-content-between mb-1">
                             <em>Custom Amount:</em>
-                            <span>SGD {{ calculatedAmount.toLocaleString(undefined, {
-                                minimumFractionDigits: 2,
-                                maximumFractionDigits: 2
-                            }) }}</span>
+                            <span>SGD {{ calculatedAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }}</span>
                         </div>
                         <div class="d-flex justify-content-between mb-1">
                             <em>Administration Fee:</em>
@@ -142,7 +136,6 @@
                     <p>Loading project details...</p>
                 </div>
             </div>
-
         </div>
     </div>
 </template>
@@ -165,6 +158,11 @@ export default {
             paymentMethod: '',
             customPaymentAmount: this.project.remainingBalance,
             contractorImageUrl: '',
+            cardName: '',
+            cardNumber: '',
+            expiryMonth: '',
+            expiryYear: '',
+            cvv: '',
         };
     },
     computed: {
@@ -173,7 +171,6 @@ export default {
                 ? this.customPaymentAmount
                 : this.project.remainingBalance;
         },
-
         adminFee() {
             return this.calculatedAmount * 0.001;
         },
@@ -192,13 +189,18 @@ export default {
         platformFeeFormatted() {
             return this.platformFee.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         },
+        isExpiryValid() {
+            const currentDate = new Date();
+            const expiryDate = new Date(this.expiryYear, this.expiryMonth - 1); // Month is zero-based
+            return expiryDate > currentDate;
+        },
     },
     async created() {
         if (this.project.contractorId) {
             try {
                 const contractorDoc = await getDoc(doc(db, "users", this.project.contractorId));
                 if (contractorDoc.exists()) {
-                    this.contractorImageUrl = contractorDoc.data().imageUrl; // Store contractor's image URL
+                    this.contractorImageUrl = contractorDoc.data().imageUrl;
                 } else {
                     console.error("No such contractor document!");
                 }
@@ -207,54 +209,52 @@ export default {
             }
         }
 
-        // Fetch user role
-        try {
-            onAuthStateChanged(auth, async (user) => {
-                if (user) {
-                    const userDoc = await getDoc(doc(db, "users", user.uid));
-                    if (userDoc.exists()) {
-                        this.userRole = userDoc.data().role; // Store user role
-                        this.userID = user.uid; // Store logged-in user ID
-                    }
+        onAuthStateChanged(auth, async (user) => {
+            if (user) {
+                const userDoc = await getDoc(doc(db, "users", user.uid));
+                if (userDoc.exists()) {
+                    this.userRole = userDoc.data().role;
+                    this.userID = user.uid;
                 }
-            });
-        } catch (error) {
-            console.error("Error fetching user role:", error);
-        }
+            }
+        });
     },
     methods: {
         async handleSubmit() {
+            if (this.paymentMethod=== 'creditcard' && !this.isExpiryValid) {
+                alert("Invalid expiry date.");
+                return;
+            }
+
             const amountToPay = this.customPaymentAmount;
             if (amountToPay <= 0) {
-            alert("Please enter a valid payment amount.");
-            return;
+                alert("Please enter a valid payment amount.");
+                return;
             }
+
             const paymentStatus = amountToPay === this.project.remainingBalance ? 'paid' : 'partiallypaid';
-            // Add payment record to 'payments' collection
+
             await addDoc(collection(db, 'payments'), {
                 projectname: this.project.jobName,
                 contractorname: this.project.contractorName,
                 projectID: this.project.id,
                 amount: amountToPay,
                 paymentMethod: this.paymentMethod,
-                //projstatus: amountToPay === this.totalFees ? 'paid' : 'pending',
                 paidOn: new Date(),
                 customerID: this.userID,
                 contractorID: this.project.contractorId,
                 remainingBalance: this.project.remainingBalance - amountToPay,
                 paymentStatus: paymentStatus,
                 price: this.project.price,
-                
             });
 
-            // Update job's paid status and remaining amount in the 'jobs' collection
             const jobRef = doc(db, 'jobs', this.project.id);
             try {
                 const jobSnapshot = await getDoc(jobRef);
                 if (jobSnapshot.exists()) {
                     const jobData = jobSnapshot.data();
                     const leftBalance = jobData.remainingBalance - amountToPay;
-                    console.log('Remaining balance:', jobData);
+
                     if (paymentStatus === 'paid') {
                         await updateDoc(jobRef, {
                             paidstatus: 'paid',
@@ -264,27 +264,22 @@ export default {
                     } else {
                         await updateDoc(jobRef, {
                             paidstatus: 'partiallypaid',
-                            remainingBalance: leftBalance, 
+                            remainingBalance: leftBalance,
                         });
                     }
                 }
 
-                console.log("Job's status and balance updated successfully");
-
-                // Redirect with appropriate messages
                 const queryParams = new URLSearchParams({ contractorID: this.project.contractorId }).toString();
                 const payParams = new URLSearchParams({ jobID: this.project.id }).toString();
                 if (this.paymentMethod === 'creditcard' && paymentStatus === 'paid') {
                     alert('Payment successful.');
                     this.$router.push(`/contractorReview?${queryParams}`);
-                } if(this.paymentMethod === 'creditcard' && paymentStatus === 'partiallypaid') {
+                } else if (this.paymentMethod === 'creditcard' && paymentStatus === 'partiallypaid') {
                     alert('Payment successful.');
                     this.$router.push(`/paymentOverview?${payParams}`);
-                }
-                else {
+                } else {
                     this.$router.push(`/completePayment?${payParams}`);
                 }
-                //this.$router.push(`/contractorReview?${queryParams}`);
             } catch (error) {
                 console.error('Error updating job status or remaining balance:', error);
                 alert('Failed to update the job status. Please try again.');
@@ -293,6 +288,7 @@ export default {
     },
 };
 </script>
+
 
 
 <style scoped>

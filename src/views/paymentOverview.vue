@@ -25,7 +25,7 @@
         </div>
         <div class="payment-items">
             <div class="container">
-                <ProjectItem v-for="project in filteredProjects" :key="project.jobID" :project="project" />
+                <ProjectItem v-for="project in filteredProjects" :key="project.id" :project="project" />
             </div>
         </div>
 
