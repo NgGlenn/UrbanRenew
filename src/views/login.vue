@@ -130,7 +130,7 @@ export default {
               </button>
             </div> -->
 
-            <a href="#" class="reset-link">Forgot your password?</a>
+            <!-- <a href="/forgetPassword" class="reset-link">Forgot your password?</a> -->
 
             <div class="text-center mt-4 account-creation-link">
               <p>Don't have an account yet?</p>

@@ -71,8 +71,11 @@
             const getServices = (contractors) => {
                 const results = [];
                 for (let contractor of contractors) {
-                    if (contractor.services) {
-                    results.push(...contractor.services);
+                    for (let service of contractor.services) {
+                        console.log(service)
+                        if (results.indexOf(service) == -1 && service != "None"){
+                            results.push(service);
+                        }      
                     }
                 }
                 return results;
