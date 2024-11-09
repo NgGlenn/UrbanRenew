@@ -50,11 +50,13 @@ export default {
 
             // Determine redirection based on job's paidstatus
             if (this.job.paidstatus === 'partiallypaid') {
+                alert("Payment successful!");
                 this.$router.push({ name: 'paymentOverview' });
             } else if (this.job.paidstatus === 'paid') {
                 const queryParams = new URLSearchParams({
                     contractorID: this.job.contractorId,
                 }).toString();
+                alert("Payment successful!");
                 this.$router.push(`/contractorReview?${queryParams}`);
             }
         }

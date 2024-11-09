@@ -275,6 +275,7 @@ export default {
                 const queryParams = new URLSearchParams({ contractorID: this.project.contractorId }).toString();
                 const payParams = new URLSearchParams({ jobID: this.project.id }).toString();
                 if (this.paymentMethod === 'creditcard' && paymentStatus === 'paid') {
+                    alert('Payment successful.');
                     this.$router.push(`/contractorReview?${queryParams}`);
                 } if(this.paymentMethod === 'creditcard' && paymentStatus === 'partiallypaid') {
                     alert('Payment successful.');

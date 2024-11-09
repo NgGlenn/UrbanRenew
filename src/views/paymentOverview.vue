@@ -95,15 +95,16 @@ export default {
                     return false; // Exclude projects that don't involve the user
                 }
 
-                // Parse endDate from project data (assuming endDate is in seconds, adjust if in milliseconds)
+                // Parse endDate from project data 
                 const endDate = new Date(project.endDate); // Adjust this if endDate is stored differently
-                
+                //console.log("End date:", endDate);
                 // Calculate the time difference in days
-                const daysDifference = (this.currentDate - endDate) / (1000 * 60 * 60 * 24);
-
+                const daysDifference = (endDate- this.currentDate) / (1000 * 60 * 60 * 24);
+                //console.log("Days difference:", daysDifference);
+                //console.log(this.currentDate);
                 // Filter projects based on selected button and date conditions
                 if (this.selectedButton === 'held') {
-                    return project.paidstatus === 'paid' && daysDifference <= 7 && daysDifference >= 0;
+                    return project.paidstatus === 'paid' && daysDifference <= 7;
                 } else if (this.selectedButton === 'released') {
                     return project.paidstatus === 'paid' && daysDifference > 7;
                 } else {
