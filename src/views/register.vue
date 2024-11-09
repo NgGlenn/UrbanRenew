@@ -347,9 +347,9 @@ export default {
                     ></i>
                   </span>
                 </div>
-                <div class="strength-indicator" v-if="passwordStrength">
+                <!-- <div class="strength-indicator" v-if="passwordStrength">
                   {{ passwordStrength }}
-                </div>
+                </div> -->
                 <div class="error" v-if="errors.password">
                   {{ errors.password }}
                 </div>
@@ -522,9 +522,9 @@ export default {
                     ></i>
                   </span>
                 </div>
-                <div class="strength-indicator" v-if="passwordCStrength">
+                <!-- <div class="strength-indicator" v-if="passwordCStrength">
                   {{ passwordCStrength }}
-                </div>
+                </div> -->
                 <div class="error" v-if="errors.passwordC">
                   {{ errors.passwordC }}
                 </div>

@@ -82,8 +82,8 @@ export default {
         names.length > 1 ? names.slice(0, -1).join(" ") : names[0];
       this.updateLastName = names.length > 1 ? names[names.length - 1] : "";
       this.updatedCompanyName = this.companyName;
-      this.updatedServicesOffered = [...this.servicesOffered];
-      this.updatedCertificatesAndAwards = [...this.certificatesAndAwards];
+      this.updatedServicesOffered = [...this.servicesOffered].filter(service => service !== "None");;
+      this.updatedCertificatesAndAwards = [...this.certificatesAndAwards].filter(cert => cert !== "None");
       this.updatedAddress = this.address || "";
       this.updatedPostalCode = this.postalCode || "";
       this.updatedPhone = this.phone || "";
@@ -760,28 +760,25 @@ async uploadPortfolioImage() {
 
                 <h6>Store Location:</h6>
                 <!-- Store Location Section -->
-                <p class="text-muted">{{ address }}, S{{ postalCode }}</p>
-                <a
-                  :href="storeLocation"
-                  target="_blank"
-                  class="text-primary hover-text-decoration-underline"
-                >
-                  <i class="fas fa-map-marker-alt"></i> View on Google Maps
-                </a>
-                <div id="map" style="height: 400px; width: 100%"></div>
-                <hr />
-
-                <h5 class="mt-4">
-                  <i class="fas fa-address-card"></i> Contact Info
-                </h5>
-
-                <h6 class="">
-                  <i class="fas fa-phone-alt"></i> Phone: {{ phone }}
-                </h6>
-
-                <h6 class="">
-                  <i class="fas fa-envelope"></i> Email: {{ userEmail }}
-                </h6>
+                <div v-if="postalCode">
+    <p style="color: #6c757d;">{{ address }}, S{{ postalCode }}</p>
+    <a
+        :href="storeLocation"
+        target="_blank"
+        style="color: #007bff; text-decoration: none;"
+        @mouseover="$event.target.style.textDecoration='underline'"
+        @mouseout="$event.target.style.textDecoration='none'"
+    >
+        <i class="fas fa-map-marker-alt"></i> View on Google Maps
+    </a>
+    <div id="map" style="height: 400px; width: 100%;"></div>
+</div>
+<div v-else>
+    <p style="color: #ffc107;">
+        <i class="fas fa-exclamation-circle"></i>
+        Please add your address and postal code so customers can locate your business.
+    </p>
+</div>
 
                 <hr />
 
@@ -836,7 +833,7 @@ async uploadPortfolioImage() {
                       <div>
                         <strong>Amount</strong>
                         <span class="amount"
-                          >${{ transaction.amount.toFixed(2) }}</span
+                          >${{ transaction.amount }}</span
                         >
                       </div>
                       <!-- <div>
