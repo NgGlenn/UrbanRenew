@@ -30,7 +30,12 @@ import contractorJobRequests from '@/views/contractorJobRequests.vue';
 import sendQuotation from '@/views/sendQuotation.vue';
 
 import { useUserStore } from '@/stores/userStore';
+<<<<<<< Updated upstream
 import { useProjectStore } from '@/stores/projectStore';
+=======
+import { compile } from 'vue';
+import CompletePayment from '@/views/completePayment.vue';
+>>>>>>> Stashed changes
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -159,7 +164,12 @@ const router = createRouter({
       path: '/sendQuotation',
       name: 'sendQuotation',
       component: sendQuotation
-    }
+    },
+    {
+      path: '/completePayment',
+      name: 'completePayment',
+      component: CompletePayment
+    },
   ],
   scrollBehavior(to, from, savedPosition) {
     // Check if the target route has a hash (an anchor link)
