@@ -106,8 +106,7 @@ export default{
       }
 
       .jobRequest{
-        background-color: lightgrey;
-        border: 2px solid gray;
+        border: 3px solid #769FCD;
         padding: 10px;
         position: relative;;
         margin: 5px;

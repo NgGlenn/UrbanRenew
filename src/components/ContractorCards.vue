@@ -2,13 +2,13 @@
     <div class="col-12 col-sm-6 col-lg-4">
         <div class="card">
             <div class="card-header p-10" style="text-align: center;">
-                <img :src="displayImage" style="width: 100%; margin-bottom: 15px; max-width: 300px; max-height: 250px;">
+                <img :src="displayImage" style="width: 100%; margin-bottom: 15px; width: 300px; height: 230px;">
                 <h4 style="font-weight: bold;"> {{firstName}}  {{ lastName }} </h4>
                 <p> Rating: {{rating.toFixed(1)}} / 5.0 </p>
             </div>
             <div class="card-body">
-                <p> Company: <span style="font-style: italic;"> {{company}} </span> </p>
-                <p> Service offered: <span style="font-style: italic;"> {{servicesOffered.join(", ")}} </span> </p>
+                <p><b> Company: </b><span style="font-style: italic;"> {{company}} </span> </p>
+                <p><b> Service offered: </b><span style="font-style: italic;"> {{servicesOffered.join(", ")}} </span> </p>
             </div>
             <div class="card-footer" style="text-align: center;">
                 <button @click="redirect" style="padding-inline: 50px;"> View Profile </button>
@@ -68,8 +68,10 @@ export default{
 
 <style scoped>
     .card{
+        border: 3px solid #769FCD;
+        color: #769FCD;
         margin-top: 10px;
         margin-bottom: 10px;
-        min-height: 450px;
+        min-height: 500px;
     }
 </style>
