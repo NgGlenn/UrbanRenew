@@ -108,7 +108,7 @@
                             </div>
                             <div class="project-price">
                                 <p class="mb-1"><strong> Remaining Cost:</strong></p>
-                                <span class="contractor-name"> $ {{ project.remainingBalance }}</span>
+                                <span class="contractor-name"> $ {{ project.remainingBalance-calculatedAmount }}</span>
                             </div>
                         </div>
                     </div>
