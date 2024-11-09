@@ -65,7 +65,7 @@ export default {
             <img :src="contractorImageUrl" alt="User Logo" class="contractor-logo">
         </div>
         <div class="col-sm-6">
-            <h5 class="mb-1">{{ project.description }}</h5>
+            <h5 class="mb-1">{{ project.jobName }}</h5>
             <p v-if="userRole=== 'customer'" class="mb-1"><strong>Contractor:</strong> {{ project.contractorName }}</p>
             <p v-if="userRole=== 'contractor'" class="mb-1"><strong>Customer:</strong> {{ project.customerName }}</p>
             <p v-if="userRole=== 'contractor'" class="mb-1"><strong>Percentage Paid:</strong> {{ ((project.price - project.remainingBalance) / project.price * 100).toFixed(2) }}%</p>
