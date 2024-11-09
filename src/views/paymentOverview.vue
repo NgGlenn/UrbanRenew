@@ -96,7 +96,7 @@ export default {
                 }
 
                 // Parse endDate from project data (assuming endDate is in seconds, adjust if in milliseconds)
-                const endDate = new Date(project.endDate.seconds * 1000); // Adjust this if endDate is stored differently
+                const endDate = new Date(project.endDate); // Adjust this if endDate is stored differently
                 
                 // Calculate the time difference in days
                 const daysDifference = (this.currentDate - endDate) / (1000 * 60 * 60 * 24);

@@ -16,8 +16,8 @@
                                 <input type="number" v-model.number="customPaymentAmount"
                                     placeholder="Enter amount in SGD" class="form-control" required />
                             </div>
-                            <small v-if="customPaymentAmount > totalFees" class="text-danger">
-                                Payment amount cannot exceed the total fees.
+                            <small v-if="customPaymentAmount > calculatedAmount || customPaymentAmount<=0" class="text-danger">
+                                Payment amount invalid. Please enter a valid amount.
                             </small>
                         </div>
                     </div>
@@ -111,7 +111,7 @@
                             </div>
                             <div class="project-price">
                                 <p class="mb-1"><strong> Remaining Cost:</strong></p>
-                                <span class="contractor-name">{{ project.remainingBalance }}</span>
+                                <span class="contractor-name"> $ {{ project.remainingBalance }}</span>
                             </div>
                         </div>
                     </div>
@@ -259,6 +259,7 @@ export default {
                         await updateDoc(jobRef, {
                             paidstatus: 'paid',
                             remainingBalance: 0,
+                            status: 'completed',
                         });
                     } else {
                         await updateDoc(jobRef, {
@@ -272,11 +273,15 @@ export default {
 
                 // Redirect with appropriate messages
                 const queryParams = new URLSearchParams({ contractorID: this.project.contractorId }).toString();
-    
-                if (paymentStatus === 'paid') {
+                const payParams = new URLSearchParams({ jobID: this.project.id }).toString();
+                if (this.paymentMethod === 'creditcard' && paymentStatus === 'paid') {
                     this.$router.push(`/contractorReview?${queryParams}`);
-                } else {
-                    this.$router.push(`/dashboard`);
+                } if(this.paymentMethod === 'creditcard' && paymentStatus === 'partiallypaid') {
+                    alert('Payment successful.');
+                    this.$router.push(`/paymentOverview?${payParams}`);
+                }
+                else {
+                    this.$router.push(`/completePayment?${payParams}`);
                 }
                 //this.$router.push(`/contractorReview?${queryParams}`);
             } catch (error) {
@@ -349,6 +354,7 @@ p {
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    height: auto;
 }
 
 .btn:hover {
