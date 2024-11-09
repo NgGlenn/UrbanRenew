@@ -97,6 +97,7 @@ export default {
                 placeholder="Enter your email"
                 required
                 v-model="email"
+                @keyup.enter="login"
               />
             </div>
 
@@ -110,6 +111,7 @@ export default {
                   placeholder="Enter your password"
                   required
                   v-model="password"
+                  @keyup.enter="login"
                 />
                 <span
                   class="input-group-text show-password"
