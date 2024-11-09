@@ -210,7 +210,7 @@ export default {
               <div class="card-header">Past Renovation Projects</div>
               <div class="card-body">
                 <div class="transaction-item">
-                  <div v-if="projects.length === 0" class="no-reviews">
+                  <div v-if="reviews.length === 0" class="no-reviews">
                     No past projects available.
                   </div>
                 </div>
@@ -256,16 +256,16 @@ export default {
               <div class="card-header">Portfolio Images</div>
               <div class="card-body">
                 <div class="portfolio-images-container">
-                  <div v-if="portfolioImages.length === 0" class="no-reviews">
+                  <div v-if="reviews.length === 0" class="no-reviews">
                     No photos available.
                   </div>
-                  <div v-for="(imageUrl, index) in portfolioImages" :key="index" class="portfolio-image-card">
+                  <!-- <div v-for="(imageUrl, index) in portfolioImages" :key="index" class="portfolio-image-card">
                     <img :src="imageUrl" alt="Portfolio Image" class="portfolio-image"
                       @click="openPreviewModal(imageUrl)" />
                     <button class="delete-button" @click="deletePortfolioImage(index)">
                       &times;
                     </button>
-                  </div>
+                  </div> -->
                 </div>
               </div>
             </div>
