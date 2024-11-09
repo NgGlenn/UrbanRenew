@@ -151,10 +151,13 @@ export default{
       }
 
       .jobRequest{
-        border: 3px solid #769FCD;
         padding: 10px;
         position: relative;
         margin: 5px;
+        border: 3px solid lightgray;
+        border-radius: 10px;
+        background-color: #dee8ef;
+        color: #555;
       }
 
       .icon{
