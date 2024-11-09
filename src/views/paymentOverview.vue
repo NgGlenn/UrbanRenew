@@ -99,16 +99,17 @@ export default {
                 const endDate = new Date(project.endDate); // Adjust this if endDate is stored differently
                 //console.log("End date:", endDate);
                 // Calculate the time difference in days
-                const daysDifference = (endDate- this.currentDate) / (1000 * 60 * 60 * 24);
+                const daysDifference = (this.currentDate- endDate) / (1000 * 60 * 60 * 24);
                 //console.log("Days difference:", daysDifference);
                 //console.log(this.currentDate);
-                // Filter projects based on selected button and date conditions
-                if (this.selectedButton === 'held') {
-                    return project.paidstatus === 'paid' && daysDifference <= 7;
-                } else if (this.selectedButton === 'released') {
-                    return project.paidstatus === 'paid' && daysDifference > 7;
+                if (this.selectedButton === 'released') {
+                // Released projects have a paid status of 'paid' and an end date more than 7 days ago
+                return project.paidstatus === 'paid' && daysDifference > 7;
+                } else if (this.selectedButton === 'held') {
+                // Held projects have a paid status of 'paid' and an end date within 7 days or less
+                return project.paidstatus === 'paid' && daysDifference <= 7;
                 } else {
-                    return project.paidstatus === this.selectedButton;
+                return project.paidstatus === this.selectedButton;
                 }
             });
         },
