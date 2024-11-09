@@ -1,17 +1,18 @@
 <template>
     <div class="col-12 col-sm-6 col-lg-4">
-        <div class="card">
+        <div class="card border rounded shadow-sm">
             <div class="card-header p-10" style="text-align: center;">
                 <img :src="displayImage" style="width: 100%; margin-bottom: 15px; width: 300px; height: 230px;">
-                <h4 style="font-weight: bold;"> {{firstName}}  {{ lastName }} </h4>
-                <p> Rating: {{rating.toFixed(1)}} / 5.0 </p>
+                <h4 style="font-weight: bold;"> {{ firstName }} {{ lastName }} </h4>
+                <p> Rating: {{ rating.toFixed(1) }} / 5.0 </p>
             </div>
             <div class="card-body">
-                <p><b> Company: </b><span style="font-style: italic;"> {{company}} </span> </p>
-                <p><b> Service offered: </b><span style="font-style: italic;"> {{servicesOffered.join(", ")}} </span> </p>
+                <p><b> Company: </b><span style="font-style: italic;"> {{ company }} </span> </p>
+                <p><b> Service offered: </b><span style="font-style: italic;"> {{ servicesOffered.join(", ") }} </span>
+                </p>
             </div>
             <div class="card-footer" style="text-align: center;">
-                <button @click="redirect" style="padding-inline: 50px;"> View Profile </button>
+                <button class="btn btn-primary" @click="redirect" style="padding-inline: 50px;"> View Profile </button>
             </div>
         </div>
     </div>
@@ -21,57 +22,67 @@
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
 
 
-export default{
-    props: [ 'id', 'image', 'firstName', 'lastName', 'company', 'rating', 'servicesOffered' ],
-            // props: {
-            //     img: string, 
-            //     name: string, 
-            //     company: string,
-            //     rating: float,
-            //     service: string,
-            //     styles: array
-            // }, // props
-            
-            data() {
-                return {
-                    // key: value
-                    displayImage: ""
-                }
-            }, // data
-            
-            methods: {
-                redirect() {
-                    this.$emit('redirect', this.id); // Emit the contractor ID when the button is clicked
-                },
+export default {
+    props: ['id', 'image', 'firstName', 'lastName', 'company', 'rating', 'servicesOffered'],
+    // props: {
+    //     img: string, 
+    //     name: string, 
+    //     company: string,
+    //     rating: float,
+    //     service: string,
+    //     styles: array
+    // }, // props
 
-                async processImage(image) {
-                    const storage = getStorage()
-                    if (image.length != 0) {
-                        //console.log(image)
-                        this.displayImage = image[0];
-                    }
-                    else{
-                        image = "default_image.jpg";
-                        const fileRef = storageRef(storage, 'images/' + image);
-                        // Get the file's download URL
-                        this.displayImage = await getDownloadURL(fileRef);
-                    }
-                },
-            }, // methods
+    data() {
+        return {
+            // key: value
+            displayImage: ""
+        }
+    }, // data
 
-            mounted(){
-                this.processImage(this.image);
+    methods: {
+        redirect() {
+            this.$emit('redirect', this.id); // Emit the contractor ID when the button is clicked
+        },
+
+        async processImage(image) {
+            const storage = getStorage()
+            if (image.length != 0) {
+                //console.log(image)
+                this.displayImage = image[0];
             }
-        
+            else {
+                image = "default_image.jpg";
+                const fileRef = storageRef(storage, 'images/' + image);
+                // Get the file's download URL
+                this.displayImage = await getDownloadURL(fileRef);
+            }
+        },
+    }, // methods
+
+    mounted() {
+        this.processImage(this.image);
     }
+
+}
 </script>
 
 <style scoped>
-    .card{
-        border: 3px solid #769FCD;
-        color: #769FCD;
-        margin-top: 10px;
-        margin-bottom: 10px;
-        min-height: 500px;
-    }
+.card {
+    border: 3px solid #769FCD;
+    color: #769FCD;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    min-height: 500px;
+
+}
+
+.btn-primary {
+    background-color: #769fcd;
+    border: none;
+}
+
+.btn-primary:hover {
+    background-color: #0056b3;
+}
 </style>
