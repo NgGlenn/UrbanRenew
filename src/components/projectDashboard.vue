@@ -1,5 +1,5 @@
 <script setup>
-    import { ref, computed, onMounted, onUnmounted } from 'vue';
+    import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
     import LogedInLayout from './logedInLayout.vue';
     import ProjectProgressionBar from '@/components/Project Analytics/ProjectProgressionBar.vue';
     import ProjectDonutChart from '@/components/Project Analytics/JobDonutChart.vue';
@@ -11,6 +11,7 @@
     import { useProjectStore } from '@/stores/projectStore';
     import { useRoute, useRouter } from 'vue-router';
 
+    const route = useRoute();
 
     // Props definition
     const props = defineProps({
@@ -38,7 +39,11 @@
                 paidStatus: '',
                 status: ''
             })
-        }
+        },
+        // specificJobId: { 
+        //     type: String,
+        //     default: null
+        // }
     });
 
     // Using the composables with the passed project data
@@ -51,7 +56,7 @@
     console.log('ganttData', ganttData)
     console.log('jobs data',jobs)
     // console.log(tasks)
-    // // console.log(jobs.value)
+    console.log(jobs.value)
 
 
     // State management
@@ -113,19 +118,59 @@
     onMounted(() => {
         checkMobile();
         window.addEventListener('resize', checkMobile);
+
+        if (props.isContractor && props.specificJobId) {
+            projectStore.setCurrentJob(props.specificJobId);
+        }
     });
 
-    onUnmounted(() => {
+    onUnmounted(async() => {
         window.removeEventListener('resize', checkMobile);
+
+        // projectStore.clearCurrentJob();
+        try {
+            await projectStore.clearCurrentJob();
+        } catch (error) {
+            console.error('Error clearing job on unmount:', error);
+        }
     });
 
     //Back button
     const router = useRouter();
     const projectStore = useProjectStore();
-    const handleBack = () => {
-        projectStore.clearCurrentJob();
-        router.push('/contractorProjectList');
+    // const handleBack = () => {
+    //     // projectStore.clearCurrentJob();
+    //     // if (props.isContractor) {
+    //     //     projectStore.clearCurrentJob();
+    //     // }
+    //     router.push('/contractorProjectList');
+    // };
+
+    const handleBack = async () => {
+        try {
+            projectStore.resetStore();
+            await projectStore.clearCurrentJob();
+            await router.push('/contractorProjectList');
+        } catch (error) {
+            console.error('Error handling back:', error);
+        }
     };
+
+    watch(
+        // () => route.params.jobId,
+        // (newJobId) => {
+        //     if (newJobId) {
+        //         projectStore.clearCurrentJob();
+        //         projectStore.setCurrentJob(newJobId);
+        //     }
+        // }
+        () => projectStore.currentJobId,
+        (newJobId) => {
+            if (!newJobId) {
+                currentJobIndex.value = 0; // Reset local state if needed
+            }
+        }
+    );
 
     const showPaymentButton = (index) => {
         // const isContractor = props.isContractor;
@@ -242,7 +287,7 @@
 
             <div v-if="isContractor" class="contractor-header">
                 <div class="containerBorder font text-start px-3">
-                    <div>Project Description: <span class="text-dark fw-normal">{{ jobs.value[0].description }}</span></div>
+                    <div>Project Description: <span class="text-dark fw-normal">{{ jobs?.value?.[0]?.description || 'No description available' }}</span></div>
                     <!-- <div>Customer ID: <span class="text-dark fw-normal">{{ customerDetails.id }}</span></div> -->
                     <div>Customer Name: <span class="text-dark fw-normal">{{ customerDetails.name }}</span></div>
                     <div>Location: <span class="text-dark fw-normal">{{ customerDetails.location }}</span></div>
@@ -273,7 +318,7 @@
                 <!-- Option 1: Select -->
                 <div class="ganttSection font containerBorder" :class="{'hasPayment': showPaymentButton}">
                     <!-- Job Selector -->
-                    <div class="jobSelector">
+                    <div v-if="!props.isContractor" class="jobSelector">
                         <select v-model="currentJobIndex" class="form-select w-auto mx-auto">
                             <option v-for="(job, index) in ganttData" :key="job.jobId" :value="index" class="p-0">
                                 Job #{{index + 1}}: {{ job.jobName }}
@@ -313,6 +358,7 @@
                             <GanttChart 
                                 class="leftContainer" 
                                 :tasks="ganttData[currentJobIndex]?.task"
+                                :is-contractor="props.isContractor"
                                 @taskUpdated="handleTaskUpdate" 
                                 @taskAdded="handleNewTask" 
                                 @taskDeleted="handleTaskDelete"
@@ -516,7 +562,7 @@
         }
 
         .ganttSection {
-            width: 80%;
+            width: 78%;
             max-width: 80%;
             margin-bottom: 0px;
             min-height: 720px;
@@ -548,8 +594,8 @@
         } */
 
         .jobProgressionContainer {
-            width: 19%; 
-            max-width: 19%;
+            width: 25%; 
+            max-width: 25%;
             /* flex: 1; */
             display: flex;
             flex-direction: column;

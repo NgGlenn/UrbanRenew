@@ -107,7 +107,7 @@ export default{
                     description: this.desc,
                     startDate: this.startDate,
                     endDate: this.endDate,
-                    status: "in_pending",
+                    status: "in_progress",
                     createdAt: new Date(),
                     });
                     //console.log("Document written with ID: ", docRef.id);

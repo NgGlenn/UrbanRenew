@@ -12,7 +12,7 @@
 </script>
 
 <template>
-    <vc-donut :sections="sections" :has-legend="false" :thickness="30"></vc-donut>
+    <vc-donut :sections="sections" :has-legend="false" :thickness="25" :size="225"></vc-donut>
 </template>
 
 <style scoped>

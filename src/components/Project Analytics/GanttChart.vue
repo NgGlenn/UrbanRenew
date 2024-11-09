@@ -8,6 +8,7 @@ import { gantt } from 'dhtmlx-gantt';
 import { onMounted, ref, toRefs, watch, nextTick, inject } from 'vue';
 import { doc, updateDoc, collection, addDoc, deleteDoc } from 'firebase/firestore';
 import { useProjectStore } from '@/stores/projectStore';
+import { useUserStore } from '@/stores/userStore';
 
 const props = defineProps ({
     tasks: {
@@ -15,6 +16,10 @@ const props = defineProps ({
         default: () => {
             return {data: [], links: []}
         }
+    },
+    isContractor: {
+        type: Boolean,
+        default: false
     }
 });
 const { tasks } = toRefs(props);
@@ -39,6 +44,13 @@ const initGantt = () => {
 
     // Add event listeners for Firestore sync
     gantt.attachEvent("onAfterTaskUpdate", async (id, task) => {
+        if (!props.isContractor) {
+            console.log('Only contractors can update tasks');
+            // Revert changes
+            gantt.refreshTask(id);
+            return;
+        }
+
         try {
             const taskRef = doc(db, 'tasks', id);
             await updateDoc(taskRef, {
@@ -46,6 +58,7 @@ const initGantt = () => {
                 startDate: task.startDate,
                 endDate: task.endDate,
                 progress: task.progress || 0,
+                status: task.status
                 // Add any other fields you're tracking
             });
             console.log('Task updated in Firestore');
@@ -58,6 +71,12 @@ const initGantt = () => {
     });
 
     gantt.attachEvent("onAfterTaskAdd", async (id, task) => {
+        if (!props.isContractor) {
+            console.log('Only contractors can add tasks');
+            gantt.deleteTask(id);
+            return;
+        }
+
         try {
             const taskData = {
                 jobId: projectStore.currentJobId,
@@ -80,6 +99,11 @@ const initGantt = () => {
     });
 
     gantt.attachEvent("onAfterTaskDelete", async (id) => {
+        if (!props.isContractor) {
+            console.log('Only contractors can add tasks');
+            return;
+        }
+
         try {
             await deleteDoc(doc(db, 'tasks', id));
             console.log('Task deleted from Firestore');
@@ -92,6 +116,14 @@ const initGantt = () => {
 
     // Handle progress updates
     gantt.attachEvent("onTaskDrag", async (id, mode, task, original) => {
+        if (!props.isContractor) {
+            console.log('Only contractors can modify tasks');
+            // Revert changes
+            task.progress = original.progress;
+            gantt.refreshTask(id);
+            return;
+        }
+        
         if (mode === 'progress') {
             try {
                 await updateDoc(doc(db, 'tasks', id), {
@@ -105,6 +137,78 @@ const initGantt = () => {
             }
         }
     });
+
+    gantt.config.readonly = !props.isContractor;
+
+    // Add click handler for status changes
+    gantt.attachEvent("onTaskClick", (id, e) => {
+        if (e.target.classList.contains('status-cell')) {
+            handleStatusChange(id);
+            return false; // Prevent default action
+        }
+    });
+
+        gantt.attachEvent("onAfterTaskDrag", async (id, mode, task, original) => {
+        if (mode === "move" || mode === "resize") {
+            try {
+                const taskRef = doc(db, 'tasks', id);
+                await updateDoc(taskRef, {
+                    startDate: task.start_date,
+                    endDate: task.end_date
+                });
+                console.log('Task dates updated in Firestore after drag');
+                emit('taskUpdated', { id, task });
+            } catch (error) {
+                console.error('Error updating task dates:', error);
+                // Revert changes if update fails
+                task.start_date = original.start_date;
+                task.end_date = original.end_date;
+                gantt.refreshTask(id);
+            }
+        }
+    });
+
+    // Handle date changes through lightbox (menu)
+    gantt.attachEvent("onLightboxSave", async (id, task, is_new) => {
+        try {
+            if (!is_new) {
+                const taskRef = doc(db, 'tasks', id);
+                await updateDoc(taskRef, {
+                    startDate: task.start_date,
+                    endDate: task.end_date,
+                    text: task.text,
+                    progress: task.progress || 0
+                });
+                console.log('Task updated in Firestore after lightbox edit');
+                emit('taskUpdated', { id, task });
+            }
+            return true; // Allow the lightbox to close
+        } catch (error) {
+            console.error('Error updating task:', error);
+            return false; // Prevent the lightbox from closing
+        }
+    });
+
+    // Also add validation for dates
+    gantt.attachEvent("onTaskDrag", (id, mode, task, original) => {
+        if (mode === "move" || mode === "resize") {
+            // Add any validation logic here if needed
+            // Return false to prevent invalid moves
+            return true;
+        }
+        return true;
+    });
+
+    // Enable task dragging and resizing
+    gantt.config.drag_resize = true;
+    gantt.config.drag_move = true;
+    gantt.config.drag_progress = true;
+
+    // Configure the lightbox (edit menu)
+    // gantt.config.lightbox.sections = [
+    //     { name: "description", height: 70, map_to: "text", type: "textarea", focus: true },
+    //     { name: "time", height: 72, type: "duration", map_to: "auto" }
+    // ];
 
     // Add columns for status and progress
     // gantt.config.columns = [
@@ -173,14 +277,6 @@ const handleStatusChange = async (taskId) => {
     }
 };
 
-// Add click handler for status changes
-gantt.attachEvent("onTaskClick", (id, e) => {
-    if (e.target.classList.contains('status-cell')) {
-        handleStatusChange(id);
-        return false; // Prevent default action
-    }
-});
-
 onMounted(async () => {
     await updateGantt();
 });
@@ -192,6 +288,11 @@ onMounted(async () => {
 
 // Watch for changes in tasks
 watch(() => tasks.value, async (newTasks) => {
+    if (isInitialized) {
+        gantt.config.readonly = !newValue;
+        gantt.render(); // Re-render the chart
+    }
+
     console.log('Tasks changed:', newTasks);
     await updateGantt();
 }, { deep: true });

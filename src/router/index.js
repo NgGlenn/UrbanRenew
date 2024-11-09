@@ -30,6 +30,7 @@ import contractorJobRequests from '@/views/contractorJobRequests.vue';
 import sendQuotation from '@/views/sendQuotation.vue';
 
 import { useUserStore } from '@/stores/userStore';
+import { useProjectStore } from '@/stores/projectStore';
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -75,6 +76,12 @@ const router = createRouter({
       path: '/job/:jobId',
       name: 'JobDetails',
       component: () => import('@/views/Dashboard/contractorDashboard.vue'),
+      beforeEnter: async (to, from, next) => {
+        const store = useProjectStore();
+        store.resetStore();
+        await store.clearCurrentJob();
+        next();
+      },
       // component: contractorDashboard,
       meta: { requiresAuth: true, requiresContractor: true }
     },
@@ -205,7 +212,12 @@ router.beforeEach(async (to, from, next) => {
     if (to.meta.requiresAuth && !auth.currentUser) {
       next('/login');
     } else if (to.meta.requiresContractor && userStore.userRole !== 'contractor') {
-      next('/dashboard');
+      // next('/dashboard');
+      if (!from.path.includes('/job/')) {
+        next('/dashboard');
+      } else {
+        next('/contractorProjectList');
+      }
     } else {
       next();
     }

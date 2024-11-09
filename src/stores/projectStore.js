@@ -2,7 +2,7 @@ import { defineStore } from "pinia";
 import { useCollection, useDocument } from "vuefire";
 import { doc, collection, documentId, orderBy, query, where } from "firebase/firestore";
 import { useUserStore } from "./userStore";
-import { ref, computed, inject, watch } from "vue";
+import { ref, computed, inject, watch, nextTick } from "vue";
 
 export const useProjectStore = defineStore('projects', () => {
     const userStore = useUserStore();
@@ -85,11 +85,53 @@ export const useProjectStore = defineStore('projects', () => {
 
 
     // Function to set current project for detailed view
-    const setCurrentJob = (jobId) => {
-        currentJobId.value = jobId;
-        
-        console.log(currentJobId.value)
+    const setCurrentJob = async (jobId) => {
+        // console.log("Previous currentJobId:", currentJobId.value);
+        // currentJobId.value = jobId;
+        // console.log("New currentJobId:", currentJobId.value);
+        // console.log("Previous currentJobId:", currentJobId.value);
+        // currentJobId.value = jobId;
+        // await nextTick(); // Wait for Vue to process the update
+        // console.log("New currentJobId set to:", currentJobId.value);
+        return new Promise((resolve) => {
+            console.log("Previous currentJobId:", currentJobId.value);
+            currentJobId.value = jobId;
+            nextTick(() => {
+                console.log("New currentJobId set to:", currentJobId.value);
+                resolve();
+            });
+        });
     };
+
+    // Clear current project
+    const clearCurrentJob = async() => {
+        // console.log("Clearing currentJobId from:", currentJobId.value);
+        // currentJobId.value = null;
+        // console.log("CurrentJobId cleared to:", currentJobId.value);
+        // console.log("Clearing currentJobId from:", currentJobId.value);
+        // currentJobId.value = null;
+        // await nextTick(); // Wait for Vue to process the update
+        // console.log("CurrentJobId cleared to:", currentJobId.value);
+        return new Promise((resolve) => {
+            console.log("Clearing currentJobId from:", currentJobId.value);
+            currentJobId.value = null;
+            nextTick(() => {
+                console.log("CurrentJobId cleared to:", currentJobId.value);
+                resolve();
+            });
+        });
+    };
+
+    const resetStore = () => {
+        currentJobId.value = null;
+        // Reset any other relevant state
+    };
+
+
+    watch(currentJobId, (newVal, oldVal) => {
+        console.log(`currentJobId changed from ${oldVal} to ${newVal}`);
+    });
+
     // Get specific job details
     const currentJobQuery = computed(() => {
         if (!currentJobId.value) return null;
@@ -109,7 +151,7 @@ export const useProjectStore = defineStore('projects', () => {
         console.log('Task Query - Comparing values:');
         console.log('currentJobId from store:', currentJobId.value);
         console.log('currentJobId type:', typeof currentJobId.value);
-        console.log('Expected jobId in Firestore: "O2JyZrRbhhXN1tztLhMx"');
+        // console.log('Expected jobId in Firestore: "O2JyZrRbhhXN1tztLhMx"');
 
         if (!currentJobId.value) return null;
 
@@ -172,10 +214,7 @@ export const useProjectStore = defineStore('projects', () => {
     // }, { immediate: true });
 
 
-    // Clear current project
-    const clearCurrentJob = () => {
-        currentJobId.value = null;
-    };
+ 
 
     return {
         projects,
@@ -188,7 +227,8 @@ export const useProjectStore = defineStore('projects', () => {
         currentTask,
         currentJobId,
         setCurrentJob,
-        clearCurrentJob
+        clearCurrentJob,
+        resetStore
     }
 
 })
