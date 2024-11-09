@@ -31,7 +31,7 @@ export default {
           // Assign the document data to a variable
           this.details = docSnap.data();
           this.loading = false;
-        
+
         } else {
           console.log("No such document");
         }
@@ -211,9 +211,38 @@ export default {
             <div class="card mb-4">
               <div class="card-header">Past Renovation Projects</div>
               <div class="card-body">
-                <div class="transaction-item">
-                  <div v-if="reviews.length === 0" class="no-reviews">
-                    No past projects available.
+                <div class="portfolio-images-container">
+                  <div v-if="details.portfolioImages.length === 0" class="no-reviews">
+                    No photos available.
+                  </div>
+                  <div v-else>
+                    <!-- Bootstrap Carousel -->
+                    <div id="portfolioCarousel" class="carousel slide" data-bs-ride="carousel">
+                      <!-- Indicators -->
+                      <div class="carousel-indicators">
+                        <button type="button" data-bs-target="#portfolioCarousel" :data-bs-slide-to="index"
+                          :class="{ active: index === 0 }" aria-current="index === 0" aria-label="Slide {{ index + 1 }}"
+                          v-for="(imageUrl, index) in details.portfolioImages" :key="index"></button>
+                      </div>
+                      <!-- Carousel Items -->
+                      <div class="carousel-inner">
+                        <div class="carousel-item" :class="{ active: index === 0 }"
+                          v-for="(imageUrl, index) in details.portfolioImages" :key="index">
+                          <img :src="imageUrl" alt="Portfolio Image" class="d-block w-100 portfolio-image"
+                            @click="openPreviewModal(imageUrl)" />
+                        </div>
+                      </div>
+                      <button class="carousel-control-prev" type="button" data-bs-target="#portfolioCarousel"
+                        data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Previous</span>
+                      </button>
+                      <button class="carousel-control-next" type="button" data-bs-target="#portfolioCarousel"
+                        data-bs-slide="next">
+                        <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                        <span class="visually-hidden">Next</span>
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -252,22 +281,6 @@ export default {
                   </p>
                 </div>
 
-              </div>
-            </div>
-            <div class="card mb-4">
-              <div class="card-header">Portfolio Images</div>
-              <div class="card-body">
-                <div class="portfolio-images-container">
-                  <div v-if="details.portfolioImages.length === 0" class="no-reviews">
-                    No photos available.
-                  </div>
-                  <div v-else>
-                    <div v-for="(imageUrl, index) in details.portfolioImages" :key="index" class="portfolio-image-card">
-                      <img :src="imageUrl" alt="Portfolio Image" class="portfolio-image"
-                        @click="openPreviewModal(imageUrl)" />
-                    </div>
-                  </div>
-                </div>
               </div>
             </div>
           </div>
@@ -414,9 +427,15 @@ h6 {
 
 .portfolio-image {
   width: 100%;
-  height: 150px;
+  height: 300px;
   object-fit: cover;
   cursor: pointer;
   transition: transform 0.3s ease, filter 0.3s ease;
 }
+.carousel-control-prev,
+.carousel-control-next {
+  top: 50%;
+  transform: translateY(-50%);
+}
+
 </style>
