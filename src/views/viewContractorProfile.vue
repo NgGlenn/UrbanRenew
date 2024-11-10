@@ -134,11 +134,30 @@ export default {
         console.error("Failed to load Google Maps script:", error);
       }
     },
+
+    loadGoogleMapsScript() {
+      return new Promise((resolve, reject) => {
+        if (typeof google !== "undefined") {
+          resolve();
+          return;
+        }
+        const script = document.createElement("script");
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLEMAPS_API_KEY
+          }`;
+        script.async = true;
+        script.defer = true;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+    }
   },
 
   computed: {
     storeLocation() {
-      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(this.details.storeAddress)}`
+      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(
+        this.postalCode
+      )}`;
     }
   },
 
@@ -196,6 +215,7 @@ export default {
                 <a :href="storeLocation" target="_blank" class="text-primary hover-text-decoration-underline">
                   <i class="fas fa-map-marker-alt"></i> View on Google Maps
                 </a>
+                <div id="map" style="height: 400px; width: 100%"></div>
 
                 <hr />
 
@@ -273,7 +293,7 @@ export default {
                 <div v-else class="review-item mb-4 pb-3">
                   <div v-for="review in reviews" :key="review.id">
                     <div class="align-items-center">
-                      <Review :review="review" :defaultProfileIcon="defaultProfileIcon" />
+                      <Review :review="review"/>
                       <hr />
                     </div>
                   </div>
@@ -311,10 +331,27 @@ body {
 }
 
 .review-body {
-  max-height: 450px;
+  max-height: 500px;
   overflow-y: auto;
   border-radius: 0.5rem;
   box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+}
+.review-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.review-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.review-body::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.review-body::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 .review-card .card-body {
