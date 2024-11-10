@@ -29,6 +29,24 @@ The application would provide greater transparency through expanding avenues of 
 4. Escrow Payment System
    - Holding of funds by a neutral third-party to ensures mutual commitment. Funds are released when project milestones are met
 
+### Tech Stack
+**Frontend:** Vue.js and styled with Bootstrap
+
+**Backend:** Firebase
+
+**Database:** Firebase
+
+<p align="left">
+  <a href="https://vuejs.org/" target="_blank" rel="noreferrer">
+    <img src="https://raw.githubusercontent.com/github/explore/main/topics/vue/vue.png" alt="Vue.js" width="40" height="40"/>
+  </a>
+  <a href="https://getbootstrap.com/" target="_blank" rel="noreferrer">
+    <img src="https://raw.githubusercontent.com/github/explore/main/topics/bootstrap/bootstrap.png" alt="Bootstrap" width="40" height="40"/>
+  </a>
+  <a href="https://firebase.google.com/" target="_blank" rel="noreferrer">
+    <img src="https://raw.githubusercontent.com/github/explore/main/topics/firebase/firebase.png" alt="Firebase" width="40" height="40"/>
+  </a>
+</p>
 
 <!-- ## Customize configuration
 
