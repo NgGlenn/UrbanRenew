@@ -1,5 +1,5 @@
 <template>
-    <NavBar></NavBar>
+    <logedInLayout>
     <div class="payment">
         <div class="header">
             <h3>Payment</h3>
@@ -42,6 +42,7 @@
         </ul>
         <p>For further assistance, contact <a href="mailto:support@urbanrenew.com">support@urbanrenew.com</a>.</p>
     </div>
+    </logedInLayout>
 </template>
 
 <script>
@@ -50,10 +51,12 @@ import ProjectItem from '@/components/Payment/ProjectItem.vue';
 import { db, auth } from '../firebase'  // Ensure your firebase.js is correctly configured
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, getDocs, getDoc, doc } from 'firebase/firestore';
+import logedInLayout from '@/components/logedInLayout.vue';
 export default {
     components: {
         ProjectItem,
         NavBar,
+        logedInLayout
     },
     data() {
         return {

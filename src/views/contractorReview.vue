@@ -98,7 +98,6 @@
     </div>
   </div>
 
-
 </template>
   
 <script>
@@ -106,10 +105,11 @@ import Navbar from '@/components/NavBar.vue';
 import { db, auth } from '../firebase'; // Ensure your firebase.js is correctly configured
 import { collection, addDoc, getDoc, query, where, doc } from 'firebase/firestore';
 import { onAuthStateChanged } from "firebase/auth";
-
+import logedInLayout from '@/components/logedInLayout.vue';
 export default {
   components: {
     Navbar,
+    logedInLayout,
   },
   data() {
     return {

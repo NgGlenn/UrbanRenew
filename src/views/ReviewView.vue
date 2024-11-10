@@ -1,5 +1,5 @@
 <template>
-  <NavBar></NavBar>
+  <logedInLayout>
   <div class="review-summary-container">
     <div class="review-card">
       <h1>Thank you for your review!</h1>
@@ -10,16 +10,19 @@
       </div>
       
       <!-- Button to go back to homepage -->
-      <button @click="goToHome">Back to Homepage</button>
+      <button @click="goToHome">Back to Dashboard</button>
     </div>
   </div>
+</logedInLayout>
 </template>
 
 <script>
 import NavBar from '@/components/NavBar.vue';
+import logedInLayout from '@/components/logedInLayout.vue';
 export default {
   components: {
-    NavBar
+    NavBar,
+    logedInLayout,
   },
   data() {
     return {

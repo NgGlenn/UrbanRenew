@@ -1,6 +1,6 @@
 <template>
     <div>
-        <NavBar />
+        <NavBar></NavBar>
         <div class="container payment-container">
             <div class="row g-4 justify-content-center">
                 <div class="payment-form-container mb-4">
@@ -18,12 +18,13 @@ import PaymentDetails from '@/components/Payment/PaymentDetails.vue';
 import PaymentForm from '@/components/Payment/PaymentForm.vue';
 import { db } from '../firebase'  // Ensure your firebase.js is correctly configured
 import { collection, getDocs } from 'firebase/firestore';
-import { useRoute } from 'vue-router';
+//import logedInLayout from '@/components/logedInLayout.vue';
 export default {
     components: {
         NavBar,
         PaymentDetails,
-        PaymentForm
+        PaymentForm,
+        
     },
     data() {
         return {
