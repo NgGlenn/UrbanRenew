@@ -1,11 +1,11 @@
 <template>
     <div style="padding-bottom: 10px">
-        <div class="jobID">
-            <b> Request ID: </b> {{id}}
-        </div>
+        <!--<div class="jobID">
+            <h5><b> {{ jobType }} </b></h5>
+        </div>-->
 
         <div class="jobRequest">
-            <b> Project ID: </b> {{ projectId }}
+            <h5><b> {{ jobType }} </b></h5>
             <div class="row">
                 <div class="col-lg-6 col-sm-12"> <b>Contractor:</b> {{contractorName}} </div>
                 <div class="col-lg-6 col-sm-12"> <b>Status:</b> {{status}} </div>
@@ -144,6 +144,11 @@ export default{
 </script>
 
 <style scoped>
+    h5{
+        font-size: 1.4rem;
+        color: #769FCD;
+    }
+
     .jobID{
         min-width: 70px;
         display: inline-block;
@@ -154,9 +159,9 @@ export default{
         padding: 10px;
         position: relative;
         margin: 5px;
-        border: 3px solid lightgray;
+        border: 2px solid lightgray;
         border-radius: 10px;
-        background-color: #dee8ef;
+        background-color: white;
         color: #555;
       }
 

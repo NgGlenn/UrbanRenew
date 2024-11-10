@@ -79,7 +79,7 @@
 <template>
     <LogedInLayout>
         <div class="main-body" style="padding: 10px">
-            <h2 class="header"> Job Requests (Customer) </h2>
+            <h2 class="header"><b> Job Requests (Customer) </b></h2>
 
             <p v-if="jobRequests.length==0" style="font-style: italic;"> No job requests yet. </p>
 
