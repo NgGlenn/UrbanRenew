@@ -2,9 +2,11 @@
     <div class="review-container">
         <div class="profile-section">
             <div class="row"></div>
-            <img src="@/assets/defaultProfileIcon.jpg" alt="Profile Picture" class="profile-image-review" />
+            <img :src="profilePictureUrl" alt="Profile Picture" class="profile-image-review" />
             <div class="profile-info">
-                <h6 class="customer-name">Anonymous</h6>
+                <div class="customer-name">
+                    <h6>{{firstName + ' ' + lastName}}</h6>
+                </div>
                 <span class="metric-number">Overall Rating</span><br />
                 <div class="metric-stars rating">
                     <span v-for="star in 5" :key="star" class="star"
@@ -85,6 +87,13 @@
 </template>
 
 <script>
+import { db, auth } from "@/firebase";
+import { onAuthStateChanged } from "firebase/auth";
+import { doc, getDoc, getDocs } from "firebase/firestore";
+import { useCollection } from 'vuefire';
+import { QueryEndAtConstraint, collection, documentId, orderBy, query, where } from 'firebase/firestore';
+import defaultProfileIcon from "@/assets/defaultProfileIcon.jpg";
+
 export default {
     name: 'Review',
     props: {
@@ -93,11 +102,38 @@ export default {
             required: true,
         }
     },
+    data() {
+        return {
+            userData: null,
+            profilePictureUrl: defaultProfileIcon,
+            firstName: "Anonymous",
+            lastName:""
+        };
+    },
     method: {
         seeReview() {
             console.log(review);
-        }
+            // console.log(this.review.customerID)
+        },
+    },
+    async created() {
+        if (this.review.customerID) {
+            try {
+                const user = doc(db, "users", this.review.customerID);
+                const userDoc = await getDoc(user);
+                if (userDoc.exists()) {
+                    this.userData = userDoc.data();
+                    this.firstName = this.userData.firstName || "Anonymous"; 
+                    this.lastName = this.userData.lastName[0] + "."
+                    this.profilePictureUrl = this.userData.imageUrl || defaultProfileIcon;
+                } else {
+                    console.error("No user found for customerID:", this.review.customerID);
+                }
+            } catch (error) {
+                console.error("Error fetching user data:", error);
+            }
 
+        }
     }
 }
 </script>

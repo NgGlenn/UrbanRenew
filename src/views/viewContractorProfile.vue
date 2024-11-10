@@ -379,7 +379,7 @@ export default {
                   No reviews yet.
                 </div>
                 <div v-else class="review-item mb-4 pb-3">
-                  <div v-for="review in reviews" :key="review.id">
+                  <div v-for="review in reviews">
                     <div class="align-items-center">
                       <Review :review="review"/>
                       <hr />
