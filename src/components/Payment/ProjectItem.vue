@@ -10,6 +10,7 @@ export default {
             userID: null,
             userRole: '', 
             contractorImageUrl: '',
+            currentDate: new Date(),
         };
     },
     props: {
@@ -67,8 +68,10 @@ export default {
         <div class="col-sm-6">
             <h5 class="mb-1">{{ project.jobName }}</h5>
             <p v-if="userRole=== 'customer'" class="mb-1"><strong>Contractor:</strong> {{ project.contractorName }}</p>
+            <p v-if="userRole=== 'customer'" class="mb-1"><strong>Contractor:</strong> {{ project.contractorName }}</p>
             <p v-if="userRole=== 'contractor'" class="mb-1"><strong>Customer:</strong> {{ project.customerName }}</p>
             <p v-if="userRole=== 'contractor'" class="mb-1"><strong>Percentage Paid:</strong> {{ ((project.price - project.remainingBalance) / project.price * 100).toFixed(2) }}%</p>
+            <p class="mb-1"><strong>Price:</strong> ${{ project.price }}</p>
             <p class="mb-1"><strong>Remaining Cost:</strong> ${{ project.remainingBalance }}</p>
         </div>
         <div class="col-sm-4 d-flex justify-content-sm-end justify-content-center mt-2 mt-sm-0">
