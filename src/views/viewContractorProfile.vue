@@ -210,7 +210,7 @@ export default {
                 <h6>Services Offered:</h6>
                 <!-- Services Offered Section -->
                 <ul class="list-unstyled">
-                  <li v-for="service of details.services"> {{ service }} </li>
+                  <li v-for="service of details.services"> <i class="fas fa-check-circle"></i>  {{ service }} </li>
                 </ul>
 
                 <h6>Store Location:</h6>
