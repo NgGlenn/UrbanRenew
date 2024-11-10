@@ -102,7 +102,6 @@ export default {
 
 <style scoped>
 .payment-container {
-    background-color: rgba(21,21,21); /* Light gray background */
     padding: 20px;
 }
 
