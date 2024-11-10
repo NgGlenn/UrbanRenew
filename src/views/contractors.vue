@@ -28,17 +28,10 @@
             <!-- Placeholder cards -->
             <div id="contractors-section">
                 <div class="row">
-                    <ContractorCards 
-                    v-for="contractor of contractorsDisplay"
-                    :key="contractor.id"
-                    :id="contractor.id"
-                    :image="contractor.portfolioImages"
-                    :first-name="contractor.firstName"
-                    :last-name="contractor.lastName"
-                    :company="contractor.companyName"
-                    :rating="contractor.rating"
-                    :services-offered="contractor.services"
-                    @redirect="viewProfile">
+                    <ContractorCards v-for="contractor of contractorsDisplay" :key="contractor.id" :id="contractor.id"
+                        :image="contractor.portfolioImages" :first-name="contractor.firstName"
+                        :last-name="contractor.lastName" :company="contractor.companyName" :rating="contractor.rating"
+                        :services-offered="contractor.services" @redirect="viewProfile">
                     </ContractorCards>
                 </div>
             </div>
@@ -176,7 +169,8 @@ export default {
 }
 
 #filter-on {
-    background-color: lightgray;
+    background-color: #ebebeb;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 #searchbar {
@@ -196,8 +190,13 @@ export default {
 }
 
 #filters-section {
-    background-color: lightgray;
-    padding: 10px;
+    background-color: #f5f5f5;
+    border-radius: 8px;
+    padding: 15px 20px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    max-width: 100%;
+    margin: auto;
 }
 
 .filter {
