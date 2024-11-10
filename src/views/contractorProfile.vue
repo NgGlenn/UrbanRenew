@@ -833,7 +833,7 @@ export default {
           <div class="col-md-6">
             <div class="card mb-4">
               <div class="card-header">Renovation Project Payments</div>
-              <div class="card-body">
+              <div class="card-body card-body-transaction">
                 <div v-if="isLoading" class="loading-state">
                   <p>Loading transactions...</p>
                 </div>
@@ -863,6 +863,7 @@ export default {
                         <strong>Amount</strong>
                         <span class="amount">${{ transaction.amount }}</span>
                       </div>
+                      
                       <!-- <div>
             <strong>Payment Method</strong>
             <span class="payment-method">{{ transaction.paymentMethod }}</span>
@@ -1477,6 +1478,31 @@ h6 {
   text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6); /* Light text shadow */
   font-family: "Arial", sans-serif; /* Custom font */
   font-size: 14px;
+}
+
+.card-body-transaction {
+  margin-top: 20px;
+  max-height: 258px;
+  overflow-y: auto;
+  padding: 0 20px;
+}
+
+.card-body-transaction::-webkit-scrollbar {
+  width: 8px;
+}
+
+.card-body-transaction::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.card-body-transaction::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.card-body-transaction::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 .review-card .card-body {

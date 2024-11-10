@@ -1,23 +1,12 @@
-<template>
-    <NavBar></NavBar>
-    <div class="page-container">
-        <div class="payment-card">
-            <img src="../components/icons/qrCode.png" alt="QR Code" class="payment-image">
-            <h1>Scan & Pay</h1>
-            <button class="done-button" @click="goToHome">Done</button>
-        </div>
-    </div>
-</template>
-
 <script>
-import NavBar from '@/components/NavBar.vue';
+import LogedInLayout from '@/components/logedInLayout.vue';
 import { db } from '../firebase';
 import { doc, getDoc } from 'firebase/firestore';
 
 export default {
     name: "CompletePayment",
     components: {
-        NavBar,
+        LogedInLayout,
     },
     data() {
         return {
@@ -63,6 +52,19 @@ export default {
     }
 };
 </script>
+<template>
+    <LogedInLayout>
+    <div class="page-container">
+        <div class="payment-card">
+            <img src="../components/icons/qrCode.png" alt="QR Code" class="payment-image">
+            <h1>Scan & Pay</h1>
+            <button class="done-button" @click="goToHome">Done</button>
+        </div>
+    </div>
+</LogedInLayout>
+</template>
+
+
 
 <style scoped>
 .page-container {
