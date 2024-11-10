@@ -506,7 +506,7 @@ export default {
             <div class="card mb-4">
               <div class="card-header">Transaction History</div>
 
-    <div class="card-body">
+    <div class="card-body card-body-transaction">
     <div v-if="isLoading" class="loading-state">
       <p>Loading transactions...</p>
     </div>
@@ -987,6 +987,30 @@ h6 {
   padding: 1.5rem;
 }
 
+.card-body-transaction {
+  margin-top: 20px;
+  max-height: 258px;
+  overflow-y: auto;
+  padding: 0 20px;
+}
+
+.card-body-transaction::-webkit-scrollbar {
+  width: 8px;
+}
+
+.card-body-transaction::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.card-body-transaction::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.card-body-transaction::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
 .review-item {
   background: white;
   border-radius: 0.5rem;
