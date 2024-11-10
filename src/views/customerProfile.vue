@@ -1076,6 +1076,14 @@ h6 {
   margin: 1rem 0;
 }
 
+@media (max-width: 576px) { 
+  .metrics-container {
+    padding: 0.3em;       
+    margin: 0.5rem 0;      
+    font-size: 0.9rem; 
+  }
+}
+
 .metric-item {
   display: flex;
   justify-content: space-between;
