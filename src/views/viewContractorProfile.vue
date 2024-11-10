@@ -6,6 +6,7 @@ import { doc, getDoc, getDocs } from "firebase/firestore";
 import { useCollection } from 'vuefire';
 import { QueryEndAtConstraint, collection, documentId, orderBy, query, where } from 'firebase/firestore';
 import defaultProfileIcon from "@/assets/defaultProfileIcon.jpg";
+import Review from "@/components/Review.vue";
 
 export default {
   data() {
@@ -63,7 +64,7 @@ export default {
         if (!querySnapshot2.empty) {
           userData = querySnapshot2.docs[0].data(); // Get the first user's data
         }
-        
+
         this.profilePictureUrl = userData?.imageUrl || defaultProfileIcon;
       }
       catch (error) {
@@ -147,6 +148,7 @@ export default {
 
   components: {
     LogedInLayout,
+    Review,
   },
 };
 </script>
@@ -263,39 +265,19 @@ export default {
               </div>
             </div>
             <div class="card mb-4 review-card">
-              <div class="card-header">Reviews</div>
-              <div class="card-body">
+              <div class="card-header">Customer Reviews</div>
+              <div class="card-body review-body">
                 <div v-if="reviews.length === 0" class="no-reviews">
                   No reviews yet.
                 </div>
-                <div v-else class="review-item mb-4 border-bottom pb-3" v-for="review of reviews">
-                  <div class="d-flex align-items-center">
-                    <img src="../assets/home_testi3.jpg" alt="John Doe" class="rounded-circle me-2"
-                      style="width: 50px; height: 50px" />
-                    <!-- Increased image size -->
-                    <div class="flex-grow-1">
-                      <h6 class="mb-0 text-muted">
-                        <span v-if="review.reviewerName"> {{ review.reviewerName }} </span>
-                        <span v-else> Anonymous </span>
-                      </h6>
-                      <!-- Changed to h6 for smaller text -->
-                      <div class="rating">
-                        <span class="text-warning">&#9733;</span>
-                        <span class="text-warning">&#9733;</span>
-                        <span class="text-warning">&#9733;</span>
-                        <span class="text-warning">&#9733;</span>
-                        <span class="text-muted">&#9733;</span>
-                      </div>
+                <div v-else class="review-item mb-4 pb-3">
+                  <div v-for="review in reviews" :key="review.id">
+                    <div class="align-items-center">
+                      <Review :review="review" :defaultProfileIcon="defaultProfileIcon" />
+                      <hr />
                     </div>
                   </div>
-                  <p class="mt-2 small text-muted">
-                    Quality of work: {{ review.qualityOfWork }} / 5 <br>
-                    Communication: {{ review.communication }} / 5 <br>
-                    Budget Adherence: {{ review.budgetAdherence }} / 5 <br>
-                    Problem Resolution: {{ review.problemResolution }} / 5
-                  </p>
                 </div>
-
               </div>
             </div>
           </div>
@@ -328,8 +310,15 @@ body {
   background-color: #ffffff;
 }
 
+.review-body {
+  max-height: 450px;
+  overflow-y: auto;
+  border-radius: 0.5rem;
+  box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+}
+
 .review-card .card-body {
-  padding: 1.5rem;
+  padding: 1rem;
 }
 
 .no-reviews {
@@ -447,10 +436,10 @@ h6 {
   cursor: pointer;
   transition: transform 0.3s ease, filter 0.3s ease;
 }
+
 .carousel-control-prev,
 .carousel-control-next {
   top: 50%;
   transform: translateY(-50%);
 }
-
 </style>

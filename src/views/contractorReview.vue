@@ -206,6 +206,10 @@ export default {
       return (totalRating / ratings.length).toFixed(1); // Calculate and round to one decimal place
     },
     async submitReview() {
+      if (!this.qualityOfWork || !this.timeliness || !this.communication || !this.problemResolution || !this.budgetAdherence) {
+        alert('Please fill in all required rating fields.');
+        return;
+      }
       try {
         const averageRating = this.computeAverageRating();
         // Save the review data to Firestore
