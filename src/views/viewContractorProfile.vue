@@ -17,6 +17,7 @@ export default {
       portfolioImages: [],
       loading: true,
       profilePictureUrl: '',
+      postalCode:'',
     };
   },
 
@@ -41,6 +42,8 @@ export default {
         // Get Reviews
         const reviews = collection(db, "reviews");
         const q = query(reviews, where("contractorName", "==", this.details.firstName + " " + this.details.lastName));
+        this.postalCode = this.details.postalCode
+        await this.loadMap(this.postalCode);
 
         // Execute query
         const querySnapshot = await getDocs(q);
@@ -66,6 +69,7 @@ export default {
         }
 
         this.profilePictureUrl = userData?.imageUrl || defaultProfileIcon;
+        
       }
       catch (error) {
         console.error("Error fetching document:", error);
@@ -112,7 +116,7 @@ export default {
                         font-weight: bold;
                         color: #333;
                     ">
-                        ${this.companyName}
+                        ${this.details.companyName}
                     </div>
                 `;
 
