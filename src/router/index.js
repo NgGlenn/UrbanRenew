@@ -78,16 +78,26 @@ const router = createRouter({
       path: '/job/:jobId',
       name: 'JobDetails',
       component: () => import('@/views/Dashboard/contractorDashboard.vue'),
-      beforeEnter: async (to, from, next) => {
+      props: true,
+      beforeEnter: (to, from, next) => {
+        // const store = useProjectStore();
+        // store.resetStore();
+        // // await store.clearCurrentJob();
+        // // store.setCurrentJob(to.params.jobId);
+        // sessionStorage.setItem('selectedJobId', to.params.jobId);
         const store = useProjectStore();
         store.resetStore();
-        await store.clearCurrentJob();
+        store.setCurrentJob(to.params.jobId);
         next();
       },
       // component: contractorDashboard,
+      // Force component reload when route params change
+      // beforeRouteUpdate(to, from, next) {
+      //   this.$forceUpdate();
+      //   next();
+      // },
       meta: { requiresAuth: true, requiresContractor: true }
     },
-
     {
       path: '/contractorProfile',
       name: 'contractorProfile',
@@ -145,6 +155,11 @@ const router = createRouter({
       path: '/payment2', 
       name: 'payment2', 
       component: Payment2
+    },
+    {
+      path: '/completePayment',
+      name: 'completePayment',
+      component: CompletePayment
     },
     {
       path: '/ReviewView',
@@ -216,18 +231,32 @@ router.beforeEach(async (to, from, next) => {
       });
     });
 
+    // if (to.meta.requiresAuth && !auth.currentUser) {
+    //   next('/login');
+    // } else if (to.meta.requiresContractor && userStore.userRole !== 'contractor') {
+    //   next('/dashboard');
+    //   // if (!from.path.includes('/job/')) {
+    //   //   next('/dashboard');
+    //   // } else {
+    //   //   next('/contractorProjectList');
+    //   // }
+    // } else {
+    //   next();
+    // }
+
+    // Not authenticated -> login
     if (to.meta.requiresAuth && !auth.currentUser) {
       next('/login');
-    } else if (to.meta.requiresContractor && userStore.userRole !== 'contractor') {
-      // next('/dashboard');
-      if (!from.path.includes('/job/')) {
-        next('/dashboard');
-      } else {
-        next('/contractorProjectList');
-      }
-    } else {
-      next();
+      return;
     }
+
+    // Only check contractor role if NOT going to a job detail page
+    if (to.meta.requiresContractor && !to.path.includes('/job/') && userStore.userRole !== 'contractor') {
+      next('/dashboard');
+      return;
+    }
+
+    next();
   } catch (error) {
     console.error('Auth error:', error);
     next('/login');

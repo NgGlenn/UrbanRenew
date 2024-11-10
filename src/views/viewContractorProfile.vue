@@ -13,16 +13,25 @@ export default {
     return {
       id: this.$route.params.id,
       details: null,
-      reviews: null,
+      reviews: [],
       portfolioImages: [],
       loading: true,
       profilePictureUrl: '',
+      postalCode: '',
+      mapLoaded: false,
+      error: null,
+      mapInitialized: false
     };
   },
 
   methods: {
-
     async initPage(id) {
+      if (!id) {
+        this.error = "No contractor ID provided";
+        this.loading = false;
+        return;
+      }
+
       try {
         // Get Contractors
         const contractors = doc(db, "contractors", id);
@@ -30,120 +39,218 @@ export default {
 
         // Check if the document exists
         if (docSnap.exists()) {
-          // Assign the document data to a variable
           this.details = docSnap.data();
-          this.loading = false;
+          this.postalCode = this.details?.postalCode || '';
         } else {
+          this.error = "Contractor not found";
           console.log("No such document");
-          return; // Exit if contractor doesn't exist to prevent further code execution
+          this.loading = false;
+          return;
         }
 
-        // Get Reviews
-        const reviews = collection(db, "reviews");
-        const q = query(reviews, where("contractorName", "==", this.details.firstName + " " + this.details.lastName));
+        // Only proceed with reviews if we have contractor details
+        if (this.details?.firstName && this.details?.lastName) {
+          // Get Reviews
+          const reviews = collection(db, "reviews");
+          const q = query(reviews, where("contractorName", "==", 
+            `${this.details.firstName} ${this.details.lastName}`));
 
-        // Execute query
-        const querySnapshot = await getDocs(q);
-        const results = [];
-
-        querySnapshot.forEach((doc) => {
-          results.push(doc.data()); // Collect data for each document
-        });
-
-        this.reviews = results;
-
-        // Get User Profile
-        const users = collection(db, "users");
-        const p = query(users, where("email", "==", this.details.businessEmail));
-
-        // Execute user profile query
-        const querySnapshot2 = await getDocs(p);
-
-        let userData = null;
-        // Check if we found a user profile
-        if (!querySnapshot2.empty) {
-          userData = querySnapshot2.docs[0].data(); // Get the first user's data
+          // Execute query
+          const querySnapshot = await getDocs(q);
+          this.reviews = querySnapshot.docs.map(doc => doc.data());
         }
 
-        this.profilePictureUrl = userData?.imageUrl || defaultProfileIcon;
+        // Only proceed with user profile if we have business email
+        if (this.details?.businessEmail) {
+          // Get User Profile
+          const users = collection(db, "users");
+          const p = query(users, where("email", "==", this.details.businessEmail));
+
+          // Execute user profile query
+          const querySnapshot2 = await getDocs(p);
+          
+          if (!querySnapshot2.empty) {
+            const userData = querySnapshot2.docs[0].data();
+            this.profilePictureUrl = userData?.imageUrl || defaultProfileIcon;
+          } else {
+            this.profilePictureUrl = defaultProfileIcon;
+          }
+        } else {
+          this.profilePictureUrl = defaultProfileIcon;
+        }
+
+        this.loading = false;
+
+        // Initialize map after data is loaded and component is rendered
+        await this.$nextTick();
+        if (this.postalCode && !this.mapInitialized) {
+          // Add a small delay to ensure DOM is fully ready
+          setTimeout(async () => {
+            await this.initializeMap();
+          }, 100);
+        }
       }
       catch (error) {
         console.error("Error fetching document:", error);
+        this.error = "Error loading contractor data";
+        this.loading = false;
       }
     },
 
-    createRequest(id) {
-      this.$router.push({ path: `/jobRequest/newRequest/${id}` });
-      this.$emit(this.createRequest, id);
+    async initializeMap() {
+      const maxAttempts = 5;
+      let attempts = 0;
+
+      const tryLoadMap = async () => {
+        const mapDiv = document.getElementById("map");
+        if (!mapDiv) {
+          attempts++;
+          if (attempts < maxAttempts) {
+            console.log(`Map container not found, attempt ${attempts} of ${maxAttempts}`);
+            await new Promise(resolve => setTimeout(resolve, 200));
+            return tryLoadMap();
+          } else {
+            console.error('Failed to find map container after multiple attempts');
+            return;
+          }
+        }
+
+        try {
+          await this.loadMap(this.postalCode);
+          this.mapInitialized = true;
+        } catch (error) {
+          console.error('Error initializing map:', error);
+        }
+      };
+
+      await tryLoadMap();
     },
 
     async loadMap(postalCode) {
+      if (!postalCode) {
+        console.error('No postal code provided');
+        return;
+      }
+
       try {
-        // Load Google Maps Script
+        const mapDiv = document.getElementById("map");
+        if (!mapDiv) {
+          console.error('Map container not found');
+          return;
+        }
+
         await this.loadGoogleMapsScript();
 
-        // Now that Google Maps is loaded, create the map
         const geocoder = new google.maps.Geocoder();
-        geocoder.geocode({ address: postalCode }, (results, status) => {
-          if (status === "OK" && results[0]) {
-            const mapOptions = {
-              center: results[0].geometry.location,
-              zoom: 15,
-            };
-            const map = new google.maps.Map(
-              document.getElementById("map"),
-              mapOptions
-            );
+        
+        return new Promise((resolve, reject) => {
+          geocoder.geocode({ address: postalCode }, (results, status) => {
+            if (status === "OK" && results?.[0]) {
+              const mapOptions = {
+                center: results[0].geometry.location,
+                zoom: 15,
+              };
 
-            // Create the marker
-            const marker = new google.maps.Marker({
-              position: results[0].geometry.location,
-              map: map,
-            });
+              // Check again if map div exists before creating map
+              const mapDiv = document.getElementById("map");
+              if (!mapDiv) {
+                reject(new Error('Map container not found after geocoding'));
+                return;
+              }
 
-            // Define custom HTML for the InfoWindow with a card design
-            const infoWindowContent = `
-                    <div style="
-                        background: #fff;
-                        padding: 2px;
-                        border-radius: 8px;
-                        box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
-                        font-size: 14px;
-                        font-weight: bold;
-                        color: #333;
-                    ">
-                        ${this.companyName}
-                    </div>
-                `;
+              const map = new google.maps.Map(mapDiv, mapOptions);
 
-            // Create and open the InfoWindow with the styled content
-            const infoWindow = new google.maps.InfoWindow({
-              content: infoWindowContent,
-            });
-            infoWindow.open(map, marker);
+              const marker = new google.maps.Marker({
+                position: results[0].geometry.location,
+                map: map,
+              });
 
-            // Optional: Keep the InfoWindow open when clicking on the marker
-            marker.addListener("click", () => {
+              const infoWindowContent = `
+                <div style="
+                    background: #fff;
+                    padding: 2px;
+                    border-radius: 8px;
+                    box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.3);
+                    font-size: 14px;
+                    font-weight: bold;
+                    color: #333;
+                ">
+                    ${this.details?.companyName || 'Location'}
+                </div>
+              `;
+
+              const infoWindow = new google.maps.InfoWindow({
+                content: infoWindowContent,
+              });
+              
               infoWindow.open(map, marker);
-            });
-          } else {
-            console.error("Geocode was not successful: " + status);
-          }
+
+              marker.addListener("click", () => {
+                infoWindow.open(map, marker);
+              });
+
+              this.mapLoaded = true;
+              resolve();
+            } else {
+              console.error("Geocode was not successful: " + status);
+              reject(new Error(`Geocoding failed: ${status}`));
+            }
+          });
         });
       } catch (error) {
-        console.error("Failed to load Google Maps script:", error);
+        console.error("Failed to load map:", error);
       }
     },
+
+    loadGoogleMapsScript() {
+      return new Promise((resolve, reject) => {
+        if (typeof google !== "undefined" && google.maps) {
+          resolve();
+          return;
+        }
+
+        const existingScript = document.getElementById('google-maps-script');
+        if (existingScript) {
+          existingScript.addEventListener('load', resolve);
+          return;
+        }
+
+        const script = document.createElement("script");
+        script.id = 'google-maps-script';
+        script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLEMAPS_API_KEY}`;
+        script.async = true;
+        script.defer = true;
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+      });
+    },
+
+    createRequest(id) {
+      if (!id) return;
+      this.$router.push({ path: `/jobRequest/newRequest/${id}` });
+      this.$emit('createRequest', id);
+    }
   },
 
   computed: {
     storeLocation() {
-      return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(this.details.storeAddress)}`
+      return this.postalCode ? 
+        `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(this.postalCode)}` : 
+        '#';
+    },
+
+    hasReviews() {
+      return Array.isArray(this.reviews) && this.reviews.length > 0;
+    },
+
+    hasDetails() {
+      return this.details !== null;
     }
   },
 
-  mounted() {
-    this.initPage(this.id);
+  async mounted() {
+    await this.initPage(this.id);
   },
 
   components: {
@@ -187,7 +294,7 @@ export default {
                 <h6>Services Offered:</h6>
                 <!-- Services Offered Section -->
                 <ul class="list-unstyled">
-                  <li v-for="service of details.services"> {{ service }} </li>
+                  <li v-for="service of details.services"> <i class="fas fa-check-circle"></i>  {{ service }} </li>
                 </ul>
 
                 <h6>Store Location:</h6>
@@ -196,6 +303,7 @@ export default {
                 <a :href="storeLocation" target="_blank" class="text-primary hover-text-decoration-underline">
                   <i class="fas fa-map-marker-alt"></i> View on Google Maps
                 </a>
+                <div id="map" style="height: 400px; width: 100%"></div>
 
                 <hr />
 
@@ -271,9 +379,9 @@ export default {
                   No reviews yet.
                 </div>
                 <div v-else class="review-item mb-4 pb-3">
-                  <div v-for="review in reviews" :key="review.id">
+                  <div v-for="review in reviews">
                     <div class="align-items-center">
-                      <Review :review="review" :defaultProfileIcon="defaultProfileIcon" />
+                      <Review :review="review"/>
                       <hr />
                     </div>
                   </div>
@@ -311,10 +419,27 @@ body {
 }
 
 .review-body {
-  max-height: 450px;
+  max-height: 500px;
   overflow-y: auto;
   border-radius: 0.5rem;
   box-shadow: 0px 2px 8px rgba(0, 0, 0, 0.1);
+}
+.review-body::-webkit-scrollbar {
+  width: 8px;
+}
+
+.review-body::-webkit-scrollbar-track {
+  background: #f1f1f1;
+  border-radius: 4px;
+}
+
+.review-body::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+.review-body::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 .review-card .card-body {

@@ -1,7 +1,7 @@
 <script setup>
     console.log('contractorDashboard loading')
     import { useRoute, useRouter } from 'vue-router';
-    import { computed, onMounted, onUnmounted,watch } from 'vue';
+    import { computed, onMounted, onUnmounted, watch, ref, onBeforeUnmount } from 'vue';
     import projectDashboard from '@/components/projectDashboard.vue';
     import { useProjectStore } from '@/stores/projectStore';
     import { storeToRefs } from 'pinia';
@@ -25,95 +25,146 @@
     //     console.log(route.params)
     //     projectStore.setCurrentJob(route.params.jobId);
     // });
-    const clearJobData = () => {
-        projectStore.clearCurrentJob();
-    };
+    // const clearJobData = () => {
+    //     projectStore.clearCurrentJob();
+    // };
 
-    watch(
-        // () => route.params.jobId,
-        // (newJobId) => {
-        //     console.log('JobId from route:', newJobId);
-        //     if (newJobId) {
-        //         projectStore.setCurrentJob(newJobId);
-        //     }
-        // },
-        // { immediate: true } // This makes it run immediately when component is created
-        // () => route.params.jobId,
-        // (newJobId, oldJobId) => {
-        //     if (newJobId) {
-        //         if (oldJobId) {
-        //             clearJobData();
-        //         }
-        //         projectStore.setCurrentJob(newJobId);
-        //     }
-        // },
-        // { immediate: true }
-        // () => route.params.jobId,
-        // async (newJobId) => {
-        //     if (newJobId) {
-        //         await projectStore.setCurrentJob(newJobId);
-        //     }
-        // },
-        // { immediate: true }
-
-        // async (newJobId) => {
-        //     if (newJobId) {
-        //         try {
-        //             // await projectStore.clearCurrentJob();
-        //             await projectStore.setCurrentJob(newJobId);
-        //         } catch (error) {
-        //             console.error('Error setting job:', error);
-        //         }
-        //     }
-        // },
-        // { immediate: true }
-
-        // () => route.params.jobId,
-        // async (newJobId, oldJobId) => {
-        //     if (newJobId && newJobId !== oldJobId) {
-        //         try {
-        //             await projectStore.clearCurrentJob();
-        //             await new Promise(resolve => setTimeout(resolve, 100));
-        //             await projectStore.setCurrentJob(newJobId);
-        //         } catch (error) {
-        //             console.error('Error setting job:', error);
-        //         }
-        //     }
-        // },
-        // { immediate: true }
-
-        () => route.params.jobId,
-        async (newJobId, oldJobId) => {
-        if (newJobId) {
-            try {
-                projectStore.resetStore();
-                console.log('Route jobId changed:', newJobId);
-                await projectStore.clearCurrentJob();
-                await new Promise(resolve => setTimeout(resolve, 100));
-                await projectStore.setCurrentJob(newJobId);
-                // Force a recompute of the computed properties
-                projectData.value;
-            } catch (error) {
-                console.error('Error setting job:', error);
-            }
-        }
-        },
-        { immediate: true }
-    );
-
-    // onUnmounted(() => {
-    //     await clearJobData();
+    // const key = ref(0);
+    // watch(() => route.params.jobId, () => {
+    //     key.value++;
     // });
-    onUnmounted(async () => {
-        projectStore.resetStore();
 
-        try {
-            await projectStore.clearCurrentJob();
-        } catch (error) {
-            console.error('Error clearing job:', error);
+    // onMounted(() => {
+    //     projectStore.setCurrentJob(route.params.jobId);
+    // });
+
+    // onBeforeUnmount(() => {
+    //     projectStore.resetStore();
+    // });
+
+
+
+
+    // watch(
+    //     // () => route.params.jobId,
+    //     // (newJobId) => {
+    //     //     console.log('JobId from route:', newJobId);
+    //     //     if (newJobId) {
+    //     //         projectStore.setCurrentJob(newJobId);
+    //     //     }
+    //     // },
+    //     // { immediate: true } // This makes it run immediately when component is created
+    //     // () => route.params.jobId,
+    //     // (newJobId, oldJobId) => {
+    //     //     if (newJobId) {
+    //     //         if (oldJobId) {
+    //     //             clearJobData();
+    //     //         }
+    //     //         projectStore.setCurrentJob(newJobId);
+    //     //     }
+    //     // },
+    //     // { immediate: true }
+    //     // () => route.params.jobId,
+    //     // async (newJobId) => {
+    //     //     if (newJobId) {
+    //     //         await projectStore.setCurrentJob(newJobId);
+    //     //     }
+    //     // },
+    //     // { immediate: true }
+
+    //     // async (newJobId) => {
+    //     //     if (newJobId) {
+    //     //         try {
+    //     //             // await projectStore.clearCurrentJob();
+    //     //             await projectStore.setCurrentJob(newJobId);
+    //     //         } catch (error) {
+    //     //             console.error('Error setting job:', error);
+    //     //         }
+    //     //     }
+    //     // },
+    //     // { immediate: true }
+
+    //     // () => route.params.jobId,
+    //     // async (newJobId, oldJobId) => {
+    //     //     if (newJobId && newJobId !== oldJobId) {
+    //     //         try {
+    //     //             await projectStore.clearCurrentJob();
+    //     //             await new Promise(resolve => setTimeout(resolve, 100));
+    //     //             await projectStore.setCurrentJob(newJobId);
+    //     //         } catch (error) {
+    //     //             console.error('Error setting job:', error);
+    //     //         }
+    //     //     }
+    //     // },
+    //     // { immediate: true }
+
+    //     () => route.params.jobId,
+    //     async (newJobId, oldJobId) => {
+    //     if (newJobId) {
+    //         try {
+    //             projectStore.resetStore();
+    //             console.log('Route jobId changed:', newJobId);
+    //             await projectStore.clearCurrentJob();
+    //             await new Promise(resolve => setTimeout(resolve, 100));
+    //             await projectStore.setCurrentJob(newJobId);
+    //             // Force a recompute of the computed properties
+    //             projectData.value;
+    //         } catch (error) {
+    //             console.error('Error setting job:', error);
+    //         }
+    //     }
+    //     },
+    //     { immediate: true }
+    // );
+
+    // // onUnmounted(() => {
+    // //     await clearJobData();
+    // // });
+    // onUnmounted(async () => {
+    //     projectStore.resetStore();
+
+    //     try {
+    //         await projectStore.clearCurrentJob();
+    //     } catch (error) {
+    //         console.error('Error clearing job:', error);
+    //     }
+    // });
+
+    // Component key for forcing re-renders
+    // const componentKey = computed(() => route.params.jobId);
+
+    onMounted(() => {
+        // Check if we were redirected here with a stored job ID
+        const storedJobId = sessionStorage.getItem('selectedJobId');
+        if (storedJobId) {
+            // Clear it immediately to prevent future issues
+            sessionStorage.removeItem('selectedJobId');
+            // Force a reload if the IDs don't match
+            if (storedJobId !== route.params.jobId) {
+                window.location.replace(`${window.location.origin}/job/${storedJobId}`);
+            }
         }
     });
 
+    // Initialize on mount
+    // onMounted(async () => {
+    //     await projectStore.setCurrentJob(route.params.jobId);
+    // });
+
+    // Cleanup on unmount
+    onUnmounted(() => {
+        projectStore.resetStore();
+    });
+
+    // Watch for route changes
+    watch(
+        () => route.params.jobId,
+        async (newJobId) => {
+            if (newJobId) {
+                await projectStore.setCurrentJob(newJobId);
+            }
+        }
+    );
 
     //Data to pass to ProjectDashboard component
     // const projectData = computed(() => ({
@@ -191,8 +242,17 @@
             <p>No job ID found in route params</p>
         </div>
     </div> -->
-    <div>
+    <!-- <div :key="componentKey">
         <projectDashboard :project-data="projectData" :is-contractor="true" :customer-details="customerDetails"/>
+    </div> -->
+
+    <div v-if="isLoading">Loading...</div>
+    <div v-else :key="componentKey">
+        <projectDashboard 
+            :project-data="projectData" 
+            :is-contractor="true" 
+            :customer-details="customerDetails"
+        />
     </div>
 </template>
 

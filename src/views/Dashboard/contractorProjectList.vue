@@ -1,6 +1,6 @@
 <script setup>
     import LogedInLayout from '@/components/logedInLayout.vue';
-    import { computed, onMounted } from 'vue';
+    import { computed, onMounted, onUnmounted } from 'vue';
     import { useRouter } from 'vue-router';
     import { useProjectStore } from '@/stores/projectStore';
     import { useUserStore } from '@/stores/userStore';
@@ -13,7 +13,7 @@
     const OngoingJobs = computed(() => contractorJobs.value?.filter(job => job.status === 'in_progress')|| []);
     const CompletedJobs = computed(() => contractorJobs.value?.filter(job => job.status === 'completed')|| []);
     // console.log('ongoing jobs', OngoingJobs.value)
-    // console.log('completed jobs', CompletedJobs.value)
+    console.log('completed jobs', CompletedJobs.value)
     
     const addresses = [
         "Blk 123 Tampines Street 11 #05-234, Singapore 521123",
@@ -61,13 +61,46 @@
         //     console.error('Error navigating to job details:', error);
         // }
 
+        // try {
+        //     console.log('Starting navigation to job:', jobId);
+        //     projectStore.resetStore();
+        //     await projectStore.clearCurrentJob();
+        //     // Add small delay to ensure state is cleared
+        //     await new Promise(resolve => setTimeout(resolve, 750));
+        //     await router.push(`/job/${jobId}`);
+        // } catch (error) {
+        //     console.error('Error navigating to job details:', error);
+        // }
+
+        // try {
+        //     await projectStore.resetStore();
+        //     await router.push(`/job/${jobId}`);
+        //     await new Promise(resolve => setTimeout(resolve, 200)); // Add small delay after navigation
+        //     await projectStore.setCurrentJob(jobId);
+        // } catch (error) {
+        //     console.error('Error navigating to job details:', error);
+        // }
+
+        // try {
+        //     projectStore.clearCurrentJob();
+        //     // Force a navigation without reusing components
+        //     await router.push({
+        //         path: `/job/${jobId}`,
+        //         replace: true
+        //     });
+        // } catch (error) {
+        //     console.error('Error navigating to job details:', error);
+        // }
+
         try {
-            console.log('Starting navigation to job:', jobId);
+            // Clear current state
             projectStore.resetStore();
-            await projectStore.clearCurrentJob();
-            // Add small delay to ensure state is cleared
-            await new Promise(resolve => setTimeout(resolve, 100));
-            await router.push(`/job/${jobId}`);
+            
+            // Navigate with replace to prevent route stacking
+            await router.push({
+                path: `/job/${jobId}`,
+                replace: true
+            });
         } catch (error) {
             console.error('Error navigating to job details:', error);
         }
@@ -86,9 +119,23 @@
     //     }
     // };
 
-    onMounted(async () => {
-        const store = useProjectStore();
-        await store.clearCurrentJob();
+    // onMounted(async () => {
+    //     // const store = useProjectStore();
+    //     // await store.clearCurrentJob();
+
+    //     await projectStore.resetStore();
+    // });
+
+    // onUnmounted(async () => {
+    //     await projectStore.resetStore();
+    // })
+
+    onMounted(() => {
+        projectStore.resetStore();
+    });
+
+    onUnmounted(() => {
+        projectStore.resetStore();
     });
 </script>
 
@@ -101,12 +148,12 @@
                     <div class="col-1 d-flex align-items-center">Job: #{{index + 1}}</div>
                     <div class="col-11 projectDetails">
                         <div class="projectText">
-                            <div><strong>Customer Name:</strong> {{job.customerName}} </div>
-                            <div><strong>Job Location:</strong> {{job.location || addresses[index]}}</div>
-                            <div><strong>Job Name:</strong> {{job.jobName}}</div>
-                            <div><strong>Job Description:</strong> {{job.description}}</div>
-                            <div><strong>Start Date: </strong> {{job.startDate}}</div>
-                            <div><strong>End Date: </strong> {{job.endDate}}</div>
+                            <div style="text-align: left;"><strong>Customer Name:</strong> {{job.customerName}} </div>
+                            <div style="text-align: left;"><strong>Job Location:</strong> {{job.location || addresses[index]}}</div>
+                            <div style="text-align: left;"><strong>Job Name:</strong> {{job.jobName}}</div>
+                            <div style="text-align: left;"><strong>Job Description:</strong> {{job.description}}</div>
+                            <div style="text-align: left;"><strong>Start Date: </strong> {{job.startDate}}</div>
+                            <div style="text-align: left;"><strong>End Date: </strong> {{job.endDate}}</div>
                        
                             <!-- <div class="topText">
                                 
@@ -130,19 +177,25 @@
         </div>
         <div class="projectContent">
             <h1 style="color: #769FCD;"><strong>Completed Jobs</strong></h1>
-            <div v-if="CompletedProjects?.length">
+            <div v-if="CompletedJobs?.length">
                 <div class="row mx-0 mt-4" style="font-size: 24px;" v-for="(job, index) in CompletedJobs" :key="job">
-                    <div class="col-1 d-flex align-items-center p-0 projectNo">Project: #{{index + 1}}</div>
+                    <div class="col-1 d-flex align-items-center">Job: #{{index + 1}}</div>
                     <div class="col-11 projectDetails">
                         <div class="projectText">
-                            <div class="topText">
+                            <div><strong>Customer Name:</strong> {{job.customerName}} </div>
+                            <div><strong>Job Location:</strong> {{job.location || addresses[index]}}</div>
+                            <div><strong>Job Name:</strong> {{job.jobName}}</div>
+                            <div><strong>Job Description:</strong> {{job.description}}</div>
+                            <div><strong>Start Date: </strong> {{job.startDate}}</div>
+                            <div><strong>End Date: </strong> {{job.endDate}}</div>
+                            <!-- <div class="topText">
                                 <strong>Customer Name:</strong> {{job.customerName}} 
                                 &nbsp;<strong>Customer ID:</strong> {{job.customerId}}
                             </div>
                             <div class="bottomText">
                                 <strong>Location:</strong> {{job.location}}
                                 <strong>Project ID:</strong> {{job.projectId}}
-                            </div>
+                            </div> -->
                         </div>
                         <div class="view-button">
                             <button @click="viewJobDetails(job.id)" class="btn btn-secondary">
@@ -175,7 +228,7 @@
     border-radius: 10px;
     background-color: #dee8ef;
     color: #555;
-    padding: 12px;
+    padding: 10px;
     width: 90%;
     display: flex;
     height: auto;

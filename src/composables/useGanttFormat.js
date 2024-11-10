@@ -69,8 +69,8 @@ export function useGanttFormat(jobs, tasks, contractorCompany, contractorStaff) 
             const data = jobTasks.map(task => ({
                 id: task.id,
                 text: task.name,
-                start_date: task.startDate.toDate().toISOString().split('T')[0],
-                duration: calculateDuration(task.startDate.toDate(), task.endDate.toDate()),
+                start_date: (task.startDate instanceof Date ? task.startDate : task.startDate.toDate()).toISOString().split('T')[0],
+                duration: calculateDuration(task.startDate instanceof Date ? task.startDate : task.startDate.toDate(), task.endDate instanceof Date ? task.endDate : task.endDate.toDate()),
                 progress: task.progress ? task.progress / 100 : 0
             }))
 

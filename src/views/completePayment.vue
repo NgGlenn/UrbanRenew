@@ -59,6 +59,14 @@ export default {
             <img src="../components/icons/qrCode.png" alt="QR Code" class="payment-image">
             <h1>Scan & Pay</h1>
             <button class="done-button" @click="goToHome">Done</button>
+            <div class="instructions">
+                <p>To complete your payment, please scan the QR code using your PayNow-compatible mobile banking app.</p>
+            </div>
+            <div class="help-section">
+                <a href="/faq" class="help-link">Need help with payments?</a>
+            </div>
+
+
         </div>
     </div>
 </LogedInLayout>
@@ -85,13 +93,26 @@ export default {
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     text-align: center;
 }
-
+ .instructions {
+    margin-top: 20px;
+    margin-bottom: 20px;
+    font-size: small;
+    color: #555;
+    text-align: center;
+    font-style: italic;
+}
 .payment-image {
     width: 300px;
     height: 300px;
     margin-bottom: 20px;
 }
-
+.help-link {
+    font-size: 0.9rem;
+    color: #769FCD;
+    text-decoration: underline;
+    display: block;
+    margin-top: 15px;
+}
 h1 {
     color: #769FCD;
     margin-bottom: 20px;

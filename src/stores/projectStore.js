@@ -8,6 +8,8 @@ export const useProjectStore = defineStore('projects', () => {
     const userStore = useUserStore();
     const db = inject('db');
     const currentJobId = ref(null);
+    const isLoading = ref(false)
+
 
     //Get project for current user
     const projectsQuery = computed(() => {
@@ -85,48 +87,147 @@ export const useProjectStore = defineStore('projects', () => {
 
 
     // Function to set current project for detailed view
-    const setCurrentJob = async (jobId) => {
-        // console.log("Previous currentJobId:", currentJobId.value);
-        // currentJobId.value = jobId;
-        // console.log("New currentJobId:", currentJobId.value);
-        // console.log("Previous currentJobId:", currentJobId.value);
-        // currentJobId.value = jobId;
-        // await nextTick(); // Wait for Vue to process the update
-        // console.log("New currentJobId set to:", currentJobId.value);
-        return new Promise((resolve) => {
-            console.log("Previous currentJobId:", currentJobId.value);
-            currentJobId.value = jobId;
-            nextTick(() => {
-                console.log("New currentJobId set to:", currentJobId.value);
-                resolve();
-            });
-        });
-    };
+    // const setCurrentJob = (jobId) => {
+    //     // console.log("Previous currentJobId:", currentJobId.value);
+    //     // currentJobId.value = jobId;
+    //     // console.log("New currentJobId:", currentJobId.value);
+    //     // console.log("Previous currentJobId:", currentJobId.value);
+    //     // currentJobId.value = jobId;
+    //     // await nextTick(); // Wait for Vue to process the update
+    //     // console.log("New currentJobId set to:", currentJobId.value);
+    //     // return new Promise((resolve) => {
+    //     //     console.log("Previous currentJobId:", currentJobId.value);
+    //     //     currentJobId.value = jobId;
+    //     //     nextTick(() => {
+    //     //         console.log("New currentJobId set to:", currentJobId.value);
+    //     //         resolve();
+    //     //     });
+    //     // });
+
+    //     // try {
+    //     //     await clearCurrentJob(); // Clear current job first
+    //     //     currentJobId.value = jobId;
+
+    //     //     // Wait for both job and task data to be loaded
+    //     //     await Promise.all([
+    //     //         new Promise((resolve) => {
+    //     //             let stop = watch(currentJob, (newVal) => {
+    //     //                 if (newVal) {
+    //     //                     stop();
+    //     //                     resolve();
+    //     //                 }
+    //     //             });
+    //     //         }),
+    //     //         new Promise((resolve) => {
+    //     //             let stop = watch(currentTask, (newVal) => {
+    //     //                 if (newVal) {
+    //     //                     stop();
+    //     //                     resolve();
+    //     //                 }
+    //     //             });
+    //     //         })
+    //     //     ]);
+    //     // } catch (error) {
+    //     //     console.error('Error setting current job:', error);
+    //     //     throw error;
+    //     // }
+
+    //     currentJobId.value = jobId;
+    // };
+
+    // const setCurrentJob = async (jobId) => {
+    //     try {
+    //         isLoading.value = true;
+    //         currentJobId.value = jobId;
+
+    //         // Fixed Promise setup for watching data load
+    //         await Promise.all([
+    //             // Watch for job data
+    //             new Promise(resolve => {
+    //                 let stopWatchJob = watch(currentJob, (newVal) => {
+    //                     if (newVal) {
+    //                         stopWatchJob(); // Stop watching
+    //                         resolve();
+    //                     }
+    //                 });
+    //             }),
+    //             // Watch for task data
+    //             new Promise(resolve => {
+    //                 let stopWatchTask = watch(currentTask, (newVal) => {
+    //                     if (newVal) {
+    //                         stopWatchTask(); // Stop watching
+    //                         resolve();
+    //                     }
+    //                 });
+    //             })
+    //         ]);
+
+    //         await nextTick();
+    //         console.log('Job data loaded successfully:', currentJob.value);
+    //         console.log('Task data loaded successfully:', currentTask.value);
+    //     } catch (error) {
+    //         console.error('Error setting current job:', error);
+    //         throw error;
+    //     } finally {
+    //         isLoading.value = false;
+    //     }
+    // };
 
     // Clear current project
-    const clearCurrentJob = async() => {
-        // console.log("Clearing currentJobId from:", currentJobId.value);
-        // currentJobId.value = null;
-        // console.log("CurrentJobId cleared to:", currentJobId.value);
-        // console.log("Clearing currentJobId from:", currentJobId.value);
-        // currentJobId.value = null;
-        // await nextTick(); // Wait for Vue to process the update
-        // console.log("CurrentJobId cleared to:", currentJobId.value);
-        return new Promise((resolve) => {
-            console.log("Clearing currentJobId from:", currentJobId.value);
-            currentJobId.value = null;
-            nextTick(() => {
-                console.log("CurrentJobId cleared to:", currentJobId.value);
-                resolve();
-            });
-        });
-    };
+    // const clearCurrentJob = () => {
+    //     // console.log("Clearing currentJobId from:", currentJobId.value);
+    //     // currentJobId.value = null;
+    //     // console.log("CurrentJobId cleared to:", currentJobId.value);
+    //     // console.log("Clearing currentJobId from:", currentJobId.value);
+    //     // currentJobId.value = null;
+    //     // await nextTick(); // Wait for Vue to process the update
+    //     // console.log("CurrentJobId cleared to:", currentJobId.value);
+        
+    //     // return new Promise((resolve) => {
+    //     //     console.log("Clearing currentJobId from:", currentJobId.value);
+    //     //     currentJobId.value = null;
+    //     //     nextTick(() => {
+    //     //         console.log("CurrentJobId cleared to:", currentJobId.value);
+    //     //         resolve();
+    //     //     });
+    //     // });
 
-    const resetStore = () => {
+    //     currentJobId.value = null;
+    //     // await new Promise(resolve => setTimeout(resolve, 100)); 
+    // };
+
+    // const resetStore = () => {
+    //     // currentJobId.value = null;
+    //     // Reset any other relevant state
+    //     clearCurrentJob();
+    // };
+
+    // const resetStore = async () => {
+    //     isLoading.value = true;
+    //     currentJobId.value = null;
+    //     await nextTick();
+    //     isLoading.value = false;
+    // };
+
+    const resetStore = async () => {
+        isLoading.value = true;
         currentJobId.value = null;
-        // Reset any other relevant state
+        await nextTick();
+        isLoading.value = false;
     };
 
+    const setCurrentJob = async (jobId) => {
+        try {
+            isLoading.value = true;
+            await resetStore();
+            currentJobId.value = jobId;
+            await nextTick();
+        } catch (error) {
+            console.error('Error setting current job:', error);
+        } finally {
+            isLoading.value = false;
+        }
+    };
 
     watch(currentJobId, (newVal, oldVal) => {
         console.log(`currentJobId changed from ${oldVal} to ${newVal}`);
@@ -227,8 +328,9 @@ export const useProjectStore = defineStore('projects', () => {
         currentTask,
         currentJobId,
         setCurrentJob,
-        clearCurrentJob,
-        resetStore
+        // clearCurrentJob,
+        resetStore,
+        isLoading
     }
 
 })

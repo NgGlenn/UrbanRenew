@@ -1,5 +1,5 @@
 <script setup>
-    import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+    import { ref, computed, onMounted, onUnmounted, onBeforeMount, watch } from 'vue';
     import LogedInLayout from './logedInLayout.vue';
     import ProjectProgressionBar from '@/components/Project Analytics/ProjectProgressionBar.vue';
     import ProjectDonutChart from '@/components/Project Analytics/JobDonutChart.vue';
@@ -114,25 +114,34 @@
         }
     };
 
+    onBeforeMount(() => {
+        // Set the job ID from route params when component mounts
+        if (route.params.jobId) {
+            projectStore.setCurrentJob(route.params.jobId);
+        }
+    });
 
     onMounted(() => {
         checkMobile();
         window.addEventListener('resize', checkMobile);
 
-        if (props.isContractor && props.specificJobId) {
-            projectStore.setCurrentJob(props.specificJobId);
-        }
+        // if (props.isContractor && props.specificJobId) {
+        //     projectStore.setCurrentJob(props.specificJobId);
+        // }
+        projectStore.setCurrentJob(route.params.jobId);
     });
 
-    onUnmounted(async() => {
+    onUnmounted(() => {
         window.removeEventListener('resize', checkMobile);
 
         // projectStore.clearCurrentJob();
-        try {
-            await projectStore.clearCurrentJob();
-        } catch (error) {
-            console.error('Error clearing job on unmount:', error);
-        }
+        // try {
+        //     await projectStore.clearCurrentJob();
+        // } catch (error) {
+        //     console.error('Error clearing job on unmount:', error);
+        // }
+
+        projectStore.resetStore();
     });
 
     //Back button
@@ -146,14 +155,36 @@
     //     router.push('/contractorProjectList');
     // };
 
-    const handleBack = async () => {
-        try {
-            projectStore.resetStore();
-            await projectStore.clearCurrentJob();
-            await router.push('/contractorProjectList');
-        } catch (error) {
-            console.error('Error handling back:', error);
-        }
+    const handleBack = () => {
+        // try {
+        //     projectStore.resetStore();
+        //     await projectStore.clearCurrentJob();
+        //     await new Promise(resolve => setTimeout(resolve, 750));
+        //     // await router.push('/contractorProjectList');
+        //     await router.push('/dashboard');
+        // } catch (error) {
+        //     console.error('Error handling back:', error);
+        // }
+
+        // try {
+        //     await projectStore.resetStore();
+        //     await router.push('/dashboard');
+        // } catch (error) {
+        //     console.error('Error handling back:', error);
+        // }
+
+        // try {
+        //     await projectStore.resetStore();
+        //     await router.push({
+        //         path: '/dashboard',
+        //         replace: true
+        //     });
+        // } catch (error) {
+        //     console.error('Error handling back:', error);
+        // }
+
+        projectStore.resetStore();
+        router.push('/dashboard');
     };
 
     watch(
@@ -167,7 +198,7 @@
         () => projectStore.currentJobId,
         (newJobId) => {
             if (!newJobId) {
-                currentJobIndex.value = 0; // Reset local state if needed
+                currentJobIndex.value = 0; 
             }
         }
     );
@@ -212,9 +243,9 @@
                         <div class="timelineMarker"></div>
                         <div>
                             <div class="jobHeader">
-                                <div style="width: 70%;">
-                                    <span class="jobName">{{ job.description }}</span>
-                                    <span class="jobDates"><br>{{ formatDate(job.startDate) }} - {{ formatDate(job.endDate) }}</span>
+                                <div style="width: 70%; margin-right: 5px">
+                                    <span class="jobName">{{ job.jobName }}</span>
+                                    <span class="jobDates"><br>{{ formatDate(job.startDate) || job.startDate}} to {{ formatDate(job.endDate) || job.endDate }}</span>
                                 </div>
                                 <div style="width: 30%;">
                                     <span class="jobStatus" :style="{ color: job.status === 'completed' ? 'green' : 
@@ -244,15 +275,18 @@
                     <div class="carousel-inner">
                         <div v-for="(data, index) in ganttData" :key="index" class="carousel-item" :class="{active: index === 0}">
                             <h2 style="font-weight: bold;">{{ data.jobName }}</h2>
-                            <div v-for="task in data.task.data" :key="task.id" class="progress-item">
-                                <div class="progress-header">
-                                    <span class="task-name">{{ task.text }}</span>
-                                    <span class="progress-value">{{ task.progress * 100}}%</span>
-                                </div>
-                                <div class="progress">
-                                    <div class="progress-bar" 
-                                        :style="{ width: `${task.progress*100}%` }"
-                                        :class="{ 'bg-success': task.progress*100 === 100 }">
+                            <div v-if="!data.task?.data || data.task.data.length === 0" >Task has not started. Come back later</div>
+                            <div v-else>
+                                <div v-for="task in data.task.data" :key="task.id" class="progress-item">
+                                    <div class="progress-header">
+                                        <span class="task-name">{{ task.text }}</span>
+                                        <span class="progress-value">{{ Math.round(task.progress * 100)}}%</span>
+                                    </div>
+                                    <div class="progress">
+                                        <div class="progress-bar" 
+                                            :style="{ width: `${task.progress*100}%` }"
+                                            :class="{ 'bg-success': task.progress*100 === 100 }">
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -529,7 +563,8 @@
         
         /* flex: 1; */
         width: 95%;
-        height: 95%; 
+        /* height: 95%;  */
+        max-height: 1000px;
         /* margin-left: auto;
         margin-right: auto; */
     }
@@ -667,7 +702,7 @@
 
         .timelineItem {
             position: relative;
-            padding: 12px;
+            padding: 10px;
             background: #f8f9fa;
             border-radius: 8px;
             margin-left: 12px;
@@ -691,11 +726,11 @@
             box-shadow: 0 0 0 2px #f1f8e9;
         }
 
-        .timelineMarker {
+        .completed .timelineMarker {
             background: green;
         }
 
-        .timelineItem:not(:last-child)::before {
+        /* .timelineItem:not(:last-child)::before {
             content: '';
             position: absolute;
             left: -19px;
@@ -704,7 +739,7 @@
             width: 2px;
             background: #e0e0e0;
             height: 125px;
-        }
+        } */
 
         .jobHeader {
             display: flex;
@@ -718,7 +753,7 @@
         
 
         .jobStatus {
-            font-size: 18px;
+            font-size: 14px;
             color: #769FCD;
         }
 

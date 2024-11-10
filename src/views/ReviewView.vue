@@ -6,7 +6,11 @@
       
       <!-- Display the overall average rating -->
       <div class="average-rating">
-        <h2>Overall Rating: {{ overallRating }}/5</h2>
+        <h2>Overall Rating:</h2>
+          <div class="star-rating">
+            <span v-for="star in 5" :key="star" class="star" :class="{ filled: star <= overallRating }">&#9733;</span>
+          </div>
+        <h2>{{ overallRating }}/5</h2>
       </div>
       
       <!-- Button to go back to homepage -->
@@ -72,13 +76,27 @@ h1 {
   margin-bottom: 20px;
 }
 
+
 .average-rating h2 {
   font-size: 2rem;
   color: #6A42C7;
   margin-bottom: 20px;
 }
 
+.star-rating {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 20px;
+}
 
+.star {
+  font-size: 2rem;
+  color: #ddd;
+}
+
+.star.filled {
+  color: #f9bf29;
+}
 
 button:hover {
   background-color: #5734a5;
