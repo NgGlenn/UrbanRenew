@@ -70,13 +70,12 @@ export default {
     margin-top: 10px;
     margin-bottom: 10px;
     min-height: 500px;
-
 }
 
 img{
     width: 100%; 
     margin-bottom: 15px; 
-    min-height: 220px;
+    min-height: 230px;
     max-height: 250px;
 }
 
