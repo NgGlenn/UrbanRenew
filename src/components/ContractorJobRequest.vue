@@ -30,7 +30,7 @@
                     <a href="#" target="_blank">
                         <button style="margin-inline: 20px;" v-on:click="SendQuotation"> Send Quotation </button>
                     </a>
-                    <a href="#" target="_blank">
+                    <a href="#">
                         <button style="margin-inline: 20px;" v-on:click="Decline"> Decline </button>
                     </a>
                 </div>
@@ -41,6 +41,9 @@
 </template>
 
 <script>
+import { db } from "@/firebase";
+import { doc, getDoc, getDocs, updateDoc, addDoc, collection } from "firebase/firestore";
+
 export default{
     props: [ 'id', 'projectId', 'contractorId', 'contractorName', 
             'customerId', 'customerName', 'status', 'jobType',
