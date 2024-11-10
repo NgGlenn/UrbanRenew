@@ -2,7 +2,7 @@
     <div class="col-12 col-sm-6 col-lg-4">
         <div class="card border rounded shadow-sm">
             <div class="card-header p-10" style="text-align: center;">
-                <img :src="displayImage" style="width: 100%; margin-bottom: 15px; width: 300px; height: 230px;">
+                <img :src="displayImage">
                 <h4 style="font-weight: bold;"> {{ firstName }} {{ lastName }} </h4>
                 <p> Rating: {{ rating.toFixed(1) }} / 5.0 </p>
             </div>
@@ -21,22 +21,13 @@
 <script>
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
 
-
 export default {
     props: ['id', 'image', 'firstName', 'lastName', 'company', 'rating', 'servicesOffered'],
-    // props: {
-    //     img: string, 
-    //     name: string, 
-    //     company: string,
-    //     rating: float,
-    //     service: string,
-    //     styles: array
-    // }, // props
 
     data() {
         return {
             // key: value
-            displayImage: ""
+            displayImage: this.processImage(this.image)
         }
     }, // data
 
@@ -45,25 +36,30 @@ export default {
             this.$emit('redirect', this.id); // Emit the contractor ID when the button is clicked
         },
 
-        async processImage(image) {
+        processImage(image) {
+            console.log(image)
             const storage = getStorage()
             if (image.length != 0) {
                 //console.log(image)
-                this.displayImage = image[0];
+                //this.displayImage = image[0];
+                return image[0]
             }
             else {
-                image = "default_image.jpg";
+                /*image = "default_image.jpg";
                 const fileRef = storageRef(storage, 'images/' + image);
                 // Get the file's download URL
-                this.displayImage = await getDownloadURL(fileRef);
+                this.displayImage = await getDownloadURL(fileRef);*/
+                //this.displayImage = "https://firebasestorage.googleapis.com/v0/b/wad2-urbanrenew.appspot.com/o/images%2Fdefault_image.jpg?alt=media&token=0bb4224d-e465-490c-a908-532f8ca788f0"
+                
+                // download URL for the default image
+                return "https://firebasestorage.googleapis.com/v0/b/wad2-urbanrenew.appspot.com/o/images%2Fdefault_image.jpg?alt=media&token=0bb4224d-e465-490c-a908-532f8ca788f0"
             }
         },
     }, // methods
 
     mounted() {
-        this.processImage(this.image);
+        //this.processImage(this.image);
     }
-
 }
 </script>
 
@@ -75,6 +71,13 @@ export default {
     margin-bottom: 10px;
     min-height: 500px;
 
+}
+
+img{
+    width: 100%; 
+    margin-bottom: 15px; 
+    min-height: 220px;
+    max-height: 250px;
 }
 
 .btn-primary {

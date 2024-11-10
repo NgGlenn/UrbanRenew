@@ -29,6 +29,7 @@
                 <div class="row">
                     <ContractorCards 
                     v-for="contractor of contractorsDisplay"
+                    :key="contractor.id"
                     :id="contractor.id"
                     :image="contractor.portfolioImages"
                     :first-name="contractor.firstName"
@@ -38,7 +39,6 @@
                     :services-offered="contractor.services"
                     @redirect="viewProfile">
                     </ContractorCards>
-
                 </div>
             </div>
             
@@ -72,7 +72,7 @@
                 const results = [];
                 for (let contractor of contractors) {
                     for (let service of contractor.services) {
-                        console.log(service)
+                        //console.log(service)
                         if (results.indexOf(service) == -1 && service != "None"){
                             results.push(service);
                         }      
@@ -114,7 +114,7 @@
                         let index = this.filters.indexOf(filterName);
                         this.filters.splice(index, 1);
                     }
-                    console.log(this.filters);
+                    //console.log(this.filters);
                 },
 
                 Search(key){
@@ -140,6 +140,7 @@
                             }    
                         }
                     }
+                    //console.log(JSON.stringify(results))
                     this.contractorsDisplay = results;
                 },
 
