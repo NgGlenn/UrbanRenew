@@ -37,7 +37,7 @@ export default {
         },
 
         processImage(image) {
-            console.log(image)
+            //console.log(image)
             const storage = getStorage()
             if (image.length != 0) {
                 //console.log(image)

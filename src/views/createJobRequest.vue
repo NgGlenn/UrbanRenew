@@ -11,7 +11,7 @@
 
               <label class="metric-label">Job Type:</label>
               <select v-model="jobType">
-                <option v-for="service of services"> {{ service }}</option>
+                <option v-for="service of services"> {{ service }} </option>
               </select>
 
               <label class="metric-label">Description:</label>
@@ -56,7 +56,7 @@
         Navbar,
       },
 
-      setup(){
+      /*setup(){
         const contractors = useCollection(collection(db, 'contractors'));
         var services = ref([]); // Make services reactive
 
@@ -78,11 +78,12 @@
         };
 
         return {contractors, services}
-    },
+    },*/
 
     async created() {
         this.projectID = await this.getProjectID(); // Resolve and assign projectID after retrieval
         this.username = await this.getUsername();
+        this.getServices();
     },
 
       data() {
@@ -91,6 +92,7 @@
             contractor_id: this.$route.params.contractor_id,
             contractorName: '',
             projectID: null,
+            services: [],
             jobType: '',
             desc: '',
             budget: null,
@@ -107,10 +109,30 @@
 
             if (user) {
             const uid = user.uid;  // Retrieve the user's ID
-            console.log("User ID:", uid);
+            //console.log("User ID:", uid);
             return uid;
             } else {
             console.log("No user is signed in.");
+            }
+        },
+
+        async getServices(){
+            try {
+                //console.log(this.contractor_id)
+                // Create a reference to the document
+                const docRef = doc(db, "contractors", this.contractor_id);
+                const docSnap = await getDoc(docRef);
+
+                // Check if the document exists
+                if (docSnap.exists()) {
+                // Assign the document data to a variable
+                console.log(docSnap.data().services)
+                this.services = docSnap.data().services;
+                } else {
+                console.log("No such document!");
+                }
+            } catch (error) {
+                console.error("Error fetching document:", error);
             }
         },
 
@@ -141,7 +163,7 @@
             if (userDoc.exists()) {
                 const data = userDoc.data();
                 const username = `${data.firstName || ''} ${data.lastName || ''}`;
-                console.log(username);
+                //console.log(username);
                 return username;
             } else {
                 console.log('No such document!');
