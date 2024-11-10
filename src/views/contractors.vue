@@ -18,7 +18,7 @@
 
             <!-- Filter menu -->
             <div id="filters-section" v-if="filter_state == 'filter-on'">
-                <p style="text-align: center; font-weight: bold;"> Select filter(s): </p>
+                <p style="text-align: left; font-weight: bold;"> Select filter(s): </p>
                 <p>
                     Service(s): <button class="filter" v-for="service of services" @click="addFilter($event)">
                         {{ service }} </button>
@@ -194,7 +194,7 @@ export default {
     border-radius: 8px;
     padding: 15px 20px;
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    text-align: center;
+    text-align: left;
     max-width: 100%;
     margin: auto;
 }
