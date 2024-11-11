@@ -48,7 +48,7 @@
 <script>
 import NavBar from '@/components/NavBar.vue';
 import ProjectItem from '@/components/Payment/ProjectItem.vue';
-import { db, auth } from '../firebase'  // Ensure your firebase.js is correctly configured
+import { db, auth } from '../firebase'  
 import { onAuthStateChanged } from 'firebase/auth';
 import { collection, getDocs, getDoc, doc } from 'firebase/firestore';
 import logedInLayout from '@/components/logedInLayout.vue';
@@ -170,17 +170,17 @@ h3 {
     pointer-events: none;
     opacity: 0.85;
     /* background-color: rgb(193, 249, 249); */
-    position: relative; /* Position relative for the ::after element */
+    position: relative; 
 }
 
 .selected::after {
     content: "";
     position: absolute;
-    bottom: -3px; /* Position the underline a bit below the element */
+    bottom: -3px; 
     left: 0;
     width: 100%;
-    height: 4px; /* Thickness of the underline */
-    background-color: #f9bf29; /* Color of the underline */
+    height: 4px; 
+    background-color: #f9bf29;
 }
 
 .payment {

@@ -11,7 +11,7 @@ export default {
     data() {
         return {
             job: null,
-            jobID: this.$route.query.jobID, // Get jobID from URL
+            jobID: this.$route.query.jobID, 
         };
     },
     async created() {

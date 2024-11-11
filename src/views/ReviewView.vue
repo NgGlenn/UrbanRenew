@@ -34,7 +34,7 @@ export default {
     };
   },
   created() {
-    // Get the average rating from query parameters
+    
     this.averageRating = this.$route.query.averageRating || 'N/A';
   },
   computed: {

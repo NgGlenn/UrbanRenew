@@ -142,6 +142,6 @@ p {
 .fees-container .d-flex .price {
     text-align: right;
     width: 100px;
-    /* Adjust width based on your layout for consistent alignment */
+    
 }
 </style>

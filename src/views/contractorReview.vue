@@ -102,7 +102,7 @@
   
 <script>
 import Navbar from '@/components/NavBar.vue';
-import { db, auth } from '../firebase'; // Ensure your firebase.js is correctly configured
+import { db, auth } from '../firebase'; 
 import { collection, addDoc, getDoc, query, where, doc } from 'firebase/firestore';
 import { onAuthStateChanged } from "firebase/auth";
 import logedInLayout from '@/components/logedInLayout.vue';
@@ -160,7 +160,7 @@ export default {
       console.warn('No contractorID provided in the query parameters.');
     }
 
-    // Set up auth state listener
+    
     onAuthStateChanged(auth, (user) => {
       if (user) {
         this.userID = user.uid; // Store logged-in user ID

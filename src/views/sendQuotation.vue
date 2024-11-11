@@ -60,7 +60,7 @@ export default {
                     comments: this.comments
                 });
                 //alert('Quotation submitted successfully.');
-                this.$router.push({ path: '/contractorJobRequests' }); // Redirect to the desired page after submission
+                this.$router.push({ path: '/contractorJobRequests' }); 
             } catch (error) {
                 console.error('Error submitting quotation:', error);
                 alert('Failed to submit quotation. Please try again.');
@@ -74,7 +74,6 @@ export default {
 </script>
 
 <style scoped>
-/* Center the card on the page */
 .quotation-page {
     display: flex;
     align-items: center;
@@ -84,7 +83,7 @@ export default {
     padding: 20px;
 }
 
-/* Card styling */
+
 .quotation-card {
     background-color: white;
     border-radius: 10px;
@@ -96,7 +95,7 @@ export default {
     text-align: center;
 }
 
-/* Form styling */
+
 .form-group {
     margin-bottom: 20px;
 }

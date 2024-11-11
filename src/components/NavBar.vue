@@ -6,7 +6,7 @@ export default {
   name: 'YourComponentName',
   data() {
     return {
-      userRole: null, // Variable to store the user role
+      userRole: null, // store the user role
     };
     },
   mounted() {

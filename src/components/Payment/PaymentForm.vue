@@ -62,22 +62,22 @@
                         <input type="text" class="form-control" id="cardNumber" v-model="cardNumber" required pattern="\d{16}" title="Card number must be 16 digits" maxlength="16" />
                         <br />
                         <div class="row">
-  <div class="col-12 col-md-6 mb-3">
-    <label class="form-label">Expiry Date</label>
-    <div class="expiry-date-container">
-      <input type="text" class="form-control" id="expiryMonth" v-model="expiryMonth" placeholder="MM" required
-             pattern="(0[1-9]|1[0-2])" title="Enter a valid month (01-12)" maxlength="2" />
-      <span class="divider">/</span>
-      <input type="text" class="form-control" id="expiryYear" v-model="expiryYear" placeholder="YYYY" required
-             pattern="\d{4}" title="Enter a valid year" maxlength="4" />
-    </div>
-    <small v-if="!isExpiryValid" class="text-danger">Expiry date must be later than today.</small>
-  </div>
-  <div class="col-12 col-md-6 mb-3">
-    <label for="cvv" class="form-label">CVV</label>
-    <input type="text" class="form-control" id="cvv" v-model="cvv" required
-           pattern="\d{3}" title="CVV must be 3 digits" maxlength="3" />
-  </div>
+                            <div class="col-12 col-md-6 mb-3">
+                                <label class="form-label">Expiry Date</label>
+                                <div class="expiry-date-container">
+                                <input type="text" class="form-control" id="expiryMonth" v-model="expiryMonth" placeholder="MM" required
+                                pattern="(0[1-9]|1[0-2])" title="Enter a valid month (01-12)" maxlength="2" />
+                                <span class="divider">/</span>
+                                <input type="text" class="form-control" id="expiryYear" v-model="expiryYear" placeholder="YYYY" required
+                                pattern="\d{4}" title="Enter a valid year" maxlength="4" />
+                            </div>
+                            <small v-if="!isExpiryValid" class="text-danger">Expiry date must be later than today.</small>
+                        </div>
+                        <div class="col-12 col-md-6 mb-3">
+                            <label for="cvv" class="form-label">CVV</label>
+                                <input type="text" class="form-control" id="cvv" v-model="cvv" required
+                                pattern="\d{3}" title="CVV must be 3 digits" maxlength="3" />
+                        </div>
 </div>
 
                     </div>

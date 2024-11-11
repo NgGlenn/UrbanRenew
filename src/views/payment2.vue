@@ -16,7 +16,7 @@
 import NavBar from '@/components/NavBar.vue';
 import PaymentDetails from '@/components/Payment/PaymentDetails.vue';
 import PaymentForm from '@/components/Payment/PaymentForm.vue';
-import { db } from '../firebase'  // Ensure your firebase.js is correctly configured
+import { db } from '../firebase' 
 import { collection, getDocs } from 'firebase/firestore';
 //import logedInLayout from '@/components/logedInLayout.vue';
 export default {
