@@ -201,7 +201,6 @@
         opacity: 1;
     }
 
-    /* Make the plus button text larger and centered */
     .btn.btn-outline-secondary {
         font-size: 1.2rem;
         line-height: 1;

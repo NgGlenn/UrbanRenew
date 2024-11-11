@@ -140,19 +140,14 @@ export function useProgressFormat(jobs, tasks) {
 
     // Determine project step with more granular thresholds
     const determineProjectStep = (progress) => {
-        // Planning phase if any job is in planning or just started
         if (progress < 15) return 1;  // Planning
 
-        // Design phase if initial jobs are progressing
         if (progress < 35) return 2;  // Design
 
-        // Demolition phase if major work has started
         if (progress < 55) return 3;  // Demolition
 
-        // Construction phase for main work
         if (progress < 85) return 4;  // Construction
 
-        // Finishing phase for completion
         return 5;  // Finishing
     };
 

@@ -30,20 +30,6 @@ const projectStore = useProjectStore();
 let isInitialized = false;
 let isProcessing = false;
 const emit = defineEmits(['taskUpdated', 'taskAdded', 'taskDeleted']);
-//firebase is in SEA timing, gantt chart uses different timing
-const adjustToUTC = (date) => {
-    const d = new Date(date);
-    return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString();
-};
-
-const formatDateForFirestore = (ganttDate) => {
-    // Convert Gantt date string to Date object and adjust for timezone
-    const date = new Date(ganttDate);
-    // Add timezone offset to keep the same date
-    const utcDate = new Date(date.getTime() + date.getTimezoneOffset() * 60000);
-    return utcDate;
-};
-
 
 const initGantt = () => {
     if (isInitialized) return;
@@ -77,7 +63,7 @@ const initGantt = () => {
         {name:"add"}
     ];
 
-        // Define custom progress editor
+    // Define custom progress editor
     gantt.form_blocks["progress_editor"] = {
         render: function(sns) {
             return "<div class='gantt-progress-editor'>" +
