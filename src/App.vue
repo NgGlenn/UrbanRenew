@@ -4,12 +4,14 @@
   // import contdb from '@/views/Dashboard/contractorDashboard copy.vue';
   import makeProject from '@/views/Dashboard/createProjectCust.vue';
   // import contJobList from '@/views/Dashboard/contractorProjectList.vue';
+  import cstprjlist from '@/components/projectDashboard.vue'
   import { RouterView } from 'vue-router';
 </script>
 
 <template>
   <!-- <makeProject/> -->
   <RouterView/>
+  <!-- <cstprjlist/> -->
 </template>
 
 
