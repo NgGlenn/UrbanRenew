@@ -4,7 +4,7 @@ import { db, auth } from "@/firebase";
 import { onAuthStateChanged } from "firebase/auth";
 import { doc, getDoc, updateDoc, setDoc, collection, query, where, getDocs, orderBy } from "firebase/firestore";
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import defaultProfileIcon from "@/assets/defaultProfileIcon.jpg"; //to display default picture if no profile picture set
+import defaultProfileIcon from "@/assets/defaultProfileIcon.jpg"; 
 import { updatePassword, EmailAuthProvider, reauthenticateWithCredential} from "firebase/auth";
 import Cropper from "cropperjs";
 import "cropperjs/dist/cropper.css";
@@ -17,7 +17,6 @@ export default {
       defaultImage: "",
       showEditProfileModal: false,
       showUpdatePasswordModal: false,
-      // Temporary fields to store the updated values
       updateFirstName: "",
       updateLastName: "",
       updatedEmail: "",
@@ -30,10 +29,10 @@ export default {
       imageUrl: "",
       cropper: null,
       profilePictureUrl: "",
-      loading: true, // Set loading to true initially
+      loading: true, 
       reviews: [],
       averageRating: 0,
-      userId: "", // user ID of the logged-in user
+      userId: "", 
       defaultProfileIcon: "../assets/default_profile.png",
       currentPage: 1,
       perPage: 1,
@@ -53,13 +52,13 @@ export default {
       }
     },
     openEditProfileModal() {
-      const names = this.userName.split(/\s+/).filter(Boolean); // Split the name by spaces and remove any empty strings
+      const names = this.userName.split(/\s+/).filter(Boolean); 
 
       if (names.length > 1) {
-        this.updateFirstName = names.slice(0, names.length - 1).join(" "); // Join all but the last name for the first name
-        this.updateLastName = names[names.length - 1]; // Last name is the last part
+        this.updateFirstName = names.slice(0, names.length - 1).join(" "); 
+        this.updateLastName = names[names.length - 1]; 
       } else {
-        // If there is only one name, treat it as the first name and leave last name empty
+        
         this.updateFirstName = names[0];
         this.updateLastName = "";
       }
@@ -71,21 +70,18 @@ export default {
       const user = auth.currentUser;
       if (user) {
         try {
-          // Reference to the user's document in Firestore
+
           const userDocRef = doc(db, "users", user.uid);
 
-          // Update the document in Firestore with new values
           await updateDoc(userDocRef, {
             firstName: this.updateFirstName,
             lastName: this.updateLastName,
             bio: this.tempBio,
           });
 
-          // Update local data to reflect changes immediately
           this.userName = `${this.updateFirstName} ${this.updateLastName}`;
           this.userBio = this.tempBio;
 
-          // Close the modal
           this.showEditProfileModal = false;
         } catch (error) {
           console.error("Error updating profile:", error);
@@ -109,7 +105,6 @@ export default {
         return;
       }
 
-      // Reauthenticate before updating password
       try {
         const user = auth.currentUser;
         if (!user) {
@@ -117,14 +112,12 @@ export default {
           return;
         }
 
-        // Assuming user’s current email and password are available
         const credential = EmailAuthProvider.credential(
           user.email,
-          this.currentPassword // Add a field for the current password if needed
+          this.currentPassword 
         );
         await reauthenticateWithCredential(user, credential);
 
-        // Update password
         await updatePassword(user, this.newPassword);
         alert("Password updated successfully.");
         this.currentPassword = "";
@@ -142,36 +135,36 @@ export default {
     },
     closeEditImageModal() {
       this.showEditImageModal = false;
-      this.imageUrl = null; // Reset image URL
+      this.imageUrl = null; 
       if (this.cropper) {
-        this.cropper.destroy(); // Clean up Cropper instance
+        this.cropper.destroy(); 
         this.cropper = null;
       }
     },
     handleImageUpload(event) {
       const file = event.target.files[0];
-      console.log("Selected file:", file); // Log the selected file
+      console.log("Selected file:", file); 
       if (file) {
         const reader = new FileReader();
 
         reader.onload = (e) => {
-          this.imageUrl = e.target.result; // Set the data URL
-          console.log("Image URL:", this.imageUrl); // Log the data URL
+          this.imageUrl = e.target.result; 
+          console.log("Image URL:", this.imageUrl); 
           this.$nextTick(() => {
-            this.initializeCropper(); // Ensure DOM is updated before initializing
+            this.initializeCropper(); 
           });
         };
 
-        reader.readAsDataURL(file); // Read the file as a data URL
+        reader.readAsDataURL(file); 
       }
     },
     initializeCropper() {
-      // Initialize Cropper after the image has fully loaded
+    
       if (this.$refs.imageToCrop) {
         this.cropper = new Cropper(this.$refs.imageToCrop, {
-          aspectRatio: 1, // Adjust aspect ratio as needed (1 for square)
+          aspectRatio: 1, 
           viewMode: 1,
-          autoCropArea: 1, // Ensures the entire image area is selectable
+          autoCropArea: 1, 
         });
       }
     },
@@ -179,28 +172,24 @@ export default {
       if (this.cropper) {
         this.cropper.getCroppedCanvas().toBlob(async (blob) => {
           if (blob) {
-            // Create a blob URL for the cropped image (optional)
+
             const croppedImageURL = URL.createObjectURL(blob);
             this.imageUrl = croppedImageURL;
 
-            // Upload the image to Firebase Storage
             const storage = getStorage();
-            const storageRef = ref(storage, `images/${Date.now()}.png`); // Use a unique filename
+            const storageRef = ref(storage, `images/${Date.now()}.png`); 
 
             try {
-              // Upload the blob to Firebase Storage
+
               const uploadTask = await uploadBytes(storageRef, blob);
               const downloadURL = await getDownloadURL(uploadTask.ref);
               console.log("File available at", downloadURL);
 
-              // Save the download URL to Firestore in the existing user document
               await this.saveImageUrlToFirestore(downloadURL);
 
-              // Close the modal after saving
               this.closeEditImageModal();
 
-              // Free the blob URL
-              URL.revokeObjectURL(croppedImageURL); // Revoke the blob URL
+              URL.revokeObjectURL(croppedImageURL); 
             } catch (error) {
               console.error("Error uploading image:", error);
             }
@@ -211,15 +200,15 @@ export default {
       }
     },
     async saveImageUrlToFirestore(downloadURL) {
-      const userId = auth.currentUser.uid; // Get the current user ID
-      const userDocRef = doc(db, "users", userId); // Reference to the user's document in Firestore
+      const userId = auth.currentUser.uid; 
+      const userDocRef = doc(db, "users", userId); 
 
       try {
-        // Use setDoc with merge: true to add the imageUrl field without overwriting other fields
+        
         await setDoc(userDocRef, { imageUrl: downloadURL }, { merge: true });
         alert("Image successfully updated");
         console.log("Image URL successfully saved to Firestore.");
-        window.location.reload(); // This will reload the current page
+        window.location.reload(); 
       } catch (error) {
         console.error("Error saving image URL to Firestore:", error);
       }
@@ -228,7 +217,7 @@ export default {
       try {
         this.isLoadingReviews = true;
         const reviewsCollection = collection(db, "reviews");
-        // Query reviews where customerID matches the current userId
+
         const q = query(
           reviewsCollection,
           where("customerID", "==", this.userId),
@@ -285,7 +274,7 @@ export default {
       try {
         this.isLoadingReviews = true;
         const reviewsCollection = collection(db, "reviews");
-        // Query reviews where customerID matches the current userId
+
         const q = query(
           reviewsCollection,
           where("customerID", "==", this.userId)
@@ -390,7 +379,6 @@ export default {
       return this.reviews.slice(start, end);
     },
 
-    // Add this computed property to handle which page numbers to display
     displayedPages() {
       const total = this.totalPages;
       const current = this.currentPage;
@@ -399,22 +387,20 @@ export default {
       let start = Math.max(1, current - Math.floor(displayed / 2));
       let end = Math.min(total, start + displayed - 1);
 
-      // Adjust start if we're near the end
       if (end === total) {
         start = Math.max(1, end - displayed + 1);
       }
 
-      // Generate array of page numbers
       return Array.from({ length: end - start + 1 }, (_, i) => start + i);
     },
   },
   mounted() {
     onAuthStateChanged(auth, async (user) => {
       if (user) {
-        // Fetch user data based on the userID
+        
         const userDoc = doc(db, "users", user.uid);
         const docSnap = await getDoc(userDoc);
-        this.userId = user.uid; // Store logged-in user ID
+        this.userId = user.uid; 
         await this.loadReviews();
         await this.loadTransactionHistory();
         console.log("UserID:", this.userId);
@@ -425,10 +411,10 @@ export default {
           this.userEmail = userData.email;
           this.userBio = userData.bio || "No bio available";
           this.profilePictureUrl = userData.imageUrl || defaultProfileIcon;
-          this.userRole = userData.role || ""; // Retrieve the user's role
+          this.userRole = userData.role || ""; 
           this.loading = false;
           console.log("Profile Picture URL:", this.profilePictureUrl);
-          // Redirect if the user is a contractor
+          
           if (this.userRole === "contractor") {
             this.$router.push("/contractorProfile");
           }
@@ -547,9 +533,7 @@ export default {
             <div class="card mb-4 review-card">
               <div class="card-header">Review History</div>
               <div class="card-body">
-                <!-- Loading State -->
-
-                <!-- No Reviews State -->
+            
                 <div v-if="reviews.length === 0" class="no-reviews">
                   You have submited no reviews yet.
                 </div>
@@ -797,7 +781,6 @@ export default {
         <div class="modal-content">
           <h5>Upload and Crop Image</h5>
 
-          <!-- File Upload Input -->
           <input
             type="file"
             ref="fileInput"
@@ -805,7 +788,7 @@ export default {
             class="form-control mb-2"
             accept=".jpg,.jpeg,.png"
           />
-          <!-- Image Preview for Cropping -->
+         
           <div v-if="imageUrl" class="image-crop-container">
             <img
               ref="imageToCrop"
@@ -815,7 +798,7 @@ export default {
             />
           </div>
 
-          <!-- Save and Cancel Buttons -->
+        
           <button class="btn btn-primary" @click="saveCroppedImage">
             Save
           </button>
@@ -826,7 +809,7 @@ export default {
       </div>
     </div>
   </LogedInLayout>
-  <!-- <div v-else class="loading-spinner">Please Login to account...</div> -->
+ 
 </template>
 
 <style scoped>
@@ -904,7 +887,7 @@ h6 {
   z-index: 1000;
 }
 .modal-content {
-  max-height: 100vh; /* Adjust based on your design */
+  max-height: 100vh; 
   overflow-y: auto;
   background-color: #ffffff;
   padding: 20px;
@@ -930,26 +913,26 @@ h6 {
 
 .profile-image {
   border-radius: 50%;
-  transition: filter 0.3s ease; /* Smooth transition for darkening */
+  transition: filter 0.3s ease; 
 }
 
 .profile-image-container:hover .profile-image {
-  filter: brightness(0.7); /* Darkens the image on hover */
+  filter: brightness(0.7); 
 }
 
 .hover-text {
   position: absolute;
-  top: 50%; /* Center vertically */
-  left: 50%; /* Center horizontally */
-  transform: translate(-50%, -50%); /* Offset to truly center */
-  color: white; /* Text color */
-  font-size: 16px; /* Adjust as needed */
-  opacity: 0; /* Initially hidden */
-  transition: opacity 0.3s ease; /* Smooth transition for text appearance */
+  top: 50%; 
+  left: 50%; 
+  transform: translate(-50%, -50%); 
+  color: white; 
+  font-size: 16px; 
+  opacity: 0; 
+  transition: opacity 0.3s ease; 
 }
 
 .profile-image-container:hover .hover-text {
-  opacity: 1; /* Show text on hover */
+  opacity: 1; 
 }
 
 .edit-icon {
@@ -970,16 +953,16 @@ h6 {
 }
 
 .selected-image-preview {
-  width: 100%; /* Adjust this as necessary */
+  width: 100%; 
 }
 
 .marker-label {
-  background-color: rgba(255, 255, 255, 0.8); /* Background for readability */
+  background-color: rgba(255, 255, 255, 0.8); 
   padding: 4px 8px;
-  border-radius: 4px; /* Rounded corners */
-  box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.3); /* Soft shadow */
-  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6); /* Light text shadow */
-  font-family: "Arial", sans-serif; /* Custom font */
+  border-radius: 4px; 
+  box-shadow: 1px 1px 4px rgba(0, 0, 0, 0.3); 
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.6); 
+  font-family: "Arial", sans-serif; 
   font-size: 14px;
 }
 

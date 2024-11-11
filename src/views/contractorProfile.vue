@@ -36,7 +36,7 @@ export default {
       userEmail: "",
       defaultImage: "",
       companyName: "",
-      servicesOffered: [], // Store services as an array
+      servicesOffered: [], 
       newServiceItem: "",
       address: "",
       postalCode: "",
@@ -62,15 +62,15 @@ export default {
       loading: true,
       reviews: [],
       averageRating: 0,
-      userId: "", // user ID of the logged-in user
+      userId: "", 
       defaultProfileIcon: "../assets/default_profile.png",
       currentPage: 1,
       perPage: 1,
       transactions: [],
       isLoading: true,
-      portfolioImages: [], // Store the portfolio images
-      newPortfolioImage: null, // Store the new image to be uploaded
-      showPortfolioImageModal: false, // Control the portfolio image modal
+      portfolioImages: [], 
+      newPortfolioImage: null, 
+      showPortfolioImageModal: false, 
       imagePortfolioUrl: "",
       previewImage: null,
     };
@@ -298,10 +298,10 @@ export default {
 
     async loadMap(postalCode) {
       try {
-        // Load Google Maps Script
+      
         await this.loadGoogleMapsScript();
 
-        // Now that Google Maps is loaded, create the map
+        
         const geocoder = new google.maps.Geocoder();
         geocoder.geocode({ address: postalCode }, (results, status) => {
           if (status === "OK" && results[0]) {
@@ -314,13 +314,13 @@ export default {
               mapOptions
             );
 
-            // Create the marker
+            
             const marker = new google.maps.Marker({
               position: results[0].geometry.location,
               map: map,
             });
 
-            // Define custom HTML for the InfoWindow with a card design
+          
             const infoWindowContent = `
                     <div style="
                         background: #fff;
@@ -335,13 +335,12 @@ export default {
                     </div>
                 `;
 
-            // Create and open the InfoWindow with the styled content
+          
             const infoWindow = new google.maps.InfoWindow({
               content: infoWindowContent,
             });
             infoWindow.open(map, marker);
 
-            // Optional: Keep the InfoWindow open when clicking on the marker
             marker.addListener("click", () => {
               infoWindow.open(map, marker);
             });
@@ -491,7 +490,7 @@ export default {
             let customerName = "Unknown";
 
             if (data.customerID) {
-              // Fetch customer document
+    
               const customerRef = doc(db, "users", data.customerID);
               const customerDoc = await getDoc(customerRef);
 
@@ -563,7 +562,7 @@ export default {
     initializePortfolioCropper() {
       if (this.$refs.portfolioImageToCrop) {
         this.cropperPortfolio = new Cropper(this.$refs.portfolioImageToCrop, {
-          aspectRatio: 16 / 9, // Changed to landscape for portfolio images
+          aspectRatio: 16 / 9, 
           viewMode: 1,
           autoCropArea: 1,
         });
@@ -664,7 +663,7 @@ export default {
       if (user) {
         const userDoc = doc(db, "users", user.uid);
         const docSnap = await getDoc(userDoc);
-        this.userId = user.uid; // Store logged-in user ID
+        this.userId = user.uid; 
         await this.loadReviews();
         await this.loadTransactionHistory();
         if (docSnap.exists()) {
@@ -719,7 +718,7 @@ export default {
     <div v-else>
       <div class="container mt-5">
         <div class="row">
-          <!-- Left Column -->
+
           <div class="col-md-6">
             <div class="card mb-4">
               <div class="text-center mb-3">
@@ -766,14 +765,13 @@ export default {
                 <h5 class="card-title">
                   <i class="fas fa-info-circle"></i> About
                 </h5>
-                <!-- About Section Title -->
 
                 <h6 class="">Company Name:</h6>
 
                 <p class="text-muted">{{ companyName }}</p>
 
                 <h6>Services Offered:</h6>
-                <!-- Services Offered Section -->
+
                 <ul class="list-unstyled">
                   <li
                     v-for="(service, index) in servicesOffered"
@@ -785,7 +783,7 @@ export default {
                 </ul>
 
                 <h6>Store Location:</h6>
-                <!-- Store Location Section -->
+
                 <div v-if="postalCode">
                   <p style="color: #6c757d">{{ address }}, S{{ postalCode }}</p>
                   <a
