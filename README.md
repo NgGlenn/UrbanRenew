@@ -6,13 +6,13 @@
 https://wad2-urbanrenew.web.app/
 
 # Members
-| Team Members         | Student ID | Email                            |
-| :------------------: | :--------: | :------------------------------: |
-| Adrian Tok Jun Hao   |    | adrian.tok.2023@scis.smu.edu.sg  | 
-| Joel Tan Yong Ern    |    | joel.tan.2023@scis.smu.edu.sg    | 
-| Kng Eng Cheng, Moses |    | moses.kng.2023@scis.smu.edu.sg   | 
-| Ng Jun Heng Glenn    |    | glenn.ng.2023@scis.smu.edu.sg    | 
-| Shaun Nisal Peiris   |    | shaunnisalp.2023@scis.smu.edu.sg | 
+| Team Members         | Email                             |
+| :------------------: |  :------------------------------: |
+| Adrian Tok Jun Hao   | adrian.tok.2023@scis.smu.edu.sg  | 
+| Joel Tan Yong Ern    | joel.tan.2023@scis.smu.edu.sg    | 
+| Kng Eng Cheng, Moses | moses.kng.2023@scis.smu.edu.sg   | 
+| Ng Jun Heng Glenn    | glenn.ng.2023@scis.smu.edu.sg    | 
+| Shaun Nisal Peiris   | shaunnisalp.2023@scis.smu.edu.sg | 
 
 # Project Overview
 Homeowners currently face a tedious and time-consuming process when trying to find contractors for home renovations. The process of selecting a contractor is typically time-consuming and complicated, involving scattered information on pricing, quality of work, and project management. There is no centralised platform to easily identify potential contractors. Most rely on Google searches, which yield scattered and incomplete information, or visit the HDB website to browse a list of approved contractors. However, even with this resource, they are often left in the same situation—having to sift through a large pool of contractors and conduct further research to make informed decisions.
