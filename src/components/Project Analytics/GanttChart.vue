@@ -61,6 +61,67 @@ const initGantt = () => {
     gantt.config.drag_move = true;
     gantt.config.drag_progress = true;
     gantt.config.readonly = !props.isContractor;
+    gantt.locale.labels.section_progress = "Progress"; 
+    gantt.config.duration_unit = "day";  // Add this
+    gantt.config.duration_step = 1;   
+
+    let processingTaskId = null;
+
+    gantt.config.columns = [
+        { name: "text", label: "Task name", tree: true, width: 150 },
+        // { name: "start_date", label: "Start", align: "center", width: 80 },
+        { name: "duration", label: "Duration", align: "center", width: 70 },
+        { name: "progress", label: "Progress", align: "center", width: 80,
+            template: (task) => Math.round(task.progress * 100) + "%"
+        },
+        {name:"add"}
+    ];
+
+        // Define custom progress editor
+    gantt.form_blocks["progress_editor"] = {
+        render: function(sns) {
+            return "<div class='gantt-progress-editor'>" +
+                   "<input type='number' min='0' max='100' step='1'>" +
+                   "<span>%</span>" +
+                   "</div>";
+        },
+        set_value: function(node, value, task, section) {
+            node.querySelector("input").value = Math.round((value || 0) * 100);
+        },
+        get_value: function(node, task, section) {
+            const value = node.querySelector("input").value;
+            return Math.min(Math.max(value, 0), 100) / 100;
+        },
+        focus: function(node) {
+            node.querySelector("input").focus();
+        }
+    };
+    
+    // Configure the lightbox
+    gantt.config.lightbox.sections = [
+        { 
+            name: "description", 
+            height: 70, 
+            map_to: "text", 
+            type: "textarea", 
+            focus: true 
+        },
+        { 
+            name: "progress", 
+            height: 30, 
+            map_to: "progress",
+            type: "progress_editor",
+            single_date: true
+        },
+        { 
+            name: "time", 
+            height: 72, 
+            type: "duration", 
+            map_to: "auto" 
+        }
+    ];
+
+
 
     // Add event listeners for Firestore sync
     gantt.attachEvent("onAfterTaskUpdate", async (id, task) => {
@@ -81,10 +142,11 @@ const initGantt = () => {
                 name: task.text,
                 startDate: task.start_date,
                 endDate: task.end_date,
-                progress: task.progress || 0,
+                progress: Math.round(task.progress*100) || 0,
                 // progress: task.progress
                 // Add any other fields you're tracking
             });
+            console.log(taskRef.progress)
             console.log('Task updated in Firestore');
             emit('taskUpdated', { id, task });
         } catch (error) {
@@ -97,9 +159,10 @@ const initGantt = () => {
     });
 
     gantt.attachEvent("onBeforeTaskAdd", (id, task) => {
-        if (isProcessing || !props.isContractor) {
+        if (isProcessing || !props.isContractor || processingTaskId === id) {
             return false;
         }
+        processingTaskId = id;
         return true;
     });
 
@@ -130,18 +193,54 @@ const initGantt = () => {
         //     gantt.deleteTask(id);
         // }
 
-        if (!props.isContractor || isProcessing) return;
+        // if (!props.isContractor || isProcessing) return;
+
+        // try {
+        //     isProcessing = true;
+        //     const taskData = {
+        //         jobId: projectStore.currentJobId,
+        //         name: task.text,
+        //         startDate: task.start_date,
+        //         endDate: task.end_date,
+        //         progress: Math.round(task.progress*100) || 0,
+        //         status: 'pending'
+        //     };
+        //     console.log(taskData.progress)
+        //     const docRef = await addDoc(collection(db, 'tasks'), taskData);
+        //     gantt.changeTaskId(id, docRef.id);
+        //     emit('taskAdded', { id: docRef.id, task: taskData });
+        // } catch (error) {
+        //     console.error('Error adding task:', error);
+        //     gantt.deleteTask(id);
+        // } finally {
+        //     isProcessing = false;
+        // }
+
+        if (!props.isContractor || isProcessing || id !== processingTaskId) return;
 
         try {
             isProcessing = true;
+            
+            // Ensure dates are set to start of day
+            const startDate = new Date(task.start_date);
+            startDate.setHours(0, 0, 0, 0);
+            
+            const endDate = new Date(task.end_date);
+            endDate.setHours(23, 59, 59, 999);
+
             const taskData = {
                 jobId: projectStore.currentJobId,
                 name: task.text,
-                startDate: task.start_date,
-                endDate: task.end_date,
-                progress: task.progress || 0,
+                startDate: startDate,
+                endDate: endDate,
+                progress: Math.round(task.progress*100) || 0,
                 status: 'pending'
             };
+
+            console.log('Adding task:', {
+                original: task,
+                processed: taskData
+            });
 
             const docRef = await addDoc(collection(db, 'tasks'), taskData);
             gantt.changeTaskId(id, docRef.id);
@@ -151,10 +250,15 @@ const initGantt = () => {
             gantt.deleteTask(id);
         } finally {
             isProcessing = false;
+            processingTaskId = null;
         }
     });
 
     gantt.attachEvent("onAfterTaskDelete", async (id) => {
+        if (id === processingTaskId) {
+            processingTaskId = null;
+        }
+        
         if (!props.isContractor) {
             console.log('Only contractors can add tasks');
             return;
@@ -171,28 +275,28 @@ const initGantt = () => {
     });
 
     // Handle progress updates
-    gantt.attachEvent("onTaskDrag", async (id, mode, task, original) => {
-        if (!props.isContractor) {
-            console.log('Only contractors can modify tasks');
-            // Revert changes
-            task.progress = original.progress;
-            gantt.refreshTask(id);
-            return;
-        }
+    // gantt.attachEvent("onTaskDrag", async (id, mode, task, original) => {
+    //     if (!props.isContractor) {
+    //         console.log('Only contractors can modify tasks');
+    //         // Revert changes
+    //         task.progress = original.progress;
+    //         gantt.refreshTask(id);
+    //         return;
+    //     }
         
-        if (mode === 'progress') {
-            try {
-                await updateDoc(doc(db, 'tasks', id), {
-                    progress: task.progress*100
-                });
-                console.log('Progress updated in Firestore');
-            } catch (error) {
-                console.error('Error updating progress:', error);
-                task.progress = original.progress;
-                gantt.refreshTask(id);
-            }
-        }
-    });
+    //     if (mode === 'progress') {
+    //         try {
+    //             await updateDoc(doc(db, 'tasks', id), {
+    //                 progress: Math.round(task.progress*100)
+    //             });
+    //             console.log('Progress updated in Firestore');
+    //         } catch (error) {
+    //             console.error('Error updating progress:', error);
+    //             task.progress = original.progress;
+    //             gantt.refreshTask(id);
+    //         }
+    //     }
+    // });
 
     // Add click handler for status changes
     gantt.attachEvent("onTaskClick", (id, e) => {
@@ -202,51 +306,105 @@ const initGantt = () => {
         }
     });
 
-    gantt.attachEvent("onAfterTaskDrag", async (id, mode, task, original) => {
-        if (!props.isContractor || isProcessing) return;
+    // gantt.attachEvent("onAfterTaskDrag", async (id, mode, task, original) => {
+    //     if (!props.isContractor || isProcessing) return;
         
-        if (mode === "move" || mode === "resize") {
-            try {
-                isProcessing = true;
-                const taskRef = doc(db, 'tasks', id);
+    //     if (mode === "move" || mode === "resize") {
+    //         try {
+    //             isProcessing = true;
+    //             const taskRef = doc(db, 'tasks', id);
                 
-                const updateData = {
-                    startDate: formatDateForFirestore(task.start_date),
-                    endDate: formatDateForFirestore(task.end_date)
-                };
+    //             const updateData = {
+    //                 startDate: formatDateForFirestore(task.start_date),
+    //                 endDate: formatDateForFirestore(task.end_date)
+    //             };
 
-                await updateDoc(taskRef, updateData);
-                console.log('Task dates updated in Firestore after drag');
-                emit('taskUpdated', { id, task });
-            } catch (error) {
-                console.error('Error updating task dates:', error);
-                task.start_date = original.start_date;
-                task.end_date = original.end_date;
-                gantt.refreshTask(id);
-            } finally {
-                isProcessing = false;
-            }
-        }
-    });
+    //             await updateDoc(taskRef, updateData);
+    //             console.log('Task dates updated in Firestore after drag');
+    //             emit('taskUpdated', { id, task });
+    //         } catch (error) {
+    //             console.error('Error updating task dates:', error);
+    //             task.start_date = original.start_date;
+    //             task.end_date = original.end_date;
+    //             gantt.refreshTask(id);
+    //         } finally {
+    //             isProcessing = false;
+    //         }
+    //     }
+    // });
 
     // Handle date changes through lightbox (menu)
     gantt.attachEvent("onLightboxSave", async (id, task, is_new) => {
+        //  if (!props.isContractor || isProcessing) return true;
+
+        // try {
+        //     isProcessing = true;
+        //     const taskRef = doc(db, 'tasks', id);
+            
+        //     // Ensure dates are set to start of day
+        //     const startDate = new Date(task.start_date);
+        //     startDate.setHours(0, 0, 0, 0);
+            
+        //     const endDate = new Date(task.end_date);
+        //     endDate.setHours(23, 59, 59, 999);
+
+
+        //     const updateData = {
+        //         text: task.text,
+        //         startDate: startDate,
+        //         endDate: endDate,
+        //         progress: Math.round(task.progress) || 0
+        //     };
+
+        //     await updateDoc(taskRef, updateData);
+        //     console.log('Task updated in Firestore after lightbox edit', updateData);
+        //     emit('taskUpdated', { id, task });
+        //     return true;
          if (!props.isContractor || isProcessing) return true;
 
         try {
             isProcessing = true;
-            const taskRef = doc(db, 'tasks', id);
             
-            const updateData = {
-                text: task.text,
-                startDate: formatDateForFirestore(task.start_date),
-                endDate: formatDateForFirestore(task.end_date),
-                progress: task.progress || 0
-            };
+            // For new tasks, we need to create them
+            if (is_new) {
+                const startDate = new Date(task.start_date);
+                startDate.setHours(0, 0, 0, 0);
+                
+                const endDate = new Date(task.end_date);
+                endDate.setHours(23, 59, 59, 999);
 
-            await updateDoc(taskRef, updateData);
-            console.log('Task updated in Firestore after lightbox edit');
-            emit('taskUpdated', { id, task });
+                const taskData = {
+                    jobId: projectStore.currentJobId,
+                    name: task.text,
+                    startDate: startDate,
+                    endDate: endDate,
+                    progress: Math.round(task.progress * 100) || 0,
+                    status: 'pending'
+                };
+
+                const docRef = await addDoc(collection(db, 'tasks'), taskData);
+                gantt.changeTaskId(id, docRef.id);
+                emit('taskAdded', { id: docRef.id, task: taskData });
+            } 
+            // For existing tasks, update them
+            else {
+                const taskRef = doc(db, 'tasks', id.toString());
+                const startDate = new Date(task.start_date);
+                startDate.setHours(0, 0, 0, 0);
+                
+                const endDate = new Date(task.end_date);
+                endDate.setHours(23, 59, 59, 999);
+
+                const updateData = {
+                    name: task.text,
+                    startDate: startDate,
+                    endDate: endDate,
+                    progress: Math.round(task.progress * 100) || 0
+                };
+
+                await updateDoc(taskRef, updateData);
+                emit('taskUpdated', { id, task: updateData });
+            }
             return true;
         } catch (error) {
             console.error('Error updating task:', error);
@@ -256,49 +414,18 @@ const initGantt = () => {
         }
     });
 
-    // Also add validation for dates
-    gantt.attachEvent("onTaskDrag", (id, mode, task, original) => {
-        if (mode === "move" || mode === "resize") {
-            return true;
-        }
-        return true;
+    gantt.attachEvent("onAfterLightbox", function(id) {
+        gantt.refreshData();
     });
 
 
-
-    // Configure the lightbox (edit menu)
-    // gantt.config.lightbox.sections = [
-    //     { name: "description", height: 70, map_to: "text", type: "textarea", focus: true },
-    //     { name: "time", height: 72, type: "duration", map_to: "auto" }
-    // ];
-
-    // Add columns for status and progress
-    // gantt.config.columns = [
-    //     { name: "text", label: "Task name", tree: true, width: 200 },
-    //     { 
-    //         name: "status", 
-    //         label: "Status", 
-    //         width: 100,
-    //         template: (task) => {
-    //             const statusClasses = {
-    //                 'pending': 'bg-warning',
-    //                 'in-progress': 'bg-primary',
-    //                 'completed': 'bg-success'
-    //             };
-    //             return `<span class="badge ${statusClasses[task.status] || 'bg-secondary'} status-cell">
-    //                 ${task.status || 'pending'}
-    //             </span>`;
-    //         }
-    //     },
-    //     { name: "start_date", label: "Start", align: "center" },
-    //     { name: "end_date", label: "End", align: "center" },
-    //     { 
-    //         name: "progress", 
-    //         label: "Progress", 
-    //         align: "center",
-    //         template: (task) => Math.round((task.progress || 0) * 100) + "%" 
+    // Also add validation for dates
+    // gantt.attachEvent("onTaskDrag", (id, mode, task, original) => {
+    //     if (mode === "move" || mode === "resize") {
+    //         return true;
     //     }
-    // ];
+    //     return true;
+    // });
 
     gantt.init(ganttContainer.value);
     isInitialized = true;

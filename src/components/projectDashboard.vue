@@ -212,20 +212,46 @@
 
     const handleTaskUpdate = ({ id, task }) => {
         console.log('Task updated:', id, task);
+
+        // Find and update the task in the local tasks array
+        const taskIndex = tasks.value.findIndex(t => t.id === id);
+        if (taskIndex !== -1) {
+            tasks.value[taskIndex] = {
+                ...tasks.value[taskIndex],
+                ...task
+            };
+        }
     };
 
     const handleNewTask = ({ id, task }) => {
         console.log('New task added:', id, task);
+
+        tasks.value.push({
+            id,
+            ...task
+        });
     };
 
     const handleTaskDelete = (id) => {
         console.log('Task deleted:', id);
+
+        // Remove the task from the local tasks array
+        const taskIndex = tasks.value.findIndex(t => t.id === id);
+        if (taskIndex !== -1) {
+            tasks.value.splice(taskIndex, 1);
+        }
     };
 
     const hasNoTasks = computed(() => {
         return !ganttData.value?.[currentJobIndex.value]?.task?.data?.length;
     });
     console.log('is contracotr', props.isContractor.valueOf);
+
+    // Add a deep watch for tasks changes
+    watch(() => tasks.value, () => {
+        // Force jobProgress to recalculate
+        jobProgress.value = useDonutFormat(jobs, tasks).jobProgress;
+    }, { deep: true });
 </script>
 
 <template>
@@ -266,7 +292,8 @@
                 <div id="mobileCarouselIndicator" class="carousel carousel-dark slide taskContainer">
                     <div class="carousel-indicators">
                         <div v-for="(data, index) in ganttData" :key="index">
-                            <button type="button" data-bs-target="#mobileCarouselIndicator" :data-bs-slide-to="index" :class="{active: index === 0}" :aria-current="index===0" :aria-label="`Slide ${index+1}`"></button>
+                            <button type="button" data-bs-target="#mobileCarouselIndicator" :data-bs-slide-to="index" 
+                            :class="{active: index === 0}" :aria-current="index===0" :aria-label="`Slide ${index+1}`"></button>
                         </div>
                         
                         <!-- <button type="button" data-bs-target="#mobileCarouselIndicator" data-bs-slide-to="1" aria-label="Slide 2"></button>
@@ -310,8 +337,8 @@
             <!-- Contractor Information Header -->
             <!-- Progress Header -->
             <div v-if="isContractor">
-                <button @click="handleBack" class="btn btn-secondary back-btn my-3">
-                    ← Back to Projects
+                <button @click="handleBack" class="btn btn-secondary btn-warning my-3">
+                    ← Back to Job List
                 </button>
             </div>
 
@@ -320,20 +347,24 @@
             </div>
 
             <div v-if="isContractor" class="contractor-header">
-                <div class="containerBorder font text-start px-3">
-                    <div>Project Description: <span class="text-dark fw-normal">{{ jobs?.value?.[0]?.description || 'No description available' }}</span></div>
+                <div class="containerBorder font text-start px-3 py-2">
+                    <div class="subfont">Project Description: <span class="text-dark fw-normal">{{ jobs?.value?.[0]?.description || 'No description available' }}</span></div>
                     <!-- <div>Customer ID: <span class="text-dark fw-normal">{{ customerDetails.id }}</span></div> -->
-                    <div>Customer Name: <span class="text-dark fw-normal">{{ customerDetails.name }}</span></div>
-                    <div>Location: <span class="text-dark fw-normal">{{ customerDetails.location }}</span></div>
-                    <div>Paid Status: <span class="text-dark fw-normal">{{ customerDetails.paidStatus }}</span></div>
-                    <div>Project Status: <span class="text-dark fw-normal">{{ customerDetails.status }}</span></div>
+                    <div class="subfont">Customer Name: <span class="text-dark fw-normal">{{ customerDetails.name }}</span></div>
+                    <!-- <div>Location: <span class="text-dark fw-normal">{{ customerDetails.location }}</span></div> -->
+                    <div class="subfont">Paid Status: <span class="text-dark fw-normal">
+                        {{ customerDetails.paidStatus === 'paid' ? 'Paid' : customerDetails.paidStatus === 'partiallypaid' ? 'Partially Paid' : 'Pending' }}</span>
+                    </div>
+                    <div class="subfont">Project Status: <span class="text-dark fw-normal">
+                        {{ customerDetails.status === 'completed' ? 'Completed' : customerDetails.status === 'in_progress' ? 'In Progress' : 'Pending' }}</span>
+                    </div>
                 </div>
             </div>
 
             <!-- Overall Project Progress -->
             <div class="row mx-0 my-3">
                 <div class="font containerBorder">
-                    Overall Progression of Project
+                    Overall Progression of {{isContractor? "Job" : "Project"}} 
                     <ProjectProgressionBar :my-steps="projectProgress.steps" :current-step="projectProgress.currentStep"/>
                 </div>
             </div>
@@ -341,7 +372,8 @@
             <!-- Detailed Progress Section -->
             <div class="customRow">
                 <!-- Job Progress Donut Chart -->
-                <div class="jobProgressionContainer font containerBorder" 
+                <div v-if="!isContractor" 
+                    class="jobProgressionContainer font containerBorder" 
                     :class="{'hasPayment': showPaymentButton}">
                     <p class="my-3">Overall Progression for Job {{ currentJobIndex + 1 }}</p>
                     <div class="my-3">
@@ -350,7 +382,7 @@
                     </div>
                 </div>
                 <!-- Option 1: Select -->
-                <div class="ganttSection font containerBorder" :class="{'hasPayment': showPaymentButton}">
+                <div class="ganttSection font containerBorder" :class="{'hasPayment': showPaymentButton, 'contractor-view' : isContractor}">
                     <!-- Job Selector -->
                     <div v-if="!props.isContractor" class="jobSelector">
                         <select v-model="currentJobIndex" class="form-select w-auto mx-auto">
@@ -382,7 +414,7 @@
                                             jobID: props.projectData.jobs.value[currentJobIndex]?.id
                                         }
                                     }">
-                                    Job Accepted. Please proceed with payment&nbsp;<button>Payment</button>
+                                    Job Accepted. Please proceed with payment&nbsp;<button style="height: fit-content; background-color: #769FCD">Payment</button>
                                 </RouterLink>
                             </div>
                         </div>
@@ -417,9 +449,15 @@
         color: #769FCD;
         text-align: center;
     }
+
+    .subfont{
+        font-family: 'Roboto', sans-serif;
+        font-size: 25px;
+    }
     .font.header{
-        text-decoration: underline;
+        /* text-decoration: underline;  */
         font-size: 50px;
+        /* font-size: 24px; */
     }
 
     .container-fluid {
@@ -434,7 +472,7 @@
     }
 
     .containerBorder {
-        border: 3px solid ;
+        border: 2px solid ;
         border-radius: 10px;
         box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
     }
@@ -492,7 +530,7 @@
     } */
 
     .ganttSection.hasPayment {
-        /* min-height: 800px; */
+        min-height: 400px;
         /* height: 1500px; */
     }
 
@@ -533,7 +571,8 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        font-size: 50px;
+        font-size: 30px;
+        font-weight: 500;
         height: 100%;
     }
 
@@ -572,7 +611,7 @@
     .ganttTitle{ 
         text-align: center;
         font-size: 24px;
-
+        margin: 20px;
     }
 
     @media (min-width: 1080px){
@@ -627,6 +666,11 @@
         .carouselContainer.has-payment {
             min-height: 900px;
         } */
+
+        .ganttSection.contractor-view {
+            width: 100%;
+            max-width: 100%;
+        }
 
         .jobProgressionContainer {
             width: 25%; 

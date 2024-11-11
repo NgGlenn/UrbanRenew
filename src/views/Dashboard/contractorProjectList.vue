@@ -149,7 +149,7 @@
                     <div class="col-11 projectDetails">
                         <div class="projectText">
                             <div style="text-align: left;"><strong>Customer Name:</strong> {{job.customerName}} </div>
-                            <div style="text-align: left;"><strong>Job Location:</strong> {{job.location || addresses[index]}}</div>
+                            <!-- <div style="text-align: left;"><strong>Job Location:</strong> {{job.location || addresses[index]}}</div> -->
                             <div style="text-align: left;"><strong>Job Name:</strong> {{job.jobName}}</div>
                             <div style="text-align: left;"><strong>Job Description:</strong> {{job.description}}</div>
                             <div style="text-align: left;"><strong>Start Date: </strong> {{job.startDate}}</div>
@@ -182,12 +182,12 @@
                     <div class="col-1 d-flex align-items-center">Job: #{{index + 1}}</div>
                     <div class="col-11 projectDetails">
                         <div class="projectText">
-                            <div><strong>Customer Name:</strong> {{job.customerName}} </div>
-                            <div><strong>Job Location:</strong> {{job.location || addresses[index]}}</div>
-                            <div><strong>Job Name:</strong> {{job.jobName}}</div>
-                            <div><strong>Job Description:</strong> {{job.description}}</div>
-                            <div><strong>Start Date: </strong> {{job.startDate}}</div>
-                            <div><strong>End Date: </strong> {{job.endDate}}</div>
+                            <div style="text-align: left;"><strong>Customer Name:</strong> {{job.customerName}} </div>
+                            <div style="text-align: left;"><strong>Job Location:</strong> {{job.location || addresses[index]}}</div>
+                            <div style="text-align: left;"><strong>Job Name:</strong> {{job.jobName}}</div>
+                            <div style="text-align: left;"><strong>Job Description:</strong> {{job.description}}</div>
+                            <div style="text-align: left;"><strong>Start Date: </strong> {{job.startDate}}</div>
+                            <div style="text-align: left;"><strong>End Date: </strong> {{job.endDate}}</div>
                             <!-- <div class="topText">
                                 <strong>Customer Name:</strong> {{job.customerName}} 
                                 &nbsp;<strong>Customer ID:</strong> {{job.customerId}}

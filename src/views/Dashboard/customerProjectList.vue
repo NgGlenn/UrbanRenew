@@ -40,7 +40,7 @@ const goToMarketplace = () => {
             <div class="d-flex align-items-center mb-4">
                 <h1 class="h2 mb-0">My Project</h1>
                 &nbsp;&nbsp;&nbsp;
-                <button class="btn btn-primary btn-lg d-flex  align-items-center" style="background-color: #8257E5; border: none;"
+                <button class="btn btn-primary btn-lg d-flex  align-items-center" style="background-color: #769FCD;"
                     @click="router.push({ name: 'dashboard' })">
                     Start Project
                 </button>
@@ -53,7 +53,7 @@ const goToMarketplace = () => {
                 <!-- Empty State -->
                 <div v-if="!projectStore.jobs?.length" class="text-center py-4">
                     <p class="mb-3">No jobs yet. Start by finding contractors in our marketplace!</p>
-                    <button @click="goToMarketplace" class="btn btn-primary btn-lg">
+                    <button @click="goToMarketplace" class="btn btn-primary btn-lg" style="height: fit-content; background-color: #769FCD">
                         Browse Contractors
                     </button>
                 </div>

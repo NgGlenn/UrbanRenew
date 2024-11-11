@@ -8,7 +8,7 @@
         <div class="container-fluid">   
             <h1><strong>You do not have an ongoing renovation project</strong></h1>
             <RouterLink :to="{ name: 'createProjectCust' }">
-                <button type="button" class="btn btn-primary btn-lg" style="background-color: #769FCD; color: white;">
+                <button type="button" class="btn btn-primary btn-lg" style="background-color: #769FCD; color: white; height: fit-content;">
                     Create A Project    
                 </button>
             </RouterLink>  
