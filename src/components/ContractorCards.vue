@@ -4,7 +4,6 @@
             <div class="card-header p-10" style="text-align: center;">
                 <img :src="displayImage">
                 <h4 style="font-weight: bold;"> {{ firstName }} {{ lastName }} </h4>
-                <p> Rating: {{ rating.toFixed(1) }} / 5.0 </p>
             </div>
             <div class="card-body">
                 <p><b> Company: </b><span style="font-style: italic;"> {{ company }} </span> </p>
@@ -22,7 +21,7 @@
 import { getStorage, ref as storageRef, uploadBytes, getDownloadURL } from "firebase/storage";
 
 export default {
-    props: ['id', 'image', 'firstName', 'lastName', 'company', 'rating', 'servicesOffered'],
+    props: ['id', 'image', 'firstName', 'lastName', 'company', 'servicesOffered'],
 
     data() {
         return {
@@ -69,7 +68,7 @@ export default {
     color: #769FCD;
     margin-top: 10px;
     margin-bottom: 10px;
-    min-height: 500px;
+    min-height: 490px;
 }
 
 img{

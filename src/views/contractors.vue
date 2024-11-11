@@ -30,7 +30,7 @@
                 <div class="row">
                     <ContractorCards v-for="contractor of contractorsDisplay" :key="contractor.id" :id="contractor.id"
                         :image="contractor.portfolioImages" :first-name="contractor.firstName"
-                        :last-name="contractor.lastName" :company="contractor.companyName" :rating="contractor.rating"
+                        :last-name="contractor.lastName" :company="contractor.companyName"
                         :services-offered="contractor.services" @redirect="viewProfile">
                     </ContractorCards>
                 </div>
